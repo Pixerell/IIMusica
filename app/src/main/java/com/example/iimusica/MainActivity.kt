@@ -16,6 +16,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import android.Manifest
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
@@ -27,6 +29,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -35,10 +38,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
@@ -99,7 +105,11 @@ fun MusicFilesScreen(context: Context) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Music Files") }
+                title = { Text(text = "Music Files", style= TextStyle(fontWeight = FontWeight.W500,  fontSize = 28.sp, color = Color(0xFFFFFFFF), fontStyle = androidx.compose.ui.text.font.FontStyle.Italic)) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFF030310),
+                    titleContentColor = Color(0xFFFFFFFF),
+                )
 
             )
         }
@@ -110,6 +120,11 @@ fun MusicFilesScreen(context: Context) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(Color(0xFF0B1045), Color(0xFF5B245A))
+                    )
+                )
         ) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize()
@@ -142,7 +157,10 @@ fun MusicItem(music: MusicFile) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable { /* TODO music */ }
-            .padding(16.dp)
+            .padding(vertical = 2.dp)
+            .background(color = Color(0xFF030310)),
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         // Use Coil to load the image
         val painter = rememberAsyncImagePainter(
@@ -155,18 +173,20 @@ fun MusicItem(music: MusicFile) {
             painter = painter,
             contentDescription = "Album Art",
             modifier = Modifier
-                .size(72.dp),
+                .size(60.dp),
             contentScale = ContentScale.Fit
         )
 
         Column(
             modifier = Modifier
                 .weight(1f)
-                .padding(8.dp)
+                .padding(16.dp)
+                .fillMaxSize()
         ) {
-            Text(text = music.name, style= TextStyle(fontWeight = FontWeight.W500, fontSize = 20.sp), modifier = Modifier.fillMaxWidth() )
-            Text(text = music.artist, style= TextStyle(fontSize = 18.sp))
-            Text(text = "Duration ${music.duration}")
+            Text(text = music.name, style= TextStyle(fontWeight = FontWeight.W500, fontSize = 20.sp, color = Color(0xFFFFFFFF)
+            ), maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.fillMaxWidth() )
+            Text(text = music.artist, style= TextStyle(fontSize = 18.sp, color = Color(0xFFFFFFFF)))
+            Text(text = "Duration ${music.duration}", style=TextStyle(color = Color(0xFFFFFFFF)))
         }
 
     }
