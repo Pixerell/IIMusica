@@ -6,7 +6,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.media.MediaScannerConnection
-import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import java.util.Locale
@@ -22,24 +21,16 @@ data class MusicFile(
 )
 
 fun scanAllFiles(context: Context) {
-    // Get the external storage directory (usually for media like music, photos, etc.)
-    val externalStorage = Environment.getExternalStorageDirectory()
+    // You can trigger the scan only once at app startup or when needed.
+    val externalStorage = context.getExternalFilesDir(null) ?: return
 
-    // Check if external storage is available
-    if (externalStorage.exists()) {
-        // Get the root external storage path
-        val rootDirectory = externalStorage.absolutePath
-
-        // Scan the entire external storage for media files
-        MediaScannerConnection.scanFile(
-            context,
-            arrayOf(rootDirectory), // Pass the entire external storage directory
-            null
-        ) { path, uri ->
-            Log.d("MusicFiles", "Scanned: $path, URI: $uri")
-        }
-    } else {
-        Log.d("MusicFiles", "External storage not available.")
+    // Scan the specified directory (you can scan individual files or directories)
+    MediaScannerConnection.scanFile(
+        context,
+        arrayOf(externalStorage.absolutePath), // Specify the path to scan
+        null // Mime types (null to scan all types)
+    ) { path, uri ->
+        Log.d("MusicFiles", "Scanned: $path, URI: $uri")
     }
 }
 
@@ -96,15 +87,15 @@ fun getAllMusicFiles(context: Context): List<MusicFile> {
     Log.d("MusicFiles", "Total Music Files: ${musicFiles.size}")
     return musicFiles
 }
+
 fun getAlbumArtBitmap(context: Context, albumId: Long, filePath: String): Bitmap? {
-    // Try to load album art from the system content provider
+    // Check cache first (assuming you add a bitmap cache implementation here)
     val albumArtUri = "content://media/external/audio/albumart/$albumId".toUri()
-    Log.d("musicalbum", "HEY brother $albumArtUri")
+
     try {
+        // Attempt to fetch from the content provider (URI-based)
         context.contentResolver.openInputStream(albumArtUri)?.use { inputStream ->
             val bitmap = BitmapFactory.decodeStream(inputStream)
-            Log.d("musicalbum", "bitmap question $bitmap")
-
             if (bitmap != null) {
                 return bitmap
             }
@@ -113,13 +104,12 @@ fun getAlbumArtBitmap(context: Context, albumId: Long, filePath: String): Bitmap
         Log.e("MusicFiles", "Failed to get album art from content URI", e)
     }
 
-    // Fallback: extract embedded album art from the file itself
+    // Fallback: Try embedded art from the media file
     try {
         val retriever = MediaMetadataRetriever()
         retriever.setDataSource(filePath)
         val art = retriever.embeddedPicture
         retriever.release()
-        Log.d("musicalbum", "EMBEDDEDPICTURE $art")
         if (art != null) {
             return BitmapFactory.decodeByteArray(art, 0, art.size)
         }
