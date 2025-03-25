@@ -2,33 +2,40 @@ package com.example.iimusica.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.example.iimusica.R
 
 // Set of Material typography styles to start with
+
+val Tektur = FontFamily(
+    Font(R.font.tektur_regular, FontWeight.Normal),
+    Font(R.font.tektur_bold, FontWeight.Bold)
+)
+
 val Typography = Typography(
     bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = Tektur,
         fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
+        fontSize = 30.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp
-    )
-    /* Other default text styles to override
-    titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 22.sp,
-        lineHeight = 28.sp,
-        letterSpacing = 0.sp
     ),
-    labelSmall = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,
-        fontSize = 11.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
-    )
-    */
+    headlineLarge = TextStyle(
+        fontFamily = Tektur,
+        fontWeight = FontWeight.Bold,
+        fontSize = 32.sp
+    ),
+    bodyMedium = TextStyle(
+        fontFamily = Tektur, // Or any other style like bodyMedium
+        fontWeight = FontWeight.Normal,
+        fontSize = 20.sp
+    ),
+    bodySmall = TextStyle(
+        fontFamily = Tektur, // For small text
+        fontWeight = FontWeight.Normal,
+        fontSize = 18.sp
+    ),
 )

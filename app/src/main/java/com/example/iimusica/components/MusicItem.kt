@@ -10,10 +10,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import androidx.compose.foundation.Image
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.layout.ContentScale
 import com.example.iimusica.MusicFile
@@ -50,10 +50,10 @@ fun MusicItem(music: MusicFile, navController: NavController) {
         ) {
             Text(
                 text = music.name,
-                style = TextStyle(fontWeight = FontWeight.W500, fontSize = 20.sp, color = Color.White),
+                style = TextStyle(fontWeight = FontWeight.Bold, fontSize = MaterialTheme.typography.bodyMedium.fontSize, color = Color.White, fontFamily = MaterialTheme.typography.bodyLarge.fontFamily),
                 modifier = Modifier.fillMaxWidth()
             )
-            Text(text = music.artist, style = TextStyle(fontSize = 18.sp, color = Color.White))
+            Text(text = music.artist, style = TextStyle(fontSize = MaterialTheme.typography.bodySmall.fontSize, color = Color.White, fontFamily = MaterialTheme.typography.bodySmall.fontFamily))
         }
     }
 }

@@ -17,17 +17,21 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.iimusica.MusicFile
 import com.example.iimusica.getAllMusicFiles
 import com.example.iimusica.components.MusicItem
 import com.example.iimusica.components.MusicTopBar
+import com.example.iimusica.components.SortOption
+import com.example.iimusica.components.sortFiles
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,12 +41,15 @@ import kotlinx.coroutines.withContext
 fun MusicListScreen(navController: NavController, context: Context) {
     var mFiles by remember { mutableStateOf(emptyList<MusicFile>()) }
     var searchQuery by remember { mutableStateOf("") }
-    var filteredFiles by remember { mutableStateOf(emptyList<MusicFile>()) }
+    var isSearching by remember { mutableStateOf(false) }
+
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    val coroutineScope = rememberCoroutineScope()
+    var selectedSortOption by remember { mutableStateOf(SortOption.NAME) }
+    var isDescending by remember { mutableStateOf(false) }  // Track sorting direction
 
+    val coroutineScope = rememberCoroutineScope()
 
     fun loadMusicFiles() {
         isLoading = true
@@ -62,23 +69,40 @@ fun MusicListScreen(navController: NavController, context: Context) {
     }
 
 
-    // Using rememberUpdatedState to keep the latest value of mFiles
-    val currentFiles = rememberUpdatedState(mFiles)
-
-    // Update the filtered list when either mFiles or searchQuery changes
-    LaunchedEffect(currentFiles.value, searchQuery) {
-        filteredFiles = when {
-            currentFiles.value.isEmpty() -> emptyList() // Show empty list if no files are available
-            searchQuery.isEmpty() -> currentFiles.value // Show all files if the search query is empty
-            else -> currentFiles.value.filter { music ->
-                music.name.contains(searchQuery, ignoreCase = true) // Case-insensitive search
+    val filteredFiles by remember(mFiles, searchQuery, selectedSortOption, isDescending) {
+        derivedStateOf {
+            val searchedFiles = if (searchQuery.isEmpty()) {
+                mFiles
+            } else {
+                mFiles.filter { music ->
+                    music.name.contains(searchQuery, ignoreCase = true)
+                }
             }
+
+            // Apply sorting based on selectedSortOption and isDescending
+            searchedFiles.sortFiles(selectedSortOption, isDescending)
         }
     }
+
+    fun onSortOptionSelected(option: SortOption) {
+        // If the same option is clicked again, reverse the sort order
+        if (selectedSortOption == option) {
+            isDescending = !isDescending
+        } else {
+            selectedSortOption = option
+            isDescending = false  // Reset to ascending when a new sort option is selected
+        }
+    }
+
     Scaffold(
             topBar = { MusicTopBar(
                 searchQuery = searchQuery,
-                onSearchQueryChange = {searchQuery = it}
+                onSearchQueryChange = {searchQuery = it},
+                isSearching = isSearching,
+                onToggleSearch = { isSearching = !isSearching },
+                onSortOptionSelected = { onSortOptionSelected(it) },
+                selectedSortOption = selectedSortOption,
+                isDescending = isDescending
             ) },
         floatingActionButton = {
             Box(
@@ -90,7 +114,11 @@ fun MusicListScreen(navController: NavController, context: Context) {
                     },
                     modifier = Modifier
                         .padding(16.dp)
-                        .align(Alignment.BottomCenter)
+                        .align(Alignment.BottomCenter),
+                    contentColor = Color.White,
+                    containerColor = Color(0xFF0B1045),
+
+
                 ) {
                     Icon(Icons.Default.Refresh, contentDescription = "Refresh Music Files")
                 }
@@ -127,7 +155,20 @@ fun MusicListScreen(navController: NavController, context: Context) {
                         )
                     }
                 }
-            } else {
+            }
+
+            else if (errorMessage != null) {
+                Text(
+                    text = errorMessage!!,
+                    color = Color.White,
+                    fontSize = 40.sp,
+                    modifier = Modifier.align(Alignment.Center),
+
+
+                )
+            }
+
+            else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize()
                 ) {

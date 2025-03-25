@@ -17,7 +17,9 @@ data class MusicFile(
     val path: String,
     val artist: String,
     val albumArtUri: Bitmap?,
-    val album: String
+    val album: String,
+    val size: Long,
+    val dateAdded: Long
 )
 
 fun scanAllFiles(context: Context) {
@@ -46,6 +48,8 @@ fun getAllMusicFiles(context: Context): List<MusicFile> {
         MediaStore.Audio.Media.ARTIST,
         MediaStore.Audio.Media.ALBUM_ID, // Added album ID to get album artwork
         MediaStore.Audio.Media.ALBUM,
+        MediaStore.Audio.Media.SIZE,
+        MediaStore.Audio.Media.DATE_ADDED
         )
 
     val cursor = context.contentResolver.query(
@@ -62,6 +66,9 @@ fun getAllMusicFiles(context: Context): List<MusicFile> {
         val artistIndex = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
         val albumIdIndex = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
         val albumindex = it.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
+        val sizeIndex = it.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)
+        val dateAddedIndex = it.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED)
+
 
 
 
@@ -73,6 +80,8 @@ fun getAllMusicFiles(context: Context): List<MusicFile> {
             val artist = it.getString(artistIndex)
             val albumId = it.getLong(albumIdIndex)
             val album = it.getString(albumindex)
+            val size = it.getLong(sizeIndex)
+            val dateAdded = it.getLong(dateAddedIndex)
 
             val minutes = (duration / 1000) / 60
             val seconds = (duration / 1000) % 60
@@ -81,7 +90,7 @@ fun getAllMusicFiles(context: Context): List<MusicFile> {
             val albumArt = getAlbumArtBitmap(context, albumId, path)
 
             Log.d("MusicFiles", "Name: $name, Path: $path, Duration: $formattedDuration , relPath: $relpath, albumArtUri $albumArt , albumid $albumId , album $album" )
-            musicFiles.add(MusicFile(name, formattedDuration , path, artist, albumArt, album))
+            musicFiles.add(MusicFile(name, formattedDuration , path, artist, albumArt, album, size, dateAdded))
         }
     }
     Log.d("MusicFiles", "Total Music Files: ${musicFiles.size}")
