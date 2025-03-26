@@ -23,14 +23,11 @@ data class MusicFile(
 )
 
 fun scanAllFiles(context: Context) {
-    // You can trigger the scan only once at app startup or when needed.
     val externalStorage = context.getExternalFilesDir(null) ?: return
-
-    // Scan the specified directory (you can scan individual files or directories)
     MediaScannerConnection.scanFile(
         context,
-        arrayOf(externalStorage.absolutePath), // Specify the path to scan
-        null // Mime types (null to scan all types)
+        arrayOf(externalStorage.absolutePath),
+        null
     ) { path, uri ->
         Log.d("MusicFiles", "Scanned: $path, URI: $uri")
     }

@@ -16,6 +16,11 @@ fun List<MusicFile>.sortFiles(selectedSortOption: SortOption, isDescending: Bool
             if (isDescending) compareBy { it.size }
             else compareByDescending { it.size }
         )
+        SortOption.DURATION -> this.sortedWith(
+            if (isDescending) compareBy { it.duration }
+            else compareByDescending { it.duration }
+        )
+
         SortOption.DATE -> this.sortedWith(
             if (isDescending) compareBy { it.dateAdded }
             else compareByDescending { it.dateAdded }

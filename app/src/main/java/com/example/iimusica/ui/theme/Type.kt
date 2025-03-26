@@ -8,7 +8,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.example.iimusica.R
 
-// Set of Material typography styles to start with
 
 val Tektur = FontFamily(
     Font(R.font.tektur_regular, FontWeight.Normal),
@@ -28,13 +27,18 @@ val Typography = Typography(
         fontWeight = FontWeight.Bold,
         fontSize = 32.sp
     ),
+    headlineMedium = TextStyle(
+        fontFamily = Tektur,
+        fontWeight = FontWeight.Bold,
+        fontSize = 28.sp
+    ),
     bodyMedium = TextStyle(
-        fontFamily = Tektur, // Or any other style like bodyMedium
+        fontFamily = Tektur,
         fontWeight = FontWeight.Normal,
         fontSize = 20.sp
     ),
     bodySmall = TextStyle(
-        fontFamily = Tektur, // For small text
+        fontFamily = Tektur,
         fontWeight = FontWeight.Normal,
         fontSize = 18.sp
     ),

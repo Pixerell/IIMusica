@@ -1,10 +1,17 @@
 package com.example.iimusica.components
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import com.example.iimusica.R
+import com.example.iimusica.ui.theme.LocalAppColors
+import com.example.iimusica.ui.theme.Typography
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -15,10 +22,12 @@ fun MusicTopBar(
     onToggleSearch: () -> Unit,
     onSortOptionSelected: (SortOption) -> Unit,
     selectedSortOption: SortOption,
-    isDescending: Boolean
+    isDescending: Boolean,
+    toggleTheme: () -> Unit
 
 ) {
     var expanded by remember { mutableStateOf(false) } // Controls the dropdown visibility
+    val appColors = LocalAppColors.current
 
     TopAppBar(
         title = {
@@ -28,11 +37,12 @@ fun MusicTopBar(
                 Text(
                     text = "IIMusica",
                     style = LocalTextStyle.current.copy(
-                        fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-                        color = Color.White,
-                        fontFamily = MaterialTheme.typography.headlineLarge.fontFamily,
-                        fontWeight = MaterialTheme.typography.headlineLarge.fontWeight
-                    )
+                        fontSize = Typography.headlineMedium.fontSize,
+                        color = appColors.font,
+                        fontFamily = Typography.headlineLarge.fontFamily,
+                        fontWeight = Typography.headlineLarge.fontWeight
+                    ),
+                    modifier = Modifier.clickable{ toggleTheme() }
                 )
             }
         },
@@ -47,7 +57,8 @@ fun MusicTopBar(
                 Icon(
                     painter = painterResource(id = if (isSearching) R.drawable.cancelico else R.drawable.searchico),
                     contentDescription = if (isSearching) "Clear Search" else "Search",
-                    tint = Color.White
+                    tint = appColors.icon,
+                    modifier = Modifier.size(28.dp)
                 )
             }
             // Sort Button
@@ -55,7 +66,8 @@ fun MusicTopBar(
                 Icon(
                     painter = painterResource(id = R.drawable.moreico),
                     contentDescription = "Sort",
-                    tint = Color.White
+                    tint = appColors.icon,
+                    modifier = Modifier.size(28.dp)
 
                 )
             }
@@ -70,6 +82,9 @@ fun MusicTopBar(
             )
 
         },
-        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF030310))
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = appColors.background),
+        modifier = Modifier
+            .shadow(16.dp, shape = RectangleShape, ambientColor = appColors.font, spotColor = appColors.font)
     )
+
 }

@@ -6,21 +6,27 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import androidx.compose.foundation.Image
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextOverflow
 import com.example.iimusica.MusicFile
 import com.example.iimusica.R
+import com.example.iimusica.ui.theme.LocalAppColors
+import com.example.iimusica.ui.theme.Typography
 
 @Composable
-fun MusicItem(music: MusicFile, navController: NavController) {
+fun MusicItem(music: MusicFile, navController: NavController, isLastItem: Boolean) {
+
+    val appColors = LocalAppColors.current
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -28,7 +34,12 @@ fun MusicItem(music: MusicFile, navController: NavController) {
                 navController.navigate("music_detail/${music.name}/${music.artist}")
             }
             .padding(vertical = 2.dp)
-            .background(color = Color(0xFF030310)),
+            .then(
+                if (isLastItem) Modifier.shadow(
+                    8
+                        .dp, shape = RectangleShape, ambientColor = appColors.font, spotColor = appColors.font
+                ) else Modifier
+            )            .background(color = appColors.background),
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -36,24 +47,49 @@ fun MusicItem(music: MusicFile, navController: NavController) {
             model = music.albumArtUri ?: R.drawable.default_image
         )
 
-        Image(
-            painter = painter,
-            contentDescription = "Album Art",
-            modifier = Modifier.size(60.dp),
-            contentScale = ContentScale.Fit
-        )
+        val imageModifier = if (music.albumArtUri == null) {
+            Modifier.size(60.dp) // Smaller size for the default image
+        } else {
+            Modifier.size(80.dp) // Regular size for other images
+        }
+
+
+        Box(
+            modifier = Modifier
+                .size(80.dp)  // Fixed size for the Box that wraps the image
+                .wrapContentSize(Alignment.Center)
+        ) {
+            Image(
+                painter = painter,
+                contentDescription = "Album Art",
+                modifier = imageModifier
+                    .fillMaxSize()
+                    .padding(4.dp),
+                contentScale = ContentScale.FillBounds
+            )
+        }
 
         Column(
             modifier = Modifier
                 .weight(1f)
-                .padding(16.dp)
+                .padding(vertical = 16.dp)
+
         ) {
             Text(
                 text = music.name,
-                style = TextStyle(fontWeight = FontWeight.Bold, fontSize = MaterialTheme.typography.bodyMedium.fontSize, color = Color.White, fontFamily = MaterialTheme.typography.bodyLarge.fontFamily),
-                modifier = Modifier.fillMaxWidth()
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                style = TextStyle(fontWeight = FontWeight.Bold, fontSize = Typography.bodyMedium.fontSize, color = appColors.font, fontFamily = Typography.bodyLarge.fontFamily),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
             )
-            Text(text = music.artist, style = TextStyle(fontSize = MaterialTheme.typography.bodySmall.fontSize, color = Color.White, fontFamily = MaterialTheme.typography.bodySmall.fontFamily))
+            Text(text = music.artist, style = TextStyle(fontSize = Typography.bodySmall.fontSize, color = appColors.font, fontFamily = Typography.bodySmall.fontFamily),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .padding(start = 16.dp)
+            )
         }
     }
 }

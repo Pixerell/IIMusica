@@ -7,7 +7,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
@@ -21,76 +21,65 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.iimusica.MusicFile
-import com.example.iimusica.getAllMusicFiles
 import com.example.iimusica.components.MusicItem
 import com.example.iimusica.components.MusicTopBar
 import com.example.iimusica.components.SortOption
 import com.example.iimusica.components.sortFiles
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.example.iimusica.ui.theme.LocalAppColors
+
 
 @Composable
-fun MusicListScreen(navController: NavController, context: Context) {
-    var mFiles by remember { mutableStateOf(emptyList<MusicFile>()) }
+fun MusicListScreen(navController: NavController, context: Context, toggleTheme:() -> Unit, viewModel: MusicViewModel = viewModel()) {
     var searchQuery by remember { mutableStateOf("") }
     var isSearching by remember { mutableStateOf(false) }
 
-    var isLoading by remember { mutableStateOf(true) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val mFiles by viewModel.mFiles
+    val isLoading by viewModel.isLoading
+    val errorMessage = viewModel.errorMessage
 
     var selectedSortOption by remember { mutableStateOf(SortOption.NAME) }
-    var isDescending by remember { mutableStateOf(false) }  // Track sorting direction
+    var isDescending by remember { mutableStateOf(false) }
 
-    val coroutineScope = rememberCoroutineScope()
+    val appColors = LocalAppColors.current
 
-    fun loadMusicFiles() {
-        isLoading = true
-        errorMessage = null // Reset error message on new fetch
-        fetchMusicFiles(context, coroutineScope, { files ->
-            mFiles = files
-            isLoading = false
-        }, { error ->
-            errorMessage = error
-            isLoading = false
-        })
-    }
+
 
     // Use LaunchedEffect to launch a coroutine for fetching music files
     LaunchedEffect(Unit) {
-        loadMusicFiles()
-    }
-
-
-    val filteredFiles by remember(mFiles, searchQuery, selectedSortOption, isDescending) {
-        derivedStateOf {
-            val searchedFiles = if (searchQuery.isEmpty()) {
-                mFiles
-            } else {
-                mFiles.filter { music ->
-                    music.name.contains(searchQuery, ignoreCase = true)
-                }
-            }
-
-            // Apply sorting based on selectedSortOption and isDescending
-            searchedFiles.sortFiles(selectedSortOption, isDescending)
+        if (mFiles.isEmpty()) {
+            viewModel.loadMusicFiles(context)
         }
     }
 
+    // Function to filter files based on search query
+    fun filterFiles(files: List<MusicFile>, query: String): List<MusicFile> {
+        return if (query.isEmpty()) {
+            files
+        } else {
+            files.filter { it.name.contains(query, ignoreCase = true) }
+        }
+    }
+
+    // Function to sort files based on the selected option and direction
+    fun sortFiles(files: List<MusicFile>, sortOption: SortOption, descending: Boolean): List<MusicFile> {
+        return files.sortFiles(sortOption, descending)
+    }
+
+    val filteredFiles = filterFiles(mFiles, searchQuery)
+    val sortedFiles = sortFiles(filteredFiles, selectedSortOption, isDescending)
+
     fun onSortOptionSelected(option: SortOption) {
-        // If the same option is clicked again, reverse the sort order
         if (selectedSortOption == option) {
             isDescending = !isDescending
         } else {
             selectedSortOption = option
-            isDescending = false  // Reset to ascending when a new sort option is selected
+            isDescending = false
         }
     }
 
@@ -102,7 +91,9 @@ fun MusicListScreen(navController: NavController, context: Context) {
                 onToggleSearch = { isSearching = !isSearching },
                 onSortOptionSelected = { onSortOptionSelected(it) },
                 selectedSortOption = selectedSortOption,
-                isDescending = isDescending
+                isDescending = isDescending,
+                toggleTheme = toggleTheme
+
             ) },
         floatingActionButton = {
             Box(
@@ -110,13 +101,13 @@ fun MusicListScreen(navController: NavController, context: Context) {
             ) {
                 FloatingActionButton(
                     onClick = {
-                        loadMusicFiles()
+                        viewModel.loadMusicFiles(context)
                     },
                     modifier = Modifier
                         .padding(16.dp)
                         .align(Alignment.BottomCenter),
-                    contentColor = Color.White,
-                    containerColor = Color(0xFF0B1045),
+                    contentColor = appColors.icon,
+                    containerColor = appColors.backgroundDarker,
 
 
                 ) {
@@ -130,9 +121,7 @@ fun MusicListScreen(navController: NavController, context: Context) {
                 .fillMaxSize()
                 .padding(padding)
                 .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(Color(0xFF0B1045), Color(0xFF5B245A))
-                    )
+                    brush = appColors.accentGradient
                 )
         ) {
             if (isLoading) {
@@ -145,22 +134,22 @@ fun MusicListScreen(navController: NavController, context: Context) {
                         modifier = Modifier.size(80.dp),
                         shape = CircleShape,
                         color = Color.Transparent,
-                        border = BorderStroke(6.dp, Color.Gray.copy(alpha = 0.25f))
+                        border = BorderStroke(6.dp, appColors.secondaryFont.copy(alpha = 0.25f))
                     ) {
                         // Inner CircularProgressIndicator
                         CircularProgressIndicator(
                             modifier = Modifier.align(Alignment.Center),
-                            color = Color.White,
+                            color = appColors.icon,
                             strokeWidth = 6.dp
                         )
                     }
                 }
             }
 
-            else if (errorMessage != null) {
+            else if (errorMessage.isNotEmpty()) {
                 Text(
-                    text = errorMessage!!,
-                    color = Color.White,
+                    text = "There was an error $errorMessage",
+                    color = appColors.font,
                     fontSize = 40.sp,
                     modifier = Modifier.align(Alignment.Center),
 
@@ -169,11 +158,17 @@ fun MusicListScreen(navController: NavController, context: Context) {
             }
 
             else {
+                if (filteredFiles.isEmpty()) {
+                    Text("No music files found", color = appColors.font, fontSize = 18.sp)
+                }
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 124.dp)
+
                 ) {
-                    items(filteredFiles) { music ->
-                        MusicItem(music, navController)
+                    itemsIndexed(sortedFiles) { index, music ->
+                        val isLastItem = index == filteredFiles.lastIndex
+                        MusicItem(music = music, navController = navController, isLastItem = isLastItem)
                     }
                 }
             }
@@ -181,17 +176,3 @@ fun MusicListScreen(navController: NavController, context: Context) {
     }
 }
 
-fun fetchMusicFiles(context: Context, coroutineScope: CoroutineScope, onSuccess: (List<MusicFile>) -> Unit, onError: (String) -> Unit) {
-    coroutineScope.launch(Dispatchers.IO) {
-        try {
-            val musicFiles = getAllMusicFiles(context)
-            withContext(Dispatchers.Main) {
-                onSuccess(musicFiles)
-            }
-        } catch (e: Exception) {
-            withContext(Dispatchers.Main) {
-                onError("Error fetching music files: ${e.message}")
-            }
-        }
-    }
-}
