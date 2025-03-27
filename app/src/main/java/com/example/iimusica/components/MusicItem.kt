@@ -1,5 +1,6 @@
 package com.example.iimusica.components
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,7 +18,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
-import com.example.iimusica.MusicFile
+import com.example.iimusica.utils.MusicFile
 import com.example.iimusica.R
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
@@ -31,7 +32,7 @@ fun MusicItem(music: MusicFile, navController: NavController, isLastItem: Boolea
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                navController.navigate("music_detail/${music.name}/${music.artist}")
+                navController.navigate("music_detail/${Uri.encode(music.path)}")
             }
             .padding(vertical = 2.dp)
             .then(

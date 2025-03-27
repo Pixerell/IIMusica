@@ -1,6 +1,4 @@
-package com.example.iimusica.components
-
-import com.example.iimusica.MusicFile
+package com.example.iimusica.utils
 
 fun List<MusicFile>.sortFiles(selectedSortOption: SortOption, isDescending: Boolean): List<MusicFile> {
     return when (selectedSortOption) {

@@ -25,9 +25,9 @@ val DarkAppColors = AppColors(
     secondaryFont = Color.Gray,
     icon = Color.White,
     accentStart = Color(0xFF0B1045),
-    accentEnd = Color(0xFF5B245A),
+    accentEnd = Color(0xFF4B134B),
     accentGradient = Brush.linearGradient(
-        colors = listOf(Color(0xFF0B1045), Color(0xFF5B245A))
+        colors = listOf(Color(0xFF4B134B), Color(0xFF0B1045))
     )
 )
 

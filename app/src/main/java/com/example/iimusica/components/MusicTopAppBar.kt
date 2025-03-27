@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import com.example.iimusica.R
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
+import com.example.iimusica.utils.SortOption
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,7 +50,7 @@ fun MusicTopBar(
         actions = {
             IconButton(onClick = {
                 if (isSearching && searchQuery.isNotEmpty()) {
-                    onSearchQueryChange("") // Clear search when X is pressed
+                    onSearchQueryChange("")
                 } else {
                     onToggleSearch()
                 }

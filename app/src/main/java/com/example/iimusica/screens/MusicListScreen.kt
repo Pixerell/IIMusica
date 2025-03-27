@@ -22,16 +22,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.iimusica.MusicFile
+import com.example.iimusica.utils.MusicFile
 import com.example.iimusica.components.MusicItem
 import com.example.iimusica.components.MusicTopBar
-import com.example.iimusica.components.SortOption
-import com.example.iimusica.components.sortFiles
+import com.example.iimusica.utils.SortOption
+import com.example.iimusica.utils.sortFiles
 import com.example.iimusica.ui.theme.LocalAppColors
+import com.example.iimusica.ui.theme.Typography
 
 
 @Composable
@@ -43,8 +45,8 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
     val isLoading by viewModel.isLoading
     val errorMessage = viewModel.errorMessage
 
-    var selectedSortOption by remember { mutableStateOf(SortOption.NAME) }
-    var isDescending by remember { mutableStateOf(false) }
+    val selectedSortOption by viewModel.selectedSortOption
+    val isDescending by viewModel.isDescending
 
     val appColors = LocalAppColors.current
 
@@ -55,6 +57,10 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
         if (mFiles.isEmpty()) {
             viewModel.loadMusicFiles(context)
         }
+    }
+
+    fun onSortOptionSelected(option: SortOption) {
+        viewModel.setSortOption(option)
     }
 
     // Function to filter files based on search query
@@ -71,17 +77,9 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
         return files.sortFiles(sortOption, descending)
     }
 
-    val filteredFiles = filterFiles(mFiles, searchQuery)
-    val sortedFiles = sortFiles(filteredFiles, selectedSortOption, isDescending)
+    val filteredFiles by remember { derivedStateOf { filterFiles(mFiles, searchQuery) } }
+    val sortedFiles by remember { derivedStateOf { sortFiles(filteredFiles, selectedSortOption, isDescending) } }
 
-    fun onSortOptionSelected(option: SortOption) {
-        if (selectedSortOption == option) {
-            isDescending = !isDescending
-        } else {
-            selectedSortOption = option
-            isDescending = false
-        }
-    }
 
     Scaffold(
             topBar = { MusicTopBar(
@@ -159,7 +157,15 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
 
             else {
                 if (filteredFiles.isEmpty()) {
-                    Text("No music files found", color = appColors.font, fontSize = 18.sp)
+                    Text("|| No music files found ||", color = appColors.font,
+                        fontSize = Typography.bodyLarge.fontSize,
+                        fontFamily = Typography.bodyLarge.fontFamily,
+                        fontWeight = Typography.bodyLarge.fontWeight,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                        .padding(vertical = 128.dp)
+                    )
+
                 }
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),

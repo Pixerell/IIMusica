@@ -1,13 +1,13 @@
 package com.example.iimusica.screens
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.iimusica.MusicFile
-import com.example.iimusica.getAllMusicFiles
+import com.example.iimusica.utils.MusicFile
+import com.example.iimusica.utils.SortOption
+import com.example.iimusica.utils.getAllMusicFiles
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -22,6 +22,23 @@ class MusicViewModel : ViewModel() {
     private val _errorMessage = mutableStateOf<String?>(null)
     val errorMessage: String get() = _errorMessage.value ?: ""
 
+    // Sorting state
+    private val _selectedSortOption = mutableStateOf(SortOption.NAME)
+    val selectedSortOption: MutableState<SortOption> get() = _selectedSortOption
+
+    private val _isDescending = mutableStateOf(false)
+    val isDescending: MutableState<Boolean> get() = _isDescending
+
+    fun setSortOption(option: SortOption) {
+        if (_selectedSortOption.value == option) {
+            _isDescending.value = !_isDescending.value
+        } else {
+            _selectedSortOption.value = option
+            _isDescending.value = false
+        }
+    }
+
+    private var lastSuccessfulFiles: List<MusicFile> = emptyList()
 
     fun loadMusicFiles(context: Context) {
         _isLoading.value = true
@@ -29,13 +46,14 @@ class MusicViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val files = getAllMusicFiles(context)
+                lastSuccessfulFiles = files
                 withContext(Dispatchers.Main) {
                     _mFiles.value = files.toList()
-                    Log.d("MusicViewModel", "Music files loaded: ${files}, then size ${files.size}")
                     _isLoading.value = false
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
+                    _mFiles.value = lastSuccessfulFiles
                     _errorMessage.value = "Error fetching music files: ${e.message}"
                     _isLoading.value = false
                 }
