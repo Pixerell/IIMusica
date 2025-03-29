@@ -20,11 +20,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.iimusica.utils.MusicFile
 import com.example.iimusica.R
+import com.example.iimusica.screens.PlayerViewModel
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
 
 @Composable
-fun MusicItem(music: MusicFile, navController: NavController, isLastItem: Boolean) {
+fun MusicItem(music: MusicFile, navController: NavController, isLastItem: Boolean,  playerViewModel: PlayerViewModel) {
 
     val appColors = LocalAppColors.current
 
@@ -32,6 +33,7 @@ fun MusicItem(music: MusicFile, navController: NavController, isLastItem: Boolea
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
+                playerViewModel.setCurrentPath(music.path)
                 navController.navigate("music_detail/${Uri.encode(music.path)}")
             }
             .padding(vertical = 2.dp)

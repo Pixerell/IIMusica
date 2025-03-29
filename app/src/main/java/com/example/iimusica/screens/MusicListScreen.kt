@@ -6,8 +6,6 @@ import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
@@ -28,7 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.iimusica.utils.MusicFile
-import com.example.iimusica.components.MusicItem
+import com.example.iimusica.components.MusicList
 import com.example.iimusica.components.MusicTopBar
 import com.example.iimusica.utils.SortOption
 import com.example.iimusica.utils.sortFiles
@@ -37,7 +35,7 @@ import com.example.iimusica.ui.theme.Typography
 
 
 @Composable
-fun MusicListScreen(navController: NavController, context: Context, toggleTheme:() -> Unit, viewModel: MusicViewModel = viewModel()) {
+fun MusicListScreen(navController: NavController, context: Context, toggleTheme:() -> Unit, viewModel: MusicViewModel = viewModel(), playerViewModel: PlayerViewModel) {
     var searchQuery by remember { mutableStateOf("") }
     var isSearching by remember { mutableStateOf(false) }
 
@@ -49,15 +47,6 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
     val isDescending by viewModel.isDescending
 
     val appColors = LocalAppColors.current
-
-
-
-    // Use LaunchedEffect to launch a coroutine for fetching music files
-    LaunchedEffect(Unit) {
-        if (mFiles.isEmpty()) {
-            viewModel.loadMusicFiles(context)
-        }
-    }
 
     fun onSortOptionSelected(option: SortOption) {
         viewModel.setSortOption(option)
@@ -74,12 +63,22 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
 
     // Function to sort files based on the selected option and direction
     fun sortFiles(files: List<MusicFile>, sortOption: SortOption, descending: Boolean): List<MusicFile> {
-        return files.sortFiles(sortOption, descending)
+        val sortedFiles = files.sortFiles(sortOption, descending)  // Perform sorting
+        playerViewModel.setQueue(sortedFiles)
+        return sortedFiles  // Return sorted files)
     }
 
     val filteredFiles by remember { derivedStateOf { filterFiles(mFiles, searchQuery) } }
     val sortedFiles by remember { derivedStateOf { sortFiles(filteredFiles, selectedSortOption, isDescending) } }
 
+
+    // Use LaunchedEffect to launch a coroutine for fetching music files
+    LaunchedEffect(Unit) {
+        if (mFiles.isEmpty()) {
+            viewModel.loadMusicFiles(context)
+        }
+
+    }
 
     Scaffold(
             topBar = { MusicTopBar(
@@ -99,6 +98,7 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
             ) {
                 FloatingActionButton(
                     onClick = {
+                        playerViewModel.stopPlay()
                         viewModel.loadMusicFiles(context)
                     },
                     modifier = Modifier
@@ -156,7 +156,7 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
             }
 
             else {
-                if (filteredFiles.isEmpty()) {
+                if (sortedFiles.isEmpty()) {
                     Text("|| No music files found ||", color = appColors.font,
                         fontSize = Typography.bodyLarge.fontSize,
                         fontFamily = Typography.bodyLarge.fontFamily,
@@ -167,15 +167,11 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
                     )
 
                 }
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 124.dp)
-
-                ) {
-                    itemsIndexed(sortedFiles) { index, music ->
-                        val isLastItem = index == filteredFiles.lastIndex
-                        MusicItem(music = music, navController = navController, isLastItem = isLastItem)
+                else {
+                    if (playerViewModel.getQueue().isEmpty()) {
+                        playerViewModel.setQueue(sortedFiles)  // Initialize the queue with sorted files only if it's empty
                     }
+                    MusicList(musicFiles = sortedFiles, navController = navController, playerViewModel=playerViewModel)
                 }
             }
         }
