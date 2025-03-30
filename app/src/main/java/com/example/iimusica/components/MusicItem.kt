@@ -25,24 +25,39 @@ import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
 
 @Composable
-fun MusicItem(music: MusicFile, navController: NavController, isLastItem: Boolean,  playerViewModel: PlayerViewModel) {
+fun MusicItem(music: MusicFile,
+              navController: NavController,
+              isLastItem: Boolean,
+              playerViewModel: PlayerViewModel,
+              isCurrentPlaying: Boolean) {
 
     val appColors = LocalAppColors.current
+    val fontColor = if (isCurrentPlaying) {
+        appColors.active
+    } else {
+        appColors.font // Use normal background color when not playing
+    }
+
+    val isExoPlayerPlaying = playerViewModel.exoPlayer.isPlaying
+    val currentRoute = navController.currentBackStackEntry?.destination?.route
+
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
                 playerViewModel.setCurrentPath(music.path)
-                navController.navigate("music_detail/${Uri.encode(music.path)}")
+                if (currentRoute !== null) {
+                    navController.navigate("music_detail/${Uri.encode(music.path)}")
+                }
+
             }
             .padding(vertical = 2.dp)
             .then(
                 if (isLastItem) Modifier.shadow(
-                    8
-                        .dp, shape = RectangleShape, ambientColor = appColors.font, spotColor = appColors.font
+                    8.dp, shape = RectangleShape, ambientColor = appColors.font, spotColor = appColors.font
                 ) else Modifier
-            )            .background(color = appColors.background),
+            )            .background(appColors.background),
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -78,11 +93,12 @@ fun MusicItem(music: MusicFile, navController: NavController, isLastItem: Boolea
                 .padding(vertical = 16.dp)
 
         ) {
+
             Text(
                 text = music.name,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                style = TextStyle(fontWeight = FontWeight.Bold, fontSize = Typography.bodyMedium.fontSize, color = appColors.font, fontFamily = Typography.bodyLarge.fontFamily),
+                style = TextStyle(fontWeight = FontWeight.Bold, fontSize = Typography.bodyMedium.fontSize, color = fontColor, fontFamily = Typography.bodyLarge.fontFamily),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
@@ -94,5 +110,9 @@ fun MusicItem(music: MusicFile, navController: NavController, isLastItem: Boolea
                     .padding(start = 16.dp)
             )
         }
+
+
+
+
     }
 }

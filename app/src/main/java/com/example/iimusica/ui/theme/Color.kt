@@ -14,7 +14,8 @@ data class AppColors(
     val icon: Color,
     val accentStart: Color,
     val accentEnd: Color,
-    val accentGradient: Brush
+    val accentGradient: Brush,
+    val active :Color,
 )
 
 // Dark Theme Colors
@@ -28,7 +29,8 @@ val DarkAppColors = AppColors(
     accentEnd = Color(0xFF4B134B),
     accentGradient = Brush.linearGradient(
         colors = listOf(Color(0xFF4B134B), Color(0xFF0B1045))
-    )
+    ),
+    active = Color(0xFFF05CFF)
 )
 
 val LightAppColors = AppColors(
@@ -41,7 +43,9 @@ val LightAppColors = AppColors(
     accentEnd = Color(0xFF7EFFEA),
     accentGradient = Brush.linearGradient(
         colors = listOf(Color(0xFF9D73FF), Color(0xFF7EFFEA))
-    )
+    ),
+    active = Color(0xFFEA00FF)
+
 )
 
 val LocalAppColors = staticCompositionLocalOf { DarkAppColors }

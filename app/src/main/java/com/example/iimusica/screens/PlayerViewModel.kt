@@ -19,6 +19,8 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     private val _currentPath = mutableStateOf<String?>(null)  // State for current path
     val currentPath: State<String?> = _currentPath  // Expose the state for observation
 
+
+
     fun playMusic(path: String) {
         Log.d("PlayerViewModel", "path check: $path, current path value ${_currentPath.value}")
 
@@ -94,4 +96,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         super.onCleared()
         // We don't release the player here as it is managed across multiple screens
     }
+
+
 }

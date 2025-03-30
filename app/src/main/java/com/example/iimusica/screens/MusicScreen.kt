@@ -4,10 +4,18 @@ package com.example.iimusica.screens
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
-import androidx.compose.material3.Slider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -19,13 +27,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
+import androidx.navigation.compose.rememberNavController
+import com.example.iimusica.components.DurationBar
+import com.example.iimusica.components.MusicList
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.utils.MusicFile
-import com.example.iimusica.utils.formatDuration
 import com.example.iimusica.utils.getMusicFileFromPath
 import com.example.iimusica.utils.parseDuration
 
@@ -39,22 +54,40 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel) {
     var musicFile by remember { mutableStateOf<MusicFile?>(null) }
 
     val currentPath = playerViewModel.currentPath.value ?: path
-    Log.d("mscreen", "music path start - $currentPath, also real path - $path")
+
+    var isPanelExpanded by remember { mutableStateOf(false) }
+    val panelHeight by animateDpAsState(targetValue = if (isPanelExpanded) 400.dp else 50.dp)
+
+    val animatedAccentStart by animateColorAsState(
+        targetValue = if (isPanelExpanded) appColors.accentStart else appColors.backgroundDarker,
+        animationSpec = tween(durationMillis = 1000)
+    )
+
+    val animatedAccentEnd by animateColorAsState(
+        targetValue = if (isPanelExpanded) appColors.accentEnd else appColors.backgroundDarker,
+        animationSpec = tween(durationMillis = 1000)
+    )
+
+    val animatedBackgroundColor = Brush.linearGradient(
+        colors = listOf(animatedAccentStart, animatedAccentEnd)
+    )
 
     val exoPlayer = playerViewModel.exoPlayer
     // Play the music whenever the path changes
     LaunchedEffect(currentPath) {
+            Log.d("mscreen", "music path changed? - $currentPath")
+            playerViewModel.setCurrentPath(currentPath)
 
-        Log.d("mscreen", "music path changed? - $currentPath")
-        playerViewModel.setCurrentPath(currentPath)
 
-        val index = playerViewModel.getQueue().indexOfFirst { it.path == currentPath }
-        if (index != -1) {
-            playerViewModel.setCurrentIndex(index)
-        }
+            val index = playerViewModel.getQueue().indexOfFirst { it.path == currentPath }
+            if (index != -1) {
+                playerViewModel.setCurrentIndex(index)
+            }
 
-        playerViewModel.playMusic(currentPath.toString())
-        musicFile = getMusicFileFromPath(context, currentPath.toString())
+            playerViewModel.playMusic(currentPath.toString())
+            musicFile = getMusicFileFromPath(context, currentPath.toString())
+
+
     }
 
     // Handler for updating position
@@ -64,7 +97,7 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel) {
         val updatePosition = object : Runnable {
             override fun run() {
                 currentPosition = exoPlayer.currentPosition
-                handler.postDelayed(this, 500)
+                handler.postDelayed(this, 1000) // Update every 1 second
             }
         }
         handler.post(updatePosition)
@@ -74,77 +107,113 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel) {
         }
     }
 
-    Column(
+
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(appColors.background)
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
     ) {
-        if (musicFile != null) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top // Leave this as Top, we'll pin the panel separately
+        ) {
+            if (musicFile != null) {
+                val duration = parseDuration(musicFile!!.duration)
 
-            val duration = parseDuration(musicFile!!.duration) // parse "5:23" string into duration
+                Text(text = "Now Playing:", color = appColors.font, fontSize = 20.sp)
+                Text(
+                    text = musicFile!!.name,
+                    color = appColors.font,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+                Text(
+                    text = "by ${musicFile!!.artist}",
+                    color = appColors.secondaryFont,
+                    fontSize = 18.sp
+                )
 
-            Text(text = "Now Playing:", color = appColors.font, fontSize = 20.sp)
-            Text(text = musicFile!!.name, color = appColors.font, fontSize = 28.sp, fontWeight = FontWeight.Bold, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
-            Text(text = "by ${musicFile!!.artist}", color = appColors.secondaryFont, fontSize = 18.sp)
+                Spacer(modifier = Modifier.height(24.dp))
+                DurationBar(currentPosition, duration, exoPlayer)
 
-            Spacer(modifier = Modifier.height(24.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                Row {
+                    Button(onClick = { playerViewModel.playPrevious() }) { Text("Previous") }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(onClick = { exoPlayer.play() }) { Text("Play") }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(onClick = { exoPlayer.pause() }) { Text("Pause") }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(onClick = { playerViewModel.playNext() }) { Text("Next") }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(onClick = { exoPlayer.seekTo(0); exoPlayer.play() }) { Text("Restart") }
+                }
+            } else {
+                Text(text = "Error: Music file not found", color = appColors.font)
+            }
+        }
+
+        // Panel pinned to the bottom
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(panelHeight)
+                .background(appColors.backgroundDarker)
+                .align(Alignment.BottomCenter) // This pins it to the bottom of the screen
+                .zIndex(2f)
+        ) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .offset(y = (-24).dp) // Overlap the icon slightly
+                    .size(56.dp) // Circle size
+                    .clip(CircleShape) // Make it circular
+                    .background(
+                        appColors.backgroundDarker
+                    )
+                    .clickable { isPanelExpanded = !isPanelExpanded }
+                    .padding(8.dp) // Add padding inside the circle for the icon
+                    .zIndex(3f)
             ) {
-                Text(
-                    text = formatDuration(currentPosition),
-                    color = appColors.font,
-                    fontSize = 14.sp
-                )
-                Text(
-                    text = formatDuration(duration),
-                    color = appColors.font,
-                    fontSize = 14.sp
+                Icon(
+                    imageVector = if (isPanelExpanded) Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowUp,
+                    contentDescription = if (isPanelExpanded) "Collapse Panel" else "Expand Panel",
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .size(32.dp), // Icon size
+
+                    tint = appColors.font
                 )
             }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(panelHeight)
+                    .background(animatedBackgroundColor)
+                    .drawBehind {
+                        drawLine(
+                            color = appColors.backgroundDarker, // Border color
+                            start = Offset(0f, 0f), // Starting position at the top left
+                            end = Offset(size.width, 0f), // Ending position at the top right
+                            strokeWidth = 30f // Border width
+                        )
+                    }
+                    .align(Alignment.BottomCenter) // This pins it to the bottom of the screen
+                    .zIndex(1f) // Keep it behind the button
 
-            Slider(
-                value = currentPosition.toFloat(),
-                onValueChange = { exoPlayer.seekTo(it.toLong()) },
-                valueRange = 0f..duration.toFloat(),
-                modifier = Modifier.fillMaxWidth()
-                    .padding(24.dp)
-            )
-
-            Row {
-                Button(onClick = { playerViewModel.playPrevious() }) {
-                    Text("Previous")
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Button(onClick = { exoPlayer.play() }) {
-                    Text("Play")
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Button(onClick = { exoPlayer.pause() }) {
-                    Text("Pause")
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Button(onClick = {
-                    playerViewModel.playNext()
-                }) {
-                    Text("Next")
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Button(onClick = {
-                    exoPlayer.seekTo(0)
-                    exoPlayer.play()
-                }) {
-                    Text("Restart")
+            ) {
+                if (isPanelExpanded) {
+                    MusicList(
+                        musicFiles = playerViewModel.getQueue(),
+                        navController = rememberNavController(), // Provide the appropriate NavController
+                        playerViewModel = playerViewModel
+                    )
                 }
             }
         }
-        else {
-            Text(text = "Error: Music file not found", color = appColors.font)
-        }
-
     }
-}
+    }
