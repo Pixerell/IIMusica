@@ -13,6 +13,14 @@ private const val REQUEST_CODE = 1
 fun checkAndRequestPermissions(activity: Activity) {
     val permissions = mutableListOf<String>()
 
+
+    // For recording audio (Visualizer needs this)
+    if (ContextCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO)
+        != PackageManager.PERMISSION_GRANTED
+    ) {
+        permissions.add(Manifest.permission.RECORD_AUDIO)
+    }
+
     // For devices running Android 10 and below
     if (ContextCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE)
         != PackageManager.PERMISSION_GRANTED

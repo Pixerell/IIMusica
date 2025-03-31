@@ -26,13 +26,16 @@ fun MusicList(
     val listState = rememberLazyListState()
     val currentPath = playerViewModel.currentPath.value
 
+
     LazyColumn(
         state = listState,
         modifier = Modifier.fillMaxSize(),
         contentPadding = bottomPadding
     ) {
         itemsIndexed(musicFiles, key = { _, item -> item.path }) { index, music ->
+
             MusicItem(
+
                 music = music,
                 navController = navController,
                 isLastItem = index == lastIndex,

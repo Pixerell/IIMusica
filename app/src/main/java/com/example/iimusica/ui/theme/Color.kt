@@ -35,7 +35,7 @@ val DarkAppColors = AppColors(
 
 val LightAppColors = AppColors(
     background = Color.White,
-    backgroundDarker = Color(0xFFFFFFFF),
+    backgroundDarker = Color(0xFFD1DFFF),
     font = Color.Black,
     secondaryFont = Color.DarkGray,
     icon = Color.Black,
@@ -44,7 +44,8 @@ val LightAppColors = AppColors(
     accentGradient = Brush.linearGradient(
         colors = listOf(Color(0xFF9D73FF), Color(0xFF7EFFEA))
     ),
-    active = Color(0xFFEA00FF)
+    active = Color(0xFF335EC9)
+
 
 )
 

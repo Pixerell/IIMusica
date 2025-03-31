@@ -1,6 +1,7 @@
 package com.example.iimusica.components
 
 import android.net.Uri
+import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,17 +14,26 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import androidx.compose.foundation.Image
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.media3.common.util.UnstableApi
 import com.example.iimusica.utils.MusicFile
 import com.example.iimusica.R
 import com.example.iimusica.screens.PlayerViewModel
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
+@OptIn(UnstableApi::class)
 @Composable
 fun MusicItem(music: MusicFile,
               navController: NavController,
@@ -38,18 +48,49 @@ fun MusicItem(music: MusicFile,
         appColors.font // Use normal background color when not playing
     }
 
-    val isExoPlayerPlaying = playerViewModel.exoPlayer.isPlaying
     val currentRoute = navController.currentBackStackEntry?.destination?.route
+
+    // State for handling single and double click
+    var lastTapTime by remember { mutableLongStateOf(0L) }
+    val double_tap_threshhold = 500L // in milliseconds
+    val coroutineScope = rememberCoroutineScope()
+
 
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                playerViewModel.setCurrentPath(music.path)
-                if (currentRoute !== null) {
-                    navController.navigate("music_detail/${Uri.encode(music.path)}")
-                }
+                val currentTime = System.currentTimeMillis()
+
+                // Only handle tap if not already handling a previous tap
+                    val isDoubleTap = currentTime - lastTapTime < double_tap_threshhold
+
+                    if (isDoubleTap) {
+                        // Double tap: navigate to music details
+                        if (currentRoute != null) {
+                            navController.navigate("music_detail/${Uri.encode(music.path)}")
+                            playerViewModel.setIsPlaying(true)
+                        }
+                    } else {
+                        // Handle single tap
+                        if (music.path == playerViewModel.currentPath.value) {
+                            // Same track: toggle play/pause
+                            playerViewModel.togglePlayPause()
+                        } else {
+                            // New track: play music
+                            playerViewModel.playMusic(music.path)
+                            playerViewModel.setCurrentPath(music.path)
+                        }
+                    }
+
+                    // Update the last tap time
+                    lastTapTime = currentTime
+
+                    // Add a short delay to allow for the tap actions to be fully handled
+                    coroutineScope.launch {
+                        delay(double_tap_threshhold*2)
+                    }
 
             }
             .padding(vertical = 2.dp)
@@ -111,8 +152,15 @@ fun MusicItem(music: MusicFile,
             )
         }
 
+        if (playerViewModel.isPlaying.value && music.path == playerViewModel.currentPath.value) {
+            Box(
+                modifier = Modifier
+                    .padding(end = 16.dp) // Optional: add padding from the edge
 
-
+            ) {
+                AudioVisualizerView()
+            }
+        }
 
     }
 }

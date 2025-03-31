@@ -3,7 +3,6 @@ package com.example.iimusica.screens
 
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -54,6 +53,7 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel) {
     var musicFile by remember { mutableStateOf<MusicFile?>(null) }
 
     val currentPath = playerViewModel.currentPath.value ?: path
+    val isCurrentlyPlaying = currentPath == playerViewModel.currentPath.value
 
     var isPanelExpanded by remember { mutableStateOf(false) }
     val panelHeight by animateDpAsState(targetValue = if (isPanelExpanded) 400.dp else 50.dp)
@@ -75,16 +75,15 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel) {
     val exoPlayer = playerViewModel.exoPlayer
     // Play the music whenever the path changes
     LaunchedEffect(currentPath) {
-            Log.d("mscreen", "music path changed? - $currentPath")
+        if (!isCurrentlyPlaying) {
             playerViewModel.setCurrentPath(currentPath)
-
-
             val index = playerViewModel.getQueue().indexOfFirst { it.path == currentPath }
             if (index != -1) {
                 playerViewModel.setCurrentIndex(index)
             }
-
             playerViewModel.playMusic(currentPath.toString())
+        }
+            playerViewModel.exoPlayer.play()
             musicFile = getMusicFileFromPath(context, currentPath.toString())
 
 
@@ -144,9 +143,7 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel) {
                 Row {
                     Button(onClick = { playerViewModel.playPrevious() }) { Text("Previous") }
                     Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = { exoPlayer.play() }) { Text("Play") }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = { exoPlayer.pause() }) { Text("Pause") }
+                    Button(onClick = { playerViewModel.togglePlayPause() }) { Text("Play/Pause") }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(onClick = { playerViewModel.playNext() }) { Text("Next") }
                     Spacer(modifier = Modifier.width(8.dp))

@@ -2,7 +2,6 @@ package com.example.iimusica.screens
 
 
 import android.app.Application
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.media3.exoplayer.ExoPlayer
@@ -16,25 +15,22 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     private val queue = mutableListOf<MusicFile>()
     private var currentIndex = 0
 
-    private val _currentPath = mutableStateOf<String?>(null)  // State for current path
-    val currentPath: State<String?> = _currentPath  // Expose the state for observation
+    private val _currentPath = mutableStateOf<String?>(null)
+    val currentPath: State<String?> = _currentPath
 
-
+    private val _isPlaying = mutableStateOf(false)
+    val isPlaying: State<Boolean> get() = _isPlaying
 
     fun playMusic(path: String) {
-        Log.d("PlayerViewModel", "path check: $path, current path value ${_currentPath.value}")
 
             exoPlayer.stop()
             exoPlayer.clearMediaItems()
-
-            // Log the path to ensure it's correct
-            Log.d("PlayerViewModel", "Playing music at path: $path")
 
             val mediaItem = MediaItem.fromUri(path)
             exoPlayer.setMediaItem(mediaItem)
             exoPlayer.prepare()
             exoPlayer.play()
-
+            _isPlaying.value = true
             _currentPath.value = path
 
     }
@@ -53,10 +49,21 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    fun togglePlayPause() {
+        if (exoPlayer.isPlaying) {
+            exoPlayer.pause()
+            _isPlaying.value = false
+        } else {
+            exoPlayer.play()
+            _isPlaying.value = true
+        }
+    }
+
     fun stopPlay() {
         setCurrentPath("")
         setCurrentIndex(0)
         clearQueue()
+        _isPlaying.value = false
         exoPlayer.stop()
         exoPlayer.clearMediaItems()
         exoPlayer.release()
@@ -87,6 +94,10 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
     fun setCurrentIndex(ind : Int) {
         currentIndex = ind
+    }
+
+    fun setIsPlaying(bool : Boolean) {
+        _isPlaying.value = bool
     }
 
     fun getQueue(): List<MusicFile> = queue.toList()
