@@ -16,6 +16,7 @@ import coil.compose.rememberAsyncImagePainter
 import androidx.compose.foundation.Image
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -52,10 +53,10 @@ fun MusicItem(music: MusicFile,
 
     // State for handling single and double click
     var lastTapTime by remember { mutableLongStateOf(0L) }
-    val double_tap_threshhold = 500L // in milliseconds
+    val doubleTapThreshold  = 500L // in milliseconds
     val coroutineScope = rememberCoroutineScope()
 
-
+    var isDoubleTapDetected by remember { mutableStateOf(false) }
 
     Row(
         modifier = Modifier
@@ -64,33 +65,38 @@ fun MusicItem(music: MusicFile,
                 val currentTime = System.currentTimeMillis()
 
                 // Only handle tap if not already handling a previous tap
-                    val isDoubleTap = currentTime - lastTapTime < double_tap_threshhold
+                    val isDoubleTap = currentTime - lastTapTime < doubleTapThreshold
 
-                    if (isDoubleTap) {
+                if (isDoubleTap) {
+                        isDoubleTapDetected = true
                         // Double tap: navigate to music details
                         if (currentRoute != null) {
-                            navController.navigate("music_detail/${Uri.encode(music.path)}")
-                            playerViewModel.setIsPlaying(true)
+                            playerViewModel.setCurrentPath(music.path)
+
+                            navController.navigate("music_detail/${Uri.encode(music.path)}") {
+                                launchSingleTop = true
+                            }
                         }
                     } else {
-                        // Handle single tap
-                        if (music.path == playerViewModel.currentPath.value) {
-                            // Same track: toggle play/pause
-                            playerViewModel.togglePlayPause()
-                        } else {
-                            // New track: play music
-                            playerViewModel.playMusic(music.path)
-                            playerViewModel.setCurrentPath(music.path)
+                        isDoubleTapDetected = false
+
+                        coroutineScope.launch {
+                            delay(doubleTapThreshold  / 2) // Short delay to confirm it's not a double-tap
+
+                            if (!isDoubleTapDetected) {
+                                if (music.path == playerViewModel.currentPath.value) {
+                                    playerViewModel.togglePlayPause()
+                                } else {
+                                    playerViewModel.playMusic(music.path)
+                                    playerViewModel.setCurrentPath(music.path)
+                                }
+                            }
                         }
                     }
 
                     // Update the last tap time
                     lastTapTime = currentTime
 
-                    // Add a short delay to allow for the tap actions to be fully handled
-                    coroutineScope.launch {
-                        delay(double_tap_threshhold*2)
-                    }
 
             }
             .padding(vertical = 2.dp)

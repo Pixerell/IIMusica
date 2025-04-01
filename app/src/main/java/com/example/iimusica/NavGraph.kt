@@ -22,7 +22,7 @@ fun AppNavGraph(
 
         composable("music_detail/{path}") { backStackEntry ->
             val path = Uri.decode(backStackEntry.arguments?.getString("path") ?: "Unknown")
-            MusicScreen(path, playerViewModel)
+            MusicScreen(path, playerViewModel, navController)
         }
     }
 }

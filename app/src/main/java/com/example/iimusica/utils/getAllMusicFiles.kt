@@ -3,22 +3,11 @@ package com.example.iimusica.utils
 
 import android.content.Context
 import android.database.Cursor
-import android.graphics.Bitmap
 import android.media.MediaScannerConnection
 import android.provider.MediaStore
 import android.util.Log
 
-data class MusicFile(
-    val name: String,
-    val duration: String,
-    val path: String,
-    val artist: String,
-    val albumArtUri: Bitmap?,
-    val album: String,
-    val albumId: Long,
-    val size: Long,
-    val dateAdded: Long
-)
+
 
 val projection = arrayOf(
     MediaStore.Audio.Media.DATA,
