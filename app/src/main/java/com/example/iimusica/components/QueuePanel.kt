@@ -69,11 +69,11 @@ fun QueuePanel(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .offset(y = (-24).dp) // Overlap the icon slightly
-                .size(56.dp) // Circle size
-                .clip(CircleShape) // Make it circular
+                .size(56.dp)
+                .clip(CircleShape)
                 .background(appColors.backgroundDarker)
                 .clickable { togglePanelState(!isPanelExpanded) }
-                .padding(8.dp) // Add padding inside the circle for the icon
+                .padding(8.dp)
                 .zIndex(3f)
         ) {
             Icon(
@@ -81,7 +81,7 @@ fun QueuePanel(
                 contentDescription = if (isPanelExpanded) "Collapse Panel" else "Expand Panel",
                 modifier = Modifier
                     .align(Alignment.Center)
-                    .size(32.dp), // Icon size
+                    .size(32.dp),
                 tint = appColors.font
             )
         }
@@ -91,21 +91,22 @@ fun QueuePanel(
                 .fillMaxWidth()
                 .height(panelHeight)
                 .background(animatedBackgroundColor)
+                // border
                 .drawBehind {
                     drawLine(
-                        color = appColors.backgroundDarker, // Border color
-                        start = Offset(0f, 0f), // Starting position at the top left
-                        end = Offset(size.width, 0f), // Ending position at the top right
-                        strokeWidth = 30f // Border width
+                        color = appColors.backgroundDarker,
+                        start = Offset(0f, 0f),
+                        end = Offset(size.width, 0f),
+                        strokeWidth = 30f
                     )
                 }
-                .align(Alignment.BottomCenter) // This pins it to the bottom of the screen
-                .zIndex(1f) // Keep it behind the button
+                .align(Alignment.BottomCenter)
+                .zIndex(1f)
         ) {
             if (isPanelExpanded) {
                 MusicList(
                     musicFiles = playerViewModel.getQueue(),
-                    navController = rememberNavController(), // Provide the appropriate NavController
+                    navController = rememberNavController(),
                     playerViewModel = playerViewModel
                 )
             }

@@ -46,7 +46,7 @@ fun MusicItem(music: MusicFile,
     val fontColor = if (isCurrentPlaying) {
         appColors.active
     } else {
-        appColors.font // Use normal background color when not playing
+        appColors.font
     }
 
     val currentRoute = navController.currentBackStackEntry?.destination?.route
@@ -64,12 +64,10 @@ fun MusicItem(music: MusicFile,
             .clickable {
                 val currentTime = System.currentTimeMillis()
 
-                // Only handle tap if not already handling a previous tap
                     val isDoubleTap = currentTime - lastTapTime < doubleTapThreshold
 
                 if (isDoubleTap) {
                         isDoubleTapDetected = true
-                        // Double tap: navigate to music details
                         if (currentRoute != null) {
                             playerViewModel.setCurrentPath(music.path)
 
@@ -81,7 +79,7 @@ fun MusicItem(music: MusicFile,
                         isDoubleTapDetected = false
 
                         coroutineScope.launch {
-                            delay(doubleTapThreshold  / 2) // Short delay to confirm it's not a double-tap
+                            delay(doubleTapThreshold  / 2)
 
                             if (!isDoubleTapDetected) {
                                 if (music.path == playerViewModel.currentPath.value) {
@@ -161,7 +159,7 @@ fun MusicItem(music: MusicFile,
         if (playerViewModel.isPlaying.value && music.path == playerViewModel.currentPath.value) {
             Box(
                 modifier = Modifier
-                    .padding(end = 16.dp) // Optional: add padding from the edge
+                    .padding(end = 16.dp)
 
             ) {
                 AudioVisualizerView()

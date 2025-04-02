@@ -28,12 +28,11 @@ fun scanAllFiles(context: Context) {
         arrayOf(externalStorage.absolutePath),
         null
     ) { path, uri ->
-        Log.d("MusicFilesScanner", "Scanned: $path, URI: $uri")
+        Log.d("MusicFiles", "Scanned: $path, URI: $uri")
     }
 }
 
 
-// Function to get all music files
 fun getAllMusicFiles(context: Context): List<MusicFile> {
     scanAllFiles(context)
     val musicFiles = mutableListOf<MusicFile>()
@@ -85,6 +84,7 @@ fun extractMusicFileFromCursor(cursor: Cursor): MusicFile? {
     val dateAdded = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED))
 
     val formattedDuration = formatDuration(duration)
+    Log.d("MusicFiles", "Found: $name $artist")
 
     return MusicFile(name, formattedDuration, path, artist, null, album, albumId, size, dateAdded)
 }

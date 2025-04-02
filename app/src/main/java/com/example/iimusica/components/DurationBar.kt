@@ -49,7 +49,7 @@ fun DurationBar(duration: Long, exoPlayer: ExoPlayer) {
 
     Row(
         modifier = Modifier.fillMaxWidth()
-            .offset(y = -8.dp),
+            .offset(y = (-8).dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
@@ -66,16 +66,4 @@ fun DurationBar(duration: Long, exoPlayer: ExoPlayer) {
         onSeekEnd = { dragging = false },
         currentPosition = currentPosition
     )
-
-    /*
-    Slider(
-        value = currentPosition.toFloat(),
-        onValueChange = { exoPlayer.seekTo(it.toLong()) },
-        valueRange = 0f..duration.toFloat(),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    )
-
-     */
 }

@@ -23,20 +23,17 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
     fun playMusic(path: String) {
 
-        _isPlaying.value = false  // Ensure we reset the state before playing
+        _isPlaying.value = false
 
-        // Stop playback and clear current media items
         exoPlayer.stop()
         exoPlayer.clearMediaItems()
 
-        // Add the new MediaItem
         val mediaItem = MediaItem.fromUri(path)
         exoPlayer.setMediaItem(mediaItem)
 
-        // Prepare the player and add a listener to ensure it starts playing after preparation
         exoPlayer.prepare()
-        exoPlayer.playWhenReady = true  // This is important!
-        exoPlayer.play()  // This is just to make sure playback starts
+        exoPlayer.playWhenReady = true
+        exoPlayer.play()
 
         _isPlaying.value = true
         _currentPath.value = path

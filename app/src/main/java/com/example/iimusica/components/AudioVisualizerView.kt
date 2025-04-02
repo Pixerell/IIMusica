@@ -12,7 +12,7 @@ import kotlin.random.Random
 @OptIn(UnstableApi::class)
 @Composable
 fun AudioVisualizerView() {
-    // Simulating audio data here (replace with actual audio data from AudioRecord)
+    // Simulating audio data here
     val audioAmplitude = remember { mutableStateListOf<Float>() }
 
     // Update the list every frame (simulating audio data updates)

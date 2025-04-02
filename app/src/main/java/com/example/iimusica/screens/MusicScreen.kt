@@ -5,8 +5,14 @@ import androidx.annotation.OptIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -16,8 +22,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,9 +37,11 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.iimusica.R
 import com.example.iimusica.components.DurationBar
+import com.example.iimusica.components.MarqueeText
 import com.example.iimusica.components.MusicScreenTopBar
 import com.example.iimusica.components.QueuePanel
 import com.example.iimusica.ui.theme.LocalAppColors
+import com.example.iimusica.ui.theme.Typography
 import com.example.iimusica.utils.MusicFile
 import com.example.iimusica.utils.getAlbumArtBitmap
 import com.example.iimusica.utils.getMusicFileFromPath
@@ -94,54 +105,130 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+                .fillMaxSize(),
         ) {
             if (musicFile != null) {
                 val duration = parseDuration(musicFile!!.duration)
                 MusicScreenTopBar(isPlaying = playerViewModel.isPlaying.value,  onBackClick = {navController.popBackStack()}, onSettingsClick = { Log.d("MusicScreen", "Settings icon clicked") }  )
 
-
+                Column (
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(horizontal = 32.dp)
+                ) {
                     Image(
                         painter = painter,
                         contentDescription = "Album Art",
                         modifier = Modifier
-                            .size(350.dp)
-                            .padding(top = 32.dp)
+                            .size(500.dp)
+                            .padding(top = 48.dp)
+                            .fillMaxWidth()
                             .align(Alignment.CenterHorizontally)
 
 
                     )
 
 
-                Text(
-                    text = musicFile!!.name,
-                    color = appColors.font,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                )
-                Text(
-                    text = "by ${musicFile!!.artist}",
-                    color = appColors.secondaryFont,
-                    fontSize = 18.sp
-                )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(top = 32.dp)
+                    ) {
 
-                Spacer(modifier = Modifier.height(24.dp))
-                DurationBar(duration, exoPlayer)
+                            MarqueeText(
+                                text = musicFile!!.name,
+                                modifier = Modifier.padding(horizontal = 16.dp))
 
-                Row (
-                    modifier = Modifier.padding(vertical = 32.dp)
-                ) {
-                    Button(onClick = { playerViewModel.playPrevious() }) { Text("Previous") }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = { playerViewModel.togglePlayPause() }) { Text("Play/Pause") }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = { playerViewModel.playNext() }) { Text("Next") }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = { exoPlayer.seekTo(0); exoPlayer.play() }) { Text("Restart") }
+                        Text(
+                            text = "by ${musicFile!!.artist}",
+                            color = appColors.secondaryFont,
+                            fontSize = 18.sp
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    DurationBar(duration, exoPlayer)
+
+                    Row(
+                        modifier = Modifier
+                            .padding(vertical = 32.dp)
+                            .height(IntrinsicSize.Min)
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = (Alignment.CenterVertically)
+                    )
+
+
+                    {
+                        IconButton(onClick = { playerViewModel.playPrevious() }, modifier = Modifier.weight(1f).size(28.dp)) {
+                            Icon(
+                                painter  = painterResource( R.drawable.shuffleico),
+                                contentDescription = "Shuffle",
+                                tint = appColors.font,
+                            )
+                        }
+
+                        IconButton(onClick = { playerViewModel.playPrevious() },  modifier = Modifier.weight(1f).size(28.dp)) {
+                            Icon(
+                                painter  = painterResource( R.drawable.nextico),
+                                contentDescription = "Previous",
+                                tint = appColors.font,
+                                modifier = Modifier.graphicsLayer(scaleX = -1f)
+
+                            )
+                        }
+
+                        Row(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            FloatingActionButton(
+                                onClick = { playerViewModel.togglePlayPause() },
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .size(80.dp),
+                                containerColor = appColors.active,
+                            ) {
+                                Box(
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        painter = painterResource(if (playerViewModel.isPlaying.value) R.drawable.pauseico else R.drawable.playico),
+                                        contentDescription = if (playerViewModel.isPlaying.value) "Pause" else "Play",
+                                        tint = appColors.font,
+                                        modifier = Modifier.size(28.dp)
+                                            .then(
+                                                if (!playerViewModel.isPlaying.value) {
+                                                    Modifier.offset(x = 2.dp)
+                                                } else {
+                                                    Modifier
+                                                }
+                                            )
+                                    )
+                                }
+                            }
+                        }
+
+
+                        IconButton(onClick = { playerViewModel.playNext() },  modifier = Modifier.weight(1f).size(28.dp) ) {
+                            Icon(
+                                painter  = painterResource( R.drawable.nextico),
+                                contentDescription = "Next",
+                                tint = appColors.font,
+
+                            )
+                        }
+
+                        IconButton(onClick = { exoPlayer.seekTo(0); exoPlayer.play() },  modifier = Modifier.weight(1f).size(28.dp)) {
+                            Icon(
+                                painter = painterResource(R.drawable.repeatico),
+                                contentDescription = "Restart",
+                                tint = appColors.font,
+                            )
+                        }
+                    }
                 }
+
 
             } else {
                 Text(text = "Error: Music file not found", color = appColors.font)
