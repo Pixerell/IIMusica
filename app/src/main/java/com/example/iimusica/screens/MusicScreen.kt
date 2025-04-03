@@ -5,11 +5,8 @@ import androidx.annotation.OptIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
@@ -27,12 +24,12 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlayer
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.iimusica.R
@@ -41,7 +38,6 @@ import com.example.iimusica.components.MarqueeText
 import com.example.iimusica.components.MusicScreenTopBar
 import com.example.iimusica.components.QueuePanel
 import com.example.iimusica.ui.theme.LocalAppColors
-import com.example.iimusica.ui.theme.Typography
 import com.example.iimusica.utils.MusicFile
 import com.example.iimusica.utils.getAlbumArtBitmap
 import com.example.iimusica.utils.getMusicFileFromPath
@@ -109,7 +105,9 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
         ) {
             if (musicFile != null) {
                 val duration = parseDuration(musicFile!!.duration)
-                MusicScreenTopBar(isPlaying = playerViewModel.isPlaying.value,  onBackClick = {navController.popBackStack()}, onSettingsClick = { Log.d("MusicScreen", "Settings icon clicked") }  )
+                MusicScreenTopBar(isPlaying = playerViewModel.isPlaying.value,
+                    onBackClick = {navController.navigateUp()},
+                    onSettingsClick = { Log.d("MusicScreen", "Settings icon clicked") }  )
 
                 Column (
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -146,7 +144,7 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
-                    DurationBar(duration, exoPlayer)
+                    DurationBar(duration, playerViewModel)
 
                     Row(
                         modifier = Modifier
@@ -159,11 +157,11 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
 
 
                     {
-                        IconButton(onClick = { playerViewModel.playPrevious() }, modifier = Modifier.weight(1f).size(28.dp)) {
+                        IconButton(onClick = { playerViewModel.toggleShuffle() }, modifier = Modifier.weight(1f).size(28.dp)) {
                             Icon(
                                 painter  = painterResource( R.drawable.shuffleico),
                                 contentDescription = "Shuffle",
-                                tint = appColors.font,
+                                tint = if (playerViewModel.isShuffleEnabled.value) appColors.active else appColors.icon,
                             )
                         }
 
@@ -171,7 +169,7 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
                             Icon(
                                 painter  = painterResource( R.drawable.nextico),
                                 contentDescription = "Previous",
-                                tint = appColors.font,
+                                tint = appColors.icon,
                                 modifier = Modifier.graphicsLayer(scaleX = -1f)
 
                             )
@@ -187,7 +185,7 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
                                 modifier = Modifier
                                     .clip(CircleShape)
                                     .size(80.dp),
-                                containerColor = appColors.active,
+                                containerColor = appColors.icon,
                             ) {
                                 Box(
                                     contentAlignment = Alignment.Center
@@ -195,7 +193,7 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
                                     Icon(
                                         painter = painterResource(if (playerViewModel.isPlaying.value) R.drawable.pauseico else R.drawable.playico),
                                         contentDescription = if (playerViewModel.isPlaying.value) "Pause" else "Play",
-                                        tint = appColors.font,
+                                        tint = appColors.active,
                                         modifier = Modifier.size(28.dp)
                                             .then(
                                                 if (!playerViewModel.isPlaying.value) {
@@ -214,17 +212,23 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
                             Icon(
                                 painter  = painterResource( R.drawable.nextico),
                                 contentDescription = "Next",
-                                tint = appColors.font,
+                                tint = appColors.icon,
 
                             )
                         }
 
-                        IconButton(onClick = { exoPlayer.seekTo(0); exoPlayer.play() },  modifier = Modifier.weight(1f).size(28.dp)) {
+                        IconButton(onClick = {playerViewModel.toggleRepeat() },  modifier = Modifier.weight(1f).size(28.dp)) {
+                            val repeatIcon = when (exoPlayer.repeatMode) {
+                                ExoPlayer.REPEAT_MODE_OFF -> painterResource(R.drawable.repeatico)
+                                ExoPlayer.REPEAT_MODE_ALL -> painterResource(R.drawable.repeatico)
+                                ExoPlayer.REPEAT_MODE_ONE -> painterResource(R.drawable.repeatsongico)
+                                else -> painterResource(R.drawable.repeatico)
+                            }
+
                             Icon(
-                                painter = painterResource(R.drawable.repeatico),
-                                contentDescription = "Restart",
-                                tint = appColors.font,
-                            )
+                                painter = repeatIcon,
+                                contentDescription = "Repeat mode",
+                                tint = if (playerViewModel.repeatMode.value != ExoPlayer.REPEAT_MODE_OFF) appColors.active else appColors.icon                            )
                         }
                     }
                 }

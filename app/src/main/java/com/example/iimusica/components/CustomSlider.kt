@@ -21,12 +21,14 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
+import com.example.iimusica.screens.PlayerViewModel
 import com.example.iimusica.ui.theme.LocalAppColors
+
+
 @Composable
 @OptIn(UnstableApi::class)
 fun CustomSlider(
-    exoPlayer: ExoPlayer,
+    playerViewModel: PlayerViewModel,
     duration: Long,
     onSeekEnd: (Float) -> Unit,
     currentPosition: Long
@@ -36,12 +38,13 @@ fun CustomSlider(
     var dragging by remember { mutableStateOf(false) }
 
     var position by remember { mutableFloatStateOf(currentPosition.toFloat()) }
-    LaunchedEffect(currentPosition) {
+    LaunchedEffect(currentPosition, dragging) {
         if (!dragging) {
             position = currentPosition.toFloat()
-            Log.d("slider", "currentPosition: $currentPosition")
         }
     }
+
+    Log.d("DurationBar", "sliderwidth $sliderWidth ")
 
     Box(
         modifier = Modifier
@@ -52,7 +55,7 @@ fun CustomSlider(
                     onDragStart = { dragging = true },
                     onDragEnd = {
                         dragging = false
-                        exoPlayer.seekTo(position.toLong())
+                        playerViewModel.exoPlayer.seekTo(position.toLong())
                         onSeekEnd(position)
                     },
                     onDragCancel = { dragging = false },
@@ -67,7 +70,7 @@ fun CustomSlider(
                 detectTapGestures(
                     onTap = { change ->
                         position = (change.x / sliderWidth.floatValue) * duration
-                        exoPlayer.seekTo(position.toLong())
+                        playerViewModel.exoPlayer.seekTo(position.toLong())
                         onSeekEnd(position)
                     }
                 )

@@ -48,18 +48,23 @@ fun MusicScreenTopBar(isPlaying: Boolean, onBackClick: () -> Unit, onSettingsCli
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 1.dp)
-                .padding(horizontal = 32.dp, vertical = 32.dp),
+                .padding(horizontal = 32.dp, vertical = 24.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                contentDescription = "Back",
-                tint = appColors.icon,
+            Box(
                 modifier = Modifier
-                    .size(40.dp)
-                    .clickable { onBackClick() }
-            )
+                    .size(48.dp)
+                    .clickable { onBackClick() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                    contentDescription = "Back",
+                    tint = appColors.icon,
+                    modifier = Modifier.size(40.dp)
+                )
+            }
 
             Text(
                 text = if (isPlaying) "Now Playing" else "Paused",
@@ -70,14 +75,19 @@ fun MusicScreenTopBar(isPlaying: Boolean, onBackClick: () -> Unit, onSettingsCli
                 textAlign = TextAlign.Center
             )
 
-            Icon(
-                imageVector = Icons.Filled.Settings,
-                contentDescription = "Settings",
-                tint = appColors.icon,
+            Box(
                 modifier = Modifier
-                    .size(32.dp)
-                    .clickable { onSettingsClick() }
-            )
+                    .size(48.dp)
+                    .clickable { onSettingsClick() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Settings,
+                    contentDescription = "Settings",
+                    tint = appColors.icon,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
         }
     }
 }
