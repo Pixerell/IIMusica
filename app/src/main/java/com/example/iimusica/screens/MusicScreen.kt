@@ -65,12 +65,13 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
     LaunchedEffect(currentPath) {
         if (!isCurrentlyPlaying || MediaItem.fromUri(path) != playerViewModel.exoPlayer.currentMediaItem) {
             playerViewModel.setCurrentPath(currentPath)
-            Log.d("DurationBar", "New song? ${currentPath}")
             val index = playerViewModel.getQueue().indexOfFirst { it.path == currentPath }
             if (index != -1) {
                 playerViewModel.setCurrentIndex(index)
             }
-            playerViewModel.playMusic(currentPath.toString())
+            if (!playerViewModel.isPlaying.value) {
+                playerViewModel.playMusic(currentPath.toString())
+            }
         }
             playerViewModel.setIsPlaying(true)
             playerViewModel.exoPlayer.playWhenReady = true

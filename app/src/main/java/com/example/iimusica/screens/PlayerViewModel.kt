@@ -10,9 +10,14 @@ import androidx.media3.common.MediaItem
 import com.example.iimusica.utils.MusicFile
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 
 class PlayerViewModel(application: Application) : AndroidViewModel(application) {
+
+    companion object {
+        private const val TAG = "PlayerViewModel"
+    }
 
 
     val exoPlayer: ExoPlayer = ExoPlayer.Builder(application.applicationContext).build()
@@ -35,99 +40,95 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     val currentPath: State<String?> = _currentPath
 
 
-
+    @OptIn(UnstableApi::class)
     fun playMusic(path: String) {
-        // Update currentIndex if the song is in the queue
-        currentIndex = queue.indexOfFirst { it.path == path }.takeIf { it >= 0 } ?: currentIndex
+        try {
+            if (path.isEmpty()) {
+                Log.e(TAG, "playMusic called with an empty path.")
+                return
+            }
+            // Update currentIndex if the song is in the queue
+            currentIndex = updateIndex(path, queue, currentIndex)
+            shuffledIndex = updateIndex(path, shuffledQueue, shuffledIndex)
 
-        exoPlayer.stop()
-        exoPlayer.clearMediaItems()
+            exoPlayer.stop()
+            exoPlayer.clearMediaItems()
 
-        exoPlayer.setMediaItem(MediaItem.fromUri(path))
-        exoPlayer.prepare()
-        exoPlayer.playWhenReady = true
-        exoPlayer.play()
+            exoPlayer.setMediaItem(MediaItem.fromUri(path))
+            exoPlayer.prepare()
+            exoPlayer.playWhenReady = true
+            exoPlayer.play()
 
-        _isPlaying.value = true
-        _currentPath.value = path
+            _isPlaying.value = true
+            _currentPath.value = path
+        }
+        catch (e: Exception) {
+            Log.e(TAG, "Error playing music: ${e.message}", e)
+        }
 
-       // _songDuration.value = newDuration
     }
 
-
-    @OptIn(UnstableApi::class)
     fun playNext() {
-        when (_repeatMode.intValue) {
-            ExoPlayer.REPEAT_MODE_ONE -> {
-                playMusic(_currentPath.value ?: "")
-            }
-            ExoPlayer.REPEAT_MODE_ALL -> {
-                if (_isShuffleEnabled.value) {
-                    shuffledIndex = (shuffledIndex + 1) % shuffledQueue.size
-                    playMusic(shuffledQueue[shuffledIndex].path)
-                } else {
-                    currentIndex = (currentIndex + 1) % queue.size
-                    playMusic(queue[currentIndex].path)
-                }
-            }
-            ExoPlayer.REPEAT_MODE_OFF -> {
-                if (_isShuffleEnabled.value) {
-                    if (shuffledIndex < shuffledQueue.size - 1) {
-                        shuffledIndex++
-                        playMusic(shuffledQueue[shuffledIndex].path)
-                    } else {
-                        endOfQueue()
-                    }
-                } else if (currentIndex < queue.size - 1) {
-                    currentIndex++
-                    playMusic(queue[currentIndex].path)
-                } else {
-                    endOfQueue()
-                }
-            }
+        val nextIndex = getNextIndex(isNext = true)
+        if (nextIndex != -1) {
+            val path = if (_isShuffleEnabled.value) shuffledQueue[nextIndex].path else queue[nextIndex].path
+            playMusic(path)
+        } else {
+            endOfQueue() // Stop when reaching the end of the queue
         }
     }
 
     fun playPrevious() {
-        when (_repeatMode.intValue) {
-            ExoPlayer.REPEAT_MODE_ONE -> {
-                playMusic(_currentPath.value ?: "")
-            }
-            ExoPlayer.REPEAT_MODE_ALL -> {
-                if (_isShuffleEnabled.value) {
-                    shuffledIndex = if (shuffledIndex > 0) shuffledIndex - 1 else shuffledQueue.size - 1
-                    playMusic(shuffledQueue[shuffledIndex].path)
-                } else {
-                    currentIndex = if (currentIndex > 0) currentIndex - 1 else queue.size - 1
-                    playMusic(queue[currentIndex].path)
-                }
-            }
-            ExoPlayer.REPEAT_MODE_OFF -> {
-                if (_isShuffleEnabled.value) {
-                    if (shuffledIndex > 0) {
-                        shuffledIndex--
-                        playMusic(shuffledQueue[shuffledIndex].path)
-                    } else {
-                        shuffledIndex = shuffledQueue.size - 1
-                        playMusic(shuffledQueue[shuffledIndex].path)
-                    }
-                } else if (currentIndex > 0) {
-                    currentIndex--
-                    playMusic(queue[currentIndex].path)
-                } else {
-                    playMusic(_currentPath.value ?: "")
-                }
-            }
+        val prevIndex = getNextIndex(isNext = false)
+        if (prevIndex != -1) {
+            val path = if (_isShuffleEnabled.value) shuffledQueue[prevIndex].path else queue[prevIndex].path
+            playMusic(path)
+        } else {
+            endOfQueue() // Stop when reaching the beginning of the queue
         }
     }
 
-    
 
-    fun endOfQueue() {
-        _isPlaying.value = false
-        exoPlayer.pause()
-        exoPlayer.seekTo(0)
+    @OptIn(UnstableApi::class)
+    private fun getNextIndex(isNext: Boolean): Int {
+        val isShuffle = _isShuffleEnabled.value
+        val currentQueue = if (isShuffle) shuffledQueue else queue
+        var currentIdx = if (isShuffle) shuffledIndex else currentIndex
+
+        if (currentQueue.isEmpty()) {
+            Log.e(TAG, "Queue is empty.")
+            return -1
+        }
+
+        val newIndex: Int = when (_repeatMode.intValue) {
+            ExoPlayer.REPEAT_MODE_ONE -> currentIdx // Stay on the same track for REPEAT_MODE_ONE
+            ExoPlayer.REPEAT_MODE_ALL -> {
+                if (isNext) {
+                    (currentIdx + 1) % currentQueue.size
+                } else {
+                    (currentIdx - 1 + currentQueue.size) % currentQueue.size
+                }
+            }
+            ExoPlayer.REPEAT_MODE_OFF -> {
+                if (isNext) {
+                    if (currentIdx < currentQueue.size - 1) {
+                        currentIdx + 1
+                    } else {
+                        return -1 // End of queue, no more tracks
+                    }
+                } else {
+                    if (currentIdx > 0) {
+                        currentIdx - 1
+                    } else {
+                        return -1 // Beginning of queue, no more tracks
+                    }
+                }
+            }
+            else -> -1 // Default case if mode is undefined
+        }
+        return  newIndex
     }
+
 
     fun togglePlayPause() {
         if (exoPlayer.isPlaying) {
@@ -140,8 +141,8 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun stopPlay() {
-        setCurrentPath("")
-        setCurrentIndex(0)
+        currentIndex = 0
+        _currentPath.value = null
         shuffledIndex = 0
         clearQueue()
         _isPlaying.value = false
@@ -154,12 +155,10 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         _isShuffleEnabled.value = !_isShuffleEnabled.value
 
         if (_isShuffleEnabled.value) {
-            if (shuffledQueue.isEmpty() || shuffledQueue.size != queue.size ||
-                !shuffledQueue.map { it.path }.containsAll(queue.map { it.path })) {
+            if (shuffledQueue.isEmpty() || shuffledQueue.size != queue.size || shuffledQueue.map { it.path }.toSet() != queue.map { it.path }.toSet()) {
                 shuffledQueue.clear()
                 shuffledQueue.addAll(queue.shuffled())
             }
-            shuffledIndex = 0
         }
     }
 
@@ -185,15 +184,29 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         queue.remove(musicFile)
     }
     */
+
+    fun endOfQueue() {
+        _isPlaying.value = false
+        exoPlayer.pause()
+        exoPlayer.seekTo(0)
+    }
+
+
     fun clearQueue() {
         queue.clear()
 
     }
 
     fun setQueue(newQueue: List<MusicFile>, startIndex: Int = 0) {
-        queue.clear()
+        clearQueue()
         queue.addAll(newQueue)
         currentIndex = startIndex
+
+        if (_isShuffleEnabled.value) {
+            shuffledQueue.clear()
+            shuffledQueue.addAll(newQueue.shuffled())
+        }
+
     }
 
     fun setCurrentPath(path: String) {
@@ -203,6 +216,11 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     fun setCurrentIndex(ind : Int) {
         currentIndex = ind
     }
+
+    private fun updateIndex(path: String, queue: List<MusicFile>, currentIndex: Int): Int {
+        return queue.indexOfFirst { it.path == path }.takeIf { it >= 0 } ?: currentIndex
+    }
+
 
     fun setIsPlaying(bool : Boolean) {
         _isPlaying.value = bool
