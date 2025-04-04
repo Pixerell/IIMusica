@@ -10,7 +10,6 @@ import androidx.media3.common.MediaItem
 import com.example.iimusica.utils.MusicFile
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 
 class PlayerViewModel(application: Application) : AndroidViewModel(application) {
@@ -20,9 +19,8 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
     private val queue = mutableListOf<MusicFile>()
     private var currentIndex = 0
-
-    private val _currentPath = mutableStateOf<String?>(null)
-    val currentPath: State<String?> = _currentPath
+    private val shuffledQueue = mutableListOf<MusicFile>()
+    private var shuffledIndex = 0
 
     private val _isPlaying = mutableStateOf(false)
     val isPlaying: State<Boolean> get() = _isPlaying
@@ -30,20 +28,15 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     private val _isShuffleEnabled = mutableStateOf(false)
     val isShuffleEnabled: State<Boolean> get() = _isShuffleEnabled
 
-    private val shuffledQueue = mutableListOf<MusicFile>()
-    private var shuffledIndex = 0
-
     private val _repeatMode = mutableIntStateOf(ExoPlayer.REPEAT_MODE_OFF)
     val repeatMode: State<Int> get() = _repeatMode
 
-    fun playMusic(path: String) {
-        // If the song is already playing, don't do anything
-        if (_currentPath.value == path && currentIndex in queue.indices) {
-            exoPlayer.play()
-            _isPlaying.value = true
-            return
-        }
+    private val _currentPath = mutableStateOf<String?>(null)
+    val currentPath: State<String?> = _currentPath
 
+
+
+    fun playMusic(path: String) {
         // Update currentIndex if the song is in the queue
         currentIndex = queue.indexOfFirst { it.path == path }.takeIf { it >= 0 } ?: currentIndex
 
@@ -57,6 +50,8 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
         _isPlaying.value = true
         _currentPath.value = path
+
+       // _songDuration.value = newDuration
     }
 
 
@@ -64,13 +59,9 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     fun playNext() {
         when (_repeatMode.intValue) {
             ExoPlayer.REPEAT_MODE_ONE -> {
-                Log.d("DurationBar", "mode ONE current index $currentIndex, nextindex ${(currentIndex + 1) % queue.size}")
-
                 playMusic(_currentPath.value ?: "")
             }
             ExoPlayer.REPEAT_MODE_ALL -> {
-                Log.d("DurationBar", "mode ALL current index $currentIndex, nextindex ${(currentIndex + 1) % queue.size}")
-
                 if (_isShuffleEnabled.value) {
                     shuffledIndex = (shuffledIndex + 1) % shuffledQueue.size
                     playMusic(shuffledQueue[shuffledIndex].path)
@@ -80,21 +71,18 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 }
             }
             ExoPlayer.REPEAT_MODE_OFF -> {
-                Log.d("DurationBar", "mode OFF current index $currentIndex, nextindex ${(currentIndex + 1) % queue.size}")
-
                 if (_isShuffleEnabled.value) {
                     if (shuffledIndex < shuffledQueue.size - 1) {
                         shuffledIndex++
                         playMusic(shuffledQueue[shuffledIndex].path)
                     } else {
-                        shuffledIndex = 0
-                        playMusic(shuffledQueue[shuffledIndex].path)
+                        endOfQueue()
                     }
                 } else if (currentIndex < queue.size - 1) {
                     currentIndex++
                     playMusic(queue[currentIndex].path)
                 } else {
-                    playMusic(_currentPath.value ?: "")
+                    endOfQueue()
                 }
             }
         }
@@ -133,6 +121,13 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    
+
+    fun endOfQueue() {
+        _isPlaying.value = false
+        exoPlayer.pause()
+        exoPlayer.seekTo(0)
+    }
 
     fun togglePlayPause() {
         if (exoPlayer.isPlaying) {
@@ -147,6 +142,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     fun stopPlay() {
         setCurrentPath("")
         setCurrentIndex(0)
+        shuffledIndex = 0
         clearQueue()
         _isPlaying.value = false
         exoPlayer.stop()
@@ -213,7 +209,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun getQueue(): List<MusicFile> = queue.toList()
-    fun getCurrentIndex(): Int = currentIndex
+    // fun getCurrentIndex(): Int = currentIndex
 
     override fun onCleared() {
         super.onCleared()

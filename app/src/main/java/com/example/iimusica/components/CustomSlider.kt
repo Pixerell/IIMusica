@@ -11,7 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -19,59 +18,64 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import com.example.iimusica.screens.PlayerViewModel
 import com.example.iimusica.ui.theme.LocalAppColors
-
 
 @Composable
 @OptIn(UnstableApi::class)
 fun CustomSlider(
     playerViewModel: PlayerViewModel,
     duration: Long,
-    onSeekEnd: (Float) -> Unit,
-    currentPosition: Long
+    currentPosition: Long,
+    onDragging: (Boolean, Long) -> Unit,
+    dragging: Boolean
 ) {
     val appColors = LocalAppColors.current
     val sliderWidth = remember { mutableFloatStateOf(0f) }
-    var dragging by remember { mutableStateOf(false) }
 
     var position by remember { mutableFloatStateOf(currentPosition.toFloat()) }
-    LaunchedEffect(currentPosition, dragging) {
+    // Reset the position when the duration or currentPosition changes
+    LaunchedEffect(currentPosition) {
         if (!dragging) {
-            position = currentPosition.toFloat()
+            position = currentPosition.toFloat().coerceIn(0f, duration.toFloat())
+
         }
     }
 
-    Log.d("DurationBar", "sliderwidth $sliderWidth ")
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(10.dp)
-            .pointerInput(Unit) {
+            .pointerInput(duration) {
                 detectDragGestures(
-                    onDragStart = { dragging = true },
+                    onDragStart = {
+                        onDragging(true, position.toLong())
+                                  },
                     onDragEnd = {
-                        dragging = false
                         playerViewModel.exoPlayer.seekTo(position.toLong())
-                        onSeekEnd(position)
+                        onDragging(false, position.toLong())
+
                     },
-                    onDragCancel = { dragging = false },
+                    onDragCancel = {
+                        onDragging(false, position.toLong()) },
                     onDrag = { change, _ ->
                         change.consume()  // Consume the drag event
-                        position = (change.position.x / sliderWidth.floatValue) * duration
+
+                        val newPosition = (change.position.x / sliderWidth.floatValue) * duration
+                        position = newPosition.coerceIn(0f, duration.toFloat())
+                        onDragging(true, position.toLong())
                     }
                 )
             }
             // Tap gesture in its own pointerInput modifier
-            .pointerInput(Unit) {
+            .pointerInput(duration) {
                 detectTapGestures(
                     onTap = { change ->
                         position = (change.x / sliderWidth.floatValue) * duration
                         playerViewModel.exoPlayer.seekTo(position.toLong())
-                        onSeekEnd(position)
+                        onDragging(false, position.toLong())
                     }
                 )
             }
@@ -79,6 +83,7 @@ fun CustomSlider(
         Canvas(modifier = Modifier.fillMaxWidth()) {
             sliderWidth.floatValue = size.width
             val progress = position / duration
+
 
             drawLine(
                 color = appColors.secondaryFont,

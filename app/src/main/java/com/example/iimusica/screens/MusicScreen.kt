@@ -59,11 +59,13 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
         isPanelExpanded = !isPanelExpanded
     }
 
+
     val exoPlayer = playerViewModel.exoPlayer
 
     LaunchedEffect(currentPath) {
         if (!isCurrentlyPlaying || MediaItem.fromUri(path) != playerViewModel.exoPlayer.currentMediaItem) {
             playerViewModel.setCurrentPath(currentPath)
+            Log.d("DurationBar", "New song? ${currentPath}")
             val index = playerViewModel.getQueue().indexOfFirst { it.path == currentPath }
             if (index != -1) {
                 playerViewModel.setCurrentIndex(index)
@@ -73,7 +75,6 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
             playerViewModel.setIsPlaying(true)
             playerViewModel.exoPlayer.playWhenReady = true
             musicFile = getMusicFileFromPath(context, currentPath.toString())
-
 
     }
 
@@ -104,7 +105,6 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
                 .fillMaxSize(),
         ) {
             if (musicFile != null) {
-                val duration = parseDuration(musicFile!!.duration)
                 MusicScreenTopBar(isPlaying = playerViewModel.isPlaying.value,
                     onBackClick = {navController.navigateUp()},
                     onSettingsClick = { Log.d("MusicScreen", "Settings icon clicked") }  )
@@ -144,7 +144,7 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
-                    DurationBar(duration, playerViewModel)
+                    DurationBar(duration = parseDuration((musicFile?.duration ?: 0L).toString()), playerViewModel)
 
                     Row(
                         modifier = Modifier
