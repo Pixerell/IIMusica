@@ -3,28 +3,22 @@
 package com.example.iimusica.screens
 
 import android.content.Context
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.iimusica.components.ButtonReload
+import com.example.iimusica.components.Loader
 import com.example.iimusica.utils.MusicFile
 import com.example.iimusica.components.MusicList
 import com.example.iimusica.components.MusicTopBar
@@ -92,27 +86,10 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
                 toggleTheme = toggleTheme
 
             ) },
+
         floatingActionButton = {
-            Box(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                FloatingActionButton(
-                    onClick = {
-                        playerViewModel.stopPlay()
-                        viewModel.loadMusicFiles(context)
-                    },
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .align(Alignment.BottomCenter),
-                    contentColor = appColors.icon,
-                    containerColor = appColors.backgroundDarker,
-
-
-                ) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Refresh Music Files")
-                }
-            }
-        }
+            ButtonReload(playerViewModel, viewModel, context)
+        },
     ) { padding ->
         Box(
             modifier = Modifier
@@ -123,25 +100,7 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
                 )
         ) {
             if (isLoading) {
-
-                Box(
-                    modifier = Modifier.align(Alignment.Center)
-                ) {
-                    // Outer circle (Outline)
-                    Surface(
-                        modifier = Modifier.size(80.dp),
-                        shape = CircleShape,
-                        color = Color.Transparent,
-                        border = BorderStroke(6.dp, appColors.secondaryFont.copy(alpha = 0.25f))
-                    ) {
-                        // Inner CircularProgressIndicator
-                        CircularProgressIndicator(
-                            modifier = Modifier.align(Alignment.Center),
-                            color = appColors.icon,
-                            strokeWidth = 6.dp
-                        )
-                    }
-                }
+                Loader(modifier = Modifier.align(Alignment.Center))
             }
 
             else if (errorMessage.isNotEmpty()) {
@@ -172,6 +131,11 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
                         playerViewModel.setQueue(sortedFiles)  // Initialize the queue with sorted files only if it's empty
                     }
                     MusicList(musicFiles = sortedFiles, navController = navController, playerViewModel=playerViewModel)
+
+                        Box(modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter).zIndex(1f)) {
+                            MiniPlayer(playerViewModel = playerViewModel, navController = navController)
+                        }
+
                 }
             }
         }

@@ -6,10 +6,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -19,20 +15,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.iimusica.R
+import com.example.iimusica.components.ButtonNext
+import com.example.iimusica.components.ButtonPlayPause
+import com.example.iimusica.components.ButtonPrevious
+import com.example.iimusica.components.ButtonRepeat
+import com.example.iimusica.components.ButtonShuffle
 import com.example.iimusica.components.DurationBar
 import com.example.iimusica.components.MarqueeText
 import com.example.iimusica.components.MusicScreenTopBar
@@ -59,8 +56,6 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
         isPanelExpanded = !isPanelExpanded
     }
 
-
-    val exoPlayer = playerViewModel.exoPlayer
 
     LaunchedEffect(currentPath) {
         if (!isCurrentlyPlaying || MediaItem.fromUri(path) != playerViewModel.exoPlayer.currentMediaItem) {
@@ -123,19 +118,16 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
                             .padding(top = 48.dp)
                             .fillMaxWidth()
                             .align(Alignment.CenterHorizontally)
-
-
                     )
-
 
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.padding(top = 32.dp)
                     ) {
 
-                            MarqueeText(
-                                text = musicFile!!.name,
-                                modifier = Modifier.padding(horizontal = 16.dp))
+                        MarqueeText(
+                            text = musicFile!!.name,
+                            modifier = Modifier.padding(horizontal = 16.dp))
 
                         Text(
                             text = "by ${musicFile!!.artist}",
@@ -154,86 +146,14 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = (Alignment.CenterVertically)
-                    )
-
-
-                    {
-                        IconButton(onClick = { playerViewModel.toggleShuffle() }, modifier = Modifier.weight(1f).size(28.dp)) {
-                            Icon(
-                                painter  = painterResource( R.drawable.shuffleico),
-                                contentDescription = "Shuffle",
-                                tint = if (playerViewModel.isShuffleEnabled.value) appColors.active else appColors.icon,
-                            )
-                        }
-
-                        IconButton(onClick = { playerViewModel.playPrevious() },  modifier = Modifier.weight(1f).size(28.dp)) {
-                            Icon(
-                                painter  = painterResource( R.drawable.nextico),
-                                contentDescription = "Previous",
-                                tint = appColors.icon,
-                                modifier = Modifier.graphicsLayer(scaleX = -1f)
-
-                            )
-                        }
-
-                        Row(
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            FloatingActionButton(
-                                onClick = { playerViewModel.togglePlayPause() },
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .size(80.dp),
-                                containerColor = appColors.icon,
-                            ) {
-                                Box(
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        painter = painterResource(if (playerViewModel.isPlaying.value) R.drawable.pauseico else R.drawable.playico),
-                                        contentDescription = if (playerViewModel.isPlaying.value) "Pause" else "Play",
-                                        tint = appColors.active,
-                                        modifier = Modifier.size(28.dp)
-                                            .then(
-                                                if (!playerViewModel.isPlaying.value) {
-                                                    Modifier.offset(x = 2.dp)
-                                                } else {
-                                                    Modifier
-                                                }
-                                            )
-                                    )
-                                }
-                            }
-                        }
-
-
-                        IconButton(onClick = { playerViewModel.playNext() },  modifier = Modifier.weight(1f).size(28.dp) ) {
-                            Icon(
-                                painter  = painterResource( R.drawable.nextico),
-                                contentDescription = "Next",
-                                tint = appColors.icon,
-
-                            )
-                        }
-
-                        IconButton(onClick = {playerViewModel.toggleRepeat() },  modifier = Modifier.weight(1f).size(28.dp)) {
-                            val repeatIcon = when (exoPlayer.repeatMode) {
-                                ExoPlayer.REPEAT_MODE_OFF -> painterResource(R.drawable.repeatico)
-                                ExoPlayer.REPEAT_MODE_ALL -> painterResource(R.drawable.repeatico)
-                                ExoPlayer.REPEAT_MODE_ONE -> painterResource(R.drawable.repeatsongico)
-                                else -> painterResource(R.drawable.repeatico)
-                            }
-
-                            Icon(
-                                painter = repeatIcon,
-                                contentDescription = "Repeat mode",
-                                tint = if (playerViewModel.repeatMode.value != ExoPlayer.REPEAT_MODE_OFF) appColors.active else appColors.icon                            )
-                        }
+                    ) {
+                        ButtonShuffle(playerViewModel, modifier = Modifier.weight(1f))
+                        ButtonPrevious(playerViewModel, modifier = Modifier.weight(1f))
+                        ButtonPlayPause(playerViewModel)
+                        ButtonNext(playerViewModel, modifier = Modifier.weight(1f))
+                        ButtonRepeat(playerViewModel, modifier = Modifier.weight(1f))
                     }
                 }
-
 
             } else {
                 Text(text = "Error: Music file not found", color = appColors.font)
