@@ -69,7 +69,7 @@ fun MusicItem(music: MusicFile,
                 if (isDoubleTap) {
                         isDoubleTapDetected = true
                         if (currentRoute != null) {
-                            playerViewModel.setCurrentPath(music.path)
+                            playerViewModel.setCurrentPath(music.path, false)
 
                             navController.navigate("music_detail/${Uri.encode(music.path)}") {
                                 launchSingleTop = true
@@ -86,7 +86,7 @@ fun MusicItem(music: MusicFile,
                                     playerViewModel.togglePlayPause()
                                 } else {
                                     playerViewModel.playMusic(music.path)
-                                    playerViewModel.setCurrentPath(music.path)
+                                    playerViewModel.setCurrentPath(music.path, false)
                                 }
                             }
                         }

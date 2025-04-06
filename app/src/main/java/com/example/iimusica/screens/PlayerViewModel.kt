@@ -209,7 +209,13 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
     }
 
-    fun setCurrentPath(path: String) {
+    fun setCurrentPath(path: String, isReplacing : Boolean) {
+        if (isReplacing) {
+            exoPlayer.clearMediaItems()
+            exoPlayer.setMediaItem(MediaItem.fromUri(path))
+
+        }
+
         _currentPath.value = path
     }
 
@@ -221,11 +227,11 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         return queue.indexOfFirst { it.path == path }.takeIf { it >= 0 } ?: currentIndex
     }
 
-
+    /*
     fun setIsPlaying(bool : Boolean) {
         _isPlaying.value = bool
     }
-
+    */
     fun getQueue(): List<MusicFile> = queue.toList()
     // fun getCurrentIndex(): Int = currentIndex
 

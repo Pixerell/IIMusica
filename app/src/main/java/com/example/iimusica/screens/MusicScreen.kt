@@ -23,8 +23,6 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
-import coil.compose.rememberAsyncImagePainter
-import com.example.iimusica.R
 import com.example.iimusica.components.ButtonNext
 import com.example.iimusica.components.ButtonPlayPause
 import com.example.iimusica.components.ButtonPrevious
@@ -36,7 +34,7 @@ import com.example.iimusica.components.MusicScreenTopBar
 import com.example.iimusica.components.QueuePanel
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.utils.MusicFile
-import com.example.iimusica.utils.getAlbumArtBitmap
+import com.example.iimusica.utils.albumPainter
 import com.example.iimusica.utils.getMusicFileFromPath
 import com.example.iimusica.utils.parseDuration
 
@@ -50,37 +48,28 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
     var musicFile by remember { mutableStateOf<MusicFile?>(null) }
 
     val currentPath = playerViewModel.currentPath.value ?: path
-    val isCurrentlyPlaying = currentPath == playerViewModel.currentPath.value
     var isPanelExpanded by remember { mutableStateOf(false) }
     val togglePanelState: (Boolean) -> Unit = { expanded ->
         isPanelExpanded = !isPanelExpanded
     }
 
-
     LaunchedEffect(currentPath) {
-        if (!isCurrentlyPlaying || MediaItem.fromUri(path) != playerViewModel.exoPlayer.currentMediaItem) {
-            playerViewModel.setCurrentPath(currentPath)
+        if (MediaItem.fromUri(path) != playerViewModel.exoPlayer.currentMediaItem) {
+            playerViewModel.setCurrentPath(currentPath, true)
             val index = playerViewModel.getQueue().indexOfFirst { it.path == currentPath }
             if (index != -1) {
                 playerViewModel.setCurrentIndex(index)
             }
-            if (!playerViewModel.isPlaying.value) {
+            if (playerViewModel.isPlaying.value ) {
                 playerViewModel.playMusic(currentPath.toString())
             }
         }
-            playerViewModel.setIsPlaying(true)
-            playerViewModel.exoPlayer.playWhenReady = true
             musicFile = getMusicFileFromPath(context, currentPath.toString())
 
     }
 
-    val albumArtBitmap = remember(musicFile) {
-        musicFile?.let { getAlbumArtBitmap(context, it) }
-    }
+    val painter = albumPainter(musicFile, context)
 
-    val painter = rememberAsyncImagePainter(
-        model = albumArtBitmap ?: R.drawable.default_image
-    )
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -115,14 +104,14 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
                         contentDescription = "Album Art",
                         modifier = Modifier
                             .size(500.dp)
-                            .padding(top = 48.dp)
+                            .padding(top = 64.dp)
                             .fillMaxWidth()
                             .align(Alignment.CenterHorizontally)
                     )
 
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(top = 32.dp)
+                        modifier = Modifier.padding(top = 64.dp)
                     ) {
 
                         MarqueeText(

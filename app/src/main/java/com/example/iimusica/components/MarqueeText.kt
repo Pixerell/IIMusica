@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.media3.common.util.UnstableApi
@@ -25,6 +26,10 @@ import com.example.iimusica.ui.theme.Typography
 fun MarqueeText(
     text: String,
     modifier: Modifier = Modifier,
+    style: TextStyle = Typography.bodyLarge,
+    isCentered : Boolean = true,
+    isMaintext : Boolean = true
+
 ) {
     val appColors = LocalAppColors.current
     var textWidth by remember { mutableFloatStateOf(0f) }
@@ -33,6 +38,10 @@ fun MarqueeText(
     val speed = 200
     var delayMillis = 1000
     var isActive by remember { mutableStateOf(true) }
+    val finalStyle = style.copy(
+        fontWeight = if (isMaintext) FontWeight.Bold else FontWeight.Normal,
+        color = if (isMaintext) appColors.font else appColors.secondaryFont
+    )
 
     LaunchedEffect(text, isActive) {
         if (textWidth == boxWidth && isActive) {
@@ -58,8 +67,13 @@ fun MarqueeText(
         }
         else {
             if (textWidth > 0f && boxWidth > 0f) {
-                val centeredOffset = (boxWidth - textWidth) / 2f
-                animatedOffset.snapTo(centeredOffset)
+                if (isCentered) {
+                    val centeredOffset = (boxWidth - textWidth) / 2f
+                    animatedOffset.snapTo(centeredOffset)
+                }
+                else {
+                    animatedOffset.snapTo(0f)
+                }
             }
         }
     }
@@ -79,10 +93,7 @@ fun MarqueeText(
     ) {
         Text(
             text = text,
-            style = Typography.bodyLarge.copy(
-                fontWeight = FontWeight.Bold,
-                color = appColors.font
-            ),
+            style = finalStyle,
             maxLines = 1,
             overflow = TextOverflow.Visible,
             softWrap = false,
