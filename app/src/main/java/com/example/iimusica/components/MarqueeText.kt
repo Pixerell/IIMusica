@@ -81,8 +81,12 @@ fun MarqueeText(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .clickable{
-                isActive = !isActive
+            .apply {
+                if (isCentered) {
+                    clickable {
+                        isActive = !isActive
+                    }
+                }
             }
             .onGloballyPositioned { layoutCoordinates ->
                 boxWidth = layoutCoordinates.size.width.toFloat()

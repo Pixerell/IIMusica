@@ -29,7 +29,8 @@ fun CustomSlider(
     duration: Long,
     currentPosition: Long,
     onDragging: (Boolean, Long) -> Unit,
-    dragging: Boolean
+    dragging: Boolean,
+    isMiniPlayer : Boolean
 ) {
     val appColors = LocalAppColors.current
     val sliderWidth = remember { mutableFloatStateOf(0f) }
@@ -101,11 +102,13 @@ fun CustomSlider(
                 cap = StrokeCap.Round
             )
 
-            drawCircle(
-                color = appColors.font,
-                radius = 32f,
-                center = Offset(size.width * progress, size.height / 2)
-            )
+            if (!isMiniPlayer) {
+                drawCircle(
+                    color = appColors.font,
+                    radius = 32f,
+                    center = Offset(size.width * progress, size.height / 2)
+                )
+            }
         }
     }
 }

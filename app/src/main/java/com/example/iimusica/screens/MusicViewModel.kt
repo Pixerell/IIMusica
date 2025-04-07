@@ -2,7 +2,9 @@ package com.example.iimusica.screens
 
 import android.content.Context
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.iimusica.utils.MusicFile
@@ -38,6 +40,7 @@ class MusicViewModel : ViewModel() {
     }
 
     private var lastSuccessfulFiles: List<MusicFile> = emptyList()
+    var isFirstTimeEnteredMusic by mutableStateOf(true)
 
     fun loadMusicFiles(context: Context) {
         _isLoading.value = true

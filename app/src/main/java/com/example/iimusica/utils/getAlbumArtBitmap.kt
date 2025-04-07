@@ -23,7 +23,7 @@ fun getAlbumArtBitmap(context: Context, musicFile: MusicFile): Bitmap? {
             return BitmapFactory.decodeStream(inputStream)
         }
     } catch (e: Exception) {
-        Log.e("MusicFiles", "Failed to get album art from URI: $albumArtUri", e)
+        Log.e("MusicFiles", "Failed to get album art from URI: $albumArtUri | ${e.message}")
     }
 
     // Fallback: Try retrieving embedded album art from the media file
@@ -34,7 +34,7 @@ fun getAlbumArtBitmap(context: Context, musicFile: MusicFile): Bitmap? {
         retriever.release()
         return if (art != null) BitmapFactory.decodeByteArray(art, 0, art.size) else null
     } catch (e: Exception) {
-        Log.e("MusicFiles", "Failed to get album art from file metadata", e)
+        Log.e("MusicFiles", "Failed to get album art from file metadata | ${e.message}")
     }
 
     return null

@@ -9,7 +9,9 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.common.MediaItem
 import com.example.iimusica.utils.MusicFile
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 
@@ -39,6 +41,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     private val _currentPath = mutableStateOf<String?>(null)
     val currentPath: State<String?> = _currentPath
 
+    var isFirstTimeEntered by mutableStateOf(true)
 
     @OptIn(UnstableApi::class)
     fun playMusic(path: String) {
@@ -70,6 +73,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
     fun playNext() {
         val nextIndex = getNextIndex(isNext = true)
+        exoPlayer.seekTo(0)
         if (nextIndex != -1) {
             val path = if (_isShuffleEnabled.value) shuffledQueue[nextIndex].path else queue[nextIndex].path
             playMusic(path)
@@ -78,13 +82,28 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    @OptIn(UnstableApi::class)
     fun playPrevious() {
         val prevIndex = getNextIndex(isNext = false)
+        Log.d("shuffle", "previndex $prevIndex, shuffleindex $shuffledIndex and the queue $shuffledQueue")
+        exoPlayer.seekTo(0)
+        /*
         if (prevIndex != -1) {
             val path = if (_isShuffleEnabled.value) shuffledQueue[prevIndex].path else queue[prevIndex].path
             playMusic(path)
         } else {
             endOfQueue() // Stop when reaching the beginning of the queue
+        }*/
+        if (prevIndex != -1) {
+            if (_isShuffleEnabled.value) {
+                shuffledIndex = prevIndex
+            } else {
+                currentIndex = prevIndex
+            }
+            val path = if (_isShuffleEnabled.value) shuffledQueue[prevIndex].path else queue[prevIndex].path
+            playMusic(path)
+        } else {
+            endOfQueue()
         }
     }
 
@@ -148,7 +167,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         _isPlaying.value = false
         exoPlayer.stop()
         exoPlayer.clearMediaItems()
-        exoPlayer.release()
     }
 
     fun toggleShuffle() {

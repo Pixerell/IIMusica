@@ -20,12 +20,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
+import com.example.iimusica.components.ButtonNext
 import com.example.iimusica.components.ButtonPlayPause
 import com.example.iimusica.components.ButtonPrevious
+import com.example.iimusica.components.DurationBar
 import com.example.iimusica.components.MarqueeText
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
 import com.example.iimusica.utils.albumPainter
+import com.example.iimusica.utils.parseDuration
 
 @Composable
 fun MiniPlayer(playerViewModel: PlayerViewModel, navController: NavController) {
@@ -40,7 +43,7 @@ fun MiniPlayer(playerViewModel: PlayerViewModel, navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(70.dp)
+            .height(80.dp)
             .zIndex(111f)
             .background(appColors.backgroundDarker)
             .clickable {
@@ -48,15 +51,15 @@ fun MiniPlayer(playerViewModel: PlayerViewModel, navController: NavController) {
                     launchSingleTop = true
                 }
             },
-        contentAlignment = Alignment.CenterStart
     ) {
+        DurationBar(duration = parseDuration(currentMusic.duration.toString()), playerViewModel = playerViewModel, isMiniPlayer = true)
+
         Row(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-
             Image(
                 painter = painter,
                 contentDescription = "Album Art",
@@ -81,8 +84,9 @@ fun MiniPlayer(playerViewModel: PlayerViewModel, navController: NavController) {
                 )
 
             }
-            ButtonPrevious(playerViewModel, modifier = Modifier.weight(1f))
-            ButtonPlayPause(playerViewModel)
+            ButtonPrevious(playerViewModel, modifier = Modifier.weight(1f).size(18.dp))
+            ButtonPlayPause(playerViewModel, isSmallMode = true)
+            ButtonNext(playerViewModel, modifier = Modifier.weight(1f).size(18.dp))
         }
     }
 }

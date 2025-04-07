@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,7 +21,7 @@ import com.example.iimusica.screens.PlayerViewModel
 import com.example.iimusica.ui.theme.LocalAppColors
 
 @Composable
-fun ButtonPlayPause(playerViewModel: PlayerViewModel) {
+fun ButtonPlayPause(playerViewModel: PlayerViewModel, isSmallMode : Boolean = false) {
     val appColors = LocalAppColors.current
 
     Row(
@@ -32,8 +33,9 @@ fun ButtonPlayPause(playerViewModel: PlayerViewModel) {
             onClick = { playerViewModel.togglePlayPause() },
             modifier = Modifier
                 .clip(CircleShape)
-                .size(80.dp),
-            containerColor = appColors.icon,
+                .size(if (isSmallMode) 40.dp else 80.dp),
+            containerColor = if (isSmallMode) androidx.compose.ui.graphics.Color.Transparent else appColors.icon,
+            elevation = FloatingActionButtonDefaults.elevation(0.dp)
         ) {
             Box(
                 contentAlignment = Alignment.Center

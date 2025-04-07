@@ -53,6 +53,7 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
         isPanelExpanded = !isPanelExpanded
     }
 
+    Log.d("MusicScreen", "First time? ${playerViewModel.isFirstTimeEntered}")
     LaunchedEffect(currentPath) {
         if (MediaItem.fromUri(path) != playerViewModel.exoPlayer.currentMediaItem) {
             playerViewModel.setCurrentPath(currentPath, true)
@@ -60,12 +61,13 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
             if (index != -1) {
                 playerViewModel.setCurrentIndex(index)
             }
-            if (playerViewModel.isPlaying.value ) {
-                playerViewModel.playMusic(currentPath.toString())
-            }
         }
-            musicFile = getMusicFileFromPath(context, currentPath.toString())
+        musicFile = getMusicFileFromPath(context, currentPath.toString())
 
+        if (playerViewModel.isFirstTimeEntered && !playerViewModel.isPlaying.value) {
+            playerViewModel.playMusic(currentPath)
+        }
+        playerViewModel.isFirstTimeEntered = false
     }
 
     val painter = albumPainter(musicFile, context)

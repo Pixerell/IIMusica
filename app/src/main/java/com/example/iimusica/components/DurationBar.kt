@@ -26,7 +26,7 @@ import com.example.iimusica.screens.PlayerViewModel
 
 @OptIn(UnstableApi::class)
 @Composable
-fun DurationBar(duration: Long, playerViewModel: PlayerViewModel) {
+fun DurationBar(duration: Long, playerViewModel: PlayerViewModel, isMiniPlayer: Boolean = false) {
 
     val appColors = LocalAppColors.current
     var currentPosition by remember { mutableLongStateOf(0L) }
@@ -61,18 +61,21 @@ fun DurationBar(duration: Long, playerViewModel: PlayerViewModel) {
         }
     }
 
+    if (!isMiniPlayer) {
+        Row(
+            modifier = Modifier.fillMaxWidth()
+                .offset(y = (-8).dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
 
-    Row(
-        modifier = Modifier.fillMaxWidth()
-            .offset(y = (-8).dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = formatDuration(if (dragging) draggingPosition else currentPosition),
-            color = appColors.font,
-            fontSize = 14.sp
-        )
-        Text(text = formatDuration(duration), color = appColors.font, fontSize = 14.sp)
+            Text(
+                text = formatDuration(if (dragging) draggingPosition else currentPosition),
+                color = appColors.font,
+                fontSize = 14.sp
+            )
+            Text(text = formatDuration(duration), color = appColors.font, fontSize = 14.sp)
+        }
+
     }
 
     CustomSlider(
@@ -86,6 +89,7 @@ fun DurationBar(duration: Long, playerViewModel: PlayerViewModel) {
                 currentPosition = position
             }
         },
-        dragging = dragging
+        dragging = dragging,
+        isMiniPlayer = isMiniPlayer
     )
 }
