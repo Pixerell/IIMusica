@@ -19,8 +19,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.media3.common.MediaItem
-import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.example.iimusica.components.ButtonNext
@@ -53,24 +51,19 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
         isPanelExpanded = !isPanelExpanded
     }
 
-    Log.d("MusicScreen", "First time? ${playerViewModel.isFirstTimeEntered}")
     LaunchedEffect(currentPath) {
-        if (MediaItem.fromUri(path) != playerViewModel.exoPlayer.currentMediaItem) {
-            playerViewModel.setCurrentPath(currentPath, true)
-            val index = playerViewModel.getQueue().indexOfFirst { it.path == currentPath }
-            if (index != -1) {
-                playerViewModel.setCurrentIndex(index)
+        val currentMediaItem = playerViewModel.exoPlayer.currentMediaItem?.localConfiguration?.uri?.toString()
+        if (currentPath != currentMediaItem ) {
+            if (playerViewModel.exoPlayer.currentMediaItem == null) {
+                playerViewModel.playMusic(currentPath)
             }
+            playerViewModel.setCurrentPath(currentPath, true)
         }
         musicFile = getMusicFileFromPath(context, currentPath.toString())
-
-        if (playerViewModel.isFirstTimeEntered && !playerViewModel.isPlaying.value) {
-            playerViewModel.playMusic(currentPath)
-        }
-        playerViewModel.isFirstTimeEntered = false
     }
 
-    val painter = albumPainter(musicFile, context)
+
+    val painter =  albumPainter(musicFile, context)
 
     Box(
         modifier = Modifier
@@ -94,11 +87,12 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
             if (musicFile != null) {
                 MusicScreenTopBar(isPlaying = playerViewModel.isPlaying.value,
                     onBackClick = {navController.navigateUp()},
-                    onSettingsClick = { Log.d("MusicScreen", "Settings icon clicked") }  )
+                    onSettingsClick = { }  )
 
                 Column (
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
                         .padding(horizontal = 32.dp)
                 ) {
                     Image(

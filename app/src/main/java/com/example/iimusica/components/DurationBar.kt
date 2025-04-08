@@ -10,7 +10,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.utils.formatDuration
-import androidx.annotation.OptIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -20,11 +19,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.media3.common.Player
-import androidx.media3.common.util.UnstableApi
 import com.example.iimusica.screens.PlayerViewModel
 
 
-@OptIn(UnstableApi::class)
 @Composable
 fun DurationBar(duration: Long, playerViewModel: PlayerViewModel, isMiniPlayer: Boolean = false) {
 
@@ -36,7 +33,7 @@ fun DurationBar(duration: Long, playerViewModel: PlayerViewModel, isMiniPlayer: 
     DisposableEffect(playerViewModel.exoPlayer, duration) {
         val listener = object : Player.Listener {
             override fun onPlaybackStateChanged(playbackState: Int) {
-                if (playbackState == Player.STATE_ENDED) {
+                if (playbackState == Player.STATE_ENDED && playerViewModel.exoPlayer.currentMediaItem != null) {
                     playerViewModel.playNext()
                 }
             }

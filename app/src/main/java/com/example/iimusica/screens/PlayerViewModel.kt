@@ -9,9 +9,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.common.MediaItem
 import com.example.iimusica.utils.MusicFile
 import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.setValue
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 
@@ -41,28 +39,31 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     private val _currentPath = mutableStateOf<String?>(null)
     val currentPath: State<String?> = _currentPath
 
-    var isFirstTimeEntered by mutableStateOf(true)
-
     @OptIn(UnstableApi::class)
-    fun playMusic(path: String) {
+    fun playMusic(path: String, shouldPlay : Boolean = true ) {
         try {
             if (path.isEmpty()) {
                 Log.e(TAG, "playMusic called with an empty path.")
                 return
             }
+
             // Update currentIndex if the song is in the queue
             currentIndex = updateIndex(path, queue, currentIndex)
             shuffledIndex = updateIndex(path, shuffledQueue, shuffledIndex)
 
             exoPlayer.stop()
             exoPlayer.clearMediaItems()
-
             exoPlayer.setMediaItem(MediaItem.fromUri(path))
             exoPlayer.prepare()
-            exoPlayer.playWhenReady = true
-            exoPlayer.play()
 
-            _isPlaying.value = true
+            if (shouldPlay) {
+                exoPlayer.playWhenReady = true
+                exoPlayer.play()
+            } else {
+                exoPlayer.playWhenReady = false
+            }
+
+            _isPlaying.value = shouldPlay
             _currentPath.value = path
         }
         catch (e: Exception) {
@@ -85,21 +86,8 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     @OptIn(UnstableApi::class)
     fun playPrevious() {
         val prevIndex = getNextIndex(isNext = false)
-        Log.d("shuffle", "previndex $prevIndex, shuffleindex $shuffledIndex and the queue $shuffledQueue")
         exoPlayer.seekTo(0)
-        /*
         if (prevIndex != -1) {
-            val path = if (_isShuffleEnabled.value) shuffledQueue[prevIndex].path else queue[prevIndex].path
-            playMusic(path)
-        } else {
-            endOfQueue() // Stop when reaching the beginning of the queue
-        }*/
-        if (prevIndex != -1) {
-            if (_isShuffleEnabled.value) {
-                shuffledIndex = prevIndex
-            } else {
-                currentIndex = prevIndex
-            }
             val path = if (_isShuffleEnabled.value) shuffledQueue[prevIndex].path else queue[prevIndex].path
             playMusic(path)
         } else {
@@ -145,6 +133,9 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
             }
             else -> -1 // Default case if mode is undefined
         }
+        if (isShuffle) {
+            shuffledIndex = newIndex
+        }
         return  newIndex
     }
 
@@ -177,6 +168,8 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 shuffledQueue.clear()
                 shuffledQueue.addAll(queue.shuffled())
             }
+            shuffledIndex = updateIndex(_currentPath.value ?: "", shuffledQueue, shuffledIndex)
+
         }
     }
 
@@ -220,7 +213,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         queue.addAll(newQueue)
         currentIndex = startIndex
 
-        if (_isShuffleEnabled.value) {
+        if (_isShuffleEnabled.value || shuffledQueue.isEmpty()) {
             shuffledQueue.clear()
             shuffledQueue.addAll(newQueue.shuffled())
         }
@@ -237,10 +230,6 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         _currentPath.value = path
     }
 
-    fun setCurrentIndex(ind : Int) {
-        currentIndex = ind
-    }
-
     private fun updateIndex(path: String, queue: List<MusicFile>, currentIndex: Int): Int {
         return queue.indexOfFirst { it.path == path }.takeIf { it >= 0 } ?: currentIndex
     }
@@ -251,6 +240,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     }
     */
     fun getQueue(): List<MusicFile> = queue.toList()
+
     // fun getCurrentIndex(): Int = currentIndex
 
     override fun onCleared() {
