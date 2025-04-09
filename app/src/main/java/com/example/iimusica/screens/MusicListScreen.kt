@@ -3,34 +3,34 @@
 package com.example.iimusica.screens
 
 import android.content.Context
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateOffsetAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.iimusica.components.ButtonReload
+import com.example.iimusica.components.InfoBox
 import com.example.iimusica.components.Loader
+import com.example.iimusica.components.MessageType
 import com.example.iimusica.utils.MusicFile
 import com.example.iimusica.components.MusicList
 import com.example.iimusica.components.MusicTopBar
 import com.example.iimusica.utils.SortOption
 import com.example.iimusica.utils.sortFiles
 import com.example.iimusica.ui.theme.LocalAppColors
-import com.example.iimusica.ui.theme.Typography
-import kotlinx.coroutines.delay
 
 
 @Composable
@@ -46,6 +46,7 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
     val isDescending by viewModel.isDescending
 
     val appColors = LocalAppColors.current
+
 
     fun onSortOptionSelected(option: SortOption) {
         viewModel.setSortOption(option)
@@ -78,29 +79,41 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
         }
 
     }
-    val targetOffset = if (!viewModel.isFirstTimeEnteredMusic) Offset(0f, 0f) else Offset(0f, 200f)
+    // Get the screen height using LocalDensity
+    val screenHeight = with(LocalDensity.current) { LocalConfiguration.current.screenHeightDp.dp.toPx() }
+    // Set the initial offset to be off-screen (below the screen)
+    val targetOffset = if (!viewModel.isFirstTimeEnteredMusic) Offset(0f, 0f) else Offset(0f, screenHeight)
+
+    // Use the animation to slide the MiniPlayer in from off-screen
     val offset by animateOffsetAsState(
         targetValue = targetOffset,
-        animationSpec = tween(durationMillis = 500),
+        animationSpec = tween(durationMillis = 1000, delayMillis = 0),
         label = "MiniPlayerSlideIn"
     )
+
     var animationComplete by remember { mutableStateOf(false) }
-    // Use LaunchedEffect to reset flag after animation completes
-    LaunchedEffect(offset) {
-        if (offset == targetOffset && viewModel.isFirstTimeEnteredMusic) {
+
+    // Reset flag after animation completes
+    LaunchedEffect(offset, playerViewModel.isPlaying.value) {
+        if (offset == targetOffset && viewModel.isFirstTimeEnteredMusic && playerViewModel.isPlaying.value) {
             animationComplete = true
         }
     }
 
-    // Only reset the flag after animation is complete
+    // Reset the flag after animation is complete
     LaunchedEffect(animationComplete) {
         if (animationComplete) {
-            delay(3000)  // Add a small delay to make sure animation completes before flag reset
             viewModel.isFirstTimeEnteredMusic = false
         }
     }
 
     val intOffset = IntOffset(offset.x.toInt(), offset.y.toInt())
+    val fabOffsetY by animateDpAsState(
+        targetValue = if (playerViewModel.isPlaying.value || animationComplete) 100.dp else 0.dp,
+        animationSpec = tween(durationMillis = 1000),
+        label = "FABOffset"
+    )
+
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             topBar = {
@@ -118,7 +131,9 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
             },
 
             floatingActionButton = {
-                ButtonReload(playerViewModel, viewModel, context)
+                Box(modifier = Modifier.offset(y = fabOffsetY)) {
+                    ButtonReload(playerViewModel, viewModel, context)
+                }
             },
         ) { padding ->
             Box(
@@ -132,26 +147,23 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
                 if (isLoading) {
                     Loader(modifier = Modifier.align(Alignment.Center))
                 } else if (errorMessage.isNotEmpty()) {
-                    Text(
-                        text = "There was an error $errorMessage",
-                        color = appColors.font,
-                        fontSize = 40.sp,
-                        modifier = Modifier.align(Alignment.Center),
-
-
-                        )
+                    InfoBox(
+                        message = "There was an error $errorMessage",
+                        type = MessageType.Error,
+                    )
                 } else {
-                    if (sortedFiles.isEmpty()) {
-                        Text(
-                            "|| No music files found ||", color = appColors.font,
-                            fontSize = Typography.bodyLarge.fontSize,
-                            fontFamily = Typography.bodyLarge.fontFamily,
-                            fontWeight = Typography.bodyLarge.fontWeight,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
-                                .padding(vertical = 128.dp)
+                    if (mFiles.isEmpty()) {
+                        InfoBox(
+                            message = "No files found on your device. Please download them to your storage",
+                            type = MessageType.Warning,
                         )
+                    }
 
+                    else if (sortedFiles.isEmpty()) {
+                            InfoBox(
+                                message = "All files were sorted and filtered out",
+                                type = MessageType.Info,
+                            )
                     } else {
                         if (playerViewModel.getQueue().isEmpty()) {
                             playerViewModel.setQueue(sortedFiles)  // Initialize the queue with sorted files only if it's empty
@@ -167,7 +179,13 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
                 }
             }
         }
-        Box(modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter).zIndex(1f).offset { intOffset }) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .zIndex(1f)
+                .offset { intOffset }
+        ) {
             MiniPlayer(playerViewModel = playerViewModel, navController = navController)
         }
     }

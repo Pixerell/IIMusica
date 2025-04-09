@@ -27,7 +27,9 @@ import com.example.iimusica.components.ButtonPrevious
 import com.example.iimusica.components.ButtonRepeat
 import com.example.iimusica.components.ButtonShuffle
 import com.example.iimusica.components.DurationBar
+import com.example.iimusica.components.InfoBox
 import com.example.iimusica.components.MarqueeText
+import com.example.iimusica.components.MessageType
 import com.example.iimusica.components.MusicScreenTopBar
 import com.example.iimusica.components.QueuePanel
 import com.example.iimusica.ui.theme.LocalAppColors
@@ -84,11 +86,11 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
             modifier = Modifier
                 .fillMaxSize(),
         ) {
-            if (musicFile != null) {
-                MusicScreenTopBar(isPlaying = playerViewModel.isPlaying.value,
-                    onBackClick = {navController.navigateUp()},
-                    onSettingsClick = { }  )
+            MusicScreenTopBar(isPlaying = playerViewModel.isPlaying.value,
+                onBackClick = {navController.navigateUp()},
+                onSettingsClick = { }  )
 
+            if (musicFile != null) {
                 Column (
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
@@ -141,7 +143,11 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
                 }
 
             } else {
-                Text(text = "Error: Music file not found", color = appColors.font)
+                InfoBox(
+                    message = "Music file was not found",
+                    type = MessageType.Error,
+                    mainBoxColor = appColors.backgroundDarker
+                )
             }
         }
         QueuePanel(playerViewModel, isPanelExpanded, togglePanelState,
