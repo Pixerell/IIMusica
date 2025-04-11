@@ -84,7 +84,7 @@ fun extractMusicFileFromCursor(cursor: Cursor): MusicFile? {
     val dateAdded = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED))
 
     val formattedDuration = formatDuration(duration)
-    Log.d("MusicFiles", "Found: $name $artist")
+    Log.d("MusicFiles", "Found: $name $artist $album $albumId")
 
     return MusicFile(name, formattedDuration, path, artist, null, album, albumId, size, dateAdded)
 }

@@ -15,9 +15,25 @@ fun getAlbumArtBitmap(context: Context, musicFile: MusicFile): Bitmap? {
         return null
     }
 
+    // Try retrieving embedded album art from the media file, no need to mix albums
+    try {
+        val retriever = MediaMetadataRetriever()
+        retriever.setDataSource(musicFile.path)
+        val art = retriever.embeddedPicture
+        retriever.release()
+        if (art != null) {
+            Log.d("MusicFiles", "Got the art from retriever for ${musicFile.name}")
+            return BitmapFactory.decodeByteArray(art, 0, art.size)
+        } else {
+            Log.d("MusicFiles", "No embedded album art found for ${musicFile.name}")
+        }
+    } catch (e: Exception) {
+        Log.e("MusicFiles", "Failed to get album art from file metadata | ${e.message}")
+    }
+
     val albumArtUri = "content://media/external/audio/albumart/${musicFile.albumId}".toUri()
 
-    // Try fetching album art from content URI
+    // Fallback: Try fetching album art from content URI
     try {
         context.contentResolver.openInputStream(albumArtUri)?.use { inputStream ->
             return BitmapFactory.decodeStream(inputStream)
@@ -26,16 +42,6 @@ fun getAlbumArtBitmap(context: Context, musicFile: MusicFile): Bitmap? {
         Log.e("MusicFiles", "Failed to get album art from URI: $albumArtUri | ${e.message}")
     }
 
-    // Fallback: Try retrieving embedded album art from the media file
-    try {
-        val retriever = MediaMetadataRetriever()
-        retriever.setDataSource(context, musicFile.path.toUri())
-        val art = retriever.embeddedPicture
-        retriever.release()
-        return if (art != null) BitmapFactory.decodeByteArray(art, 0, art.size) else null
-    } catch (e: Exception) {
-        Log.e("MusicFiles", "Failed to get album art from file metadata | ${e.message}")
-    }
 
     return null
 }

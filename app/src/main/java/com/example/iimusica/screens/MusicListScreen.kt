@@ -64,7 +64,7 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
     // Function to sort files based on the selected option and direction
     fun sortFiles(files: List<MusicFile>, sortOption: SortOption, descending: Boolean): List<MusicFile> {
         val sortedFiles = files.sortFiles(sortOption, descending)  // Perform sorting
-        playerViewModel.setQueue(sortedFiles)
+        playerViewModel.queueManager.setQueue(sortedFiles)
         return sortedFiles  // Return sorted files)
     }
 
@@ -165,8 +165,8 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
                                 type = MessageType.Info,
                             )
                     } else {
-                        if (playerViewModel.getQueue().isEmpty()) {
-                            playerViewModel.setQueue(sortedFiles)  // Initialize the queue with sorted files only if it's empty
+                        if (playerViewModel.queueManager.getQueue().isEmpty()) {
+                            playerViewModel.queueManager.setQueue(sortedFiles)  // Initialize the queue with sorted files only if it's empty
                         }
                         MusicList(
                             musicFiles = sortedFiles,

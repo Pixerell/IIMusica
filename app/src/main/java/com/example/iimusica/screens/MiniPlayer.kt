@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,7 +34,7 @@ fun MiniPlayer(playerViewModel: PlayerViewModel, navController: NavController) {
     val context = LocalContext.current
     val appColors = LocalAppColors.current
     val currentPath = playerViewModel.currentPath.value
-    val currentMusic = playerViewModel.getQueue().find { it.path == currentPath }
+    val currentMusic = playerViewModel.queueManager.getQueue().find { it.path == currentPath }
 
     if (currentMusic == null) return
     val painter = albumPainter(currentMusic, context)
@@ -68,7 +67,7 @@ fun MiniPlayer(playerViewModel: PlayerViewModel, navController: NavController) {
             )
 
             Column(
-                modifier = Modifier.padding(horizontal = 16.dp).width(200.dp)
+                modifier = Modifier.padding(horizontal = 16.dp).weight(10f)
             ) {
 
                 MarqueeText(

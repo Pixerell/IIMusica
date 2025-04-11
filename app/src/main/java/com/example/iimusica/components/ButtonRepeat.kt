@@ -16,8 +16,9 @@ import com.example.iimusica.ui.theme.LocalAppColors
 @Composable
 fun ButtonRepeat(playerViewModel: PlayerViewModel, modifier: Modifier) {
     val appColors = LocalAppColors.current
+    val repeatMode = playerViewModel.repeatMode.value
     IconButton(onClick = {playerViewModel.toggleRepeat() },  modifier = modifier.size(28.dp)) {
-        val repeatIcon = when (playerViewModel.exoPlayer.repeatMode) {
+        val repeatIcon = when (repeatMode) {
             ExoPlayer.REPEAT_MODE_OFF -> painterResource(R.drawable.repeatico)
             ExoPlayer.REPEAT_MODE_ALL -> painterResource(R.drawable.repeatico)
             ExoPlayer.REPEAT_MODE_ONE -> painterResource(R.drawable.repeatsongico)

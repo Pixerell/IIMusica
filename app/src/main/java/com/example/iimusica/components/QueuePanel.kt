@@ -105,7 +105,7 @@ fun QueuePanel(
         ) {
             if (isPanelExpanded) {
                 MusicList(
-                    musicFiles = playerViewModel.getQueue(),
+                    musicFiles = playerViewModel.queueManager.getQueue(),
                     navController = rememberNavController(),
                     playerViewModel = playerViewModel
                 )

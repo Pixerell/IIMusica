@@ -53,7 +53,7 @@ fun InfoBox(
     var expanded by remember { mutableStateOf(true) }
     val rotateArrow by animateFloatAsState(if (expanded) 180f else 0f)
 
-    val effectiveBackgroundColor = mainBoxColor ?: appColors.backgroundDarker
+    val effectiveBackgroundColor = mainBoxColor ?: appColors.background
 
     val (icon) = when (type) {
         MessageType.Info -> painterResource(id = R.drawable.infobox) to appColors.icon

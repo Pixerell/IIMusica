@@ -19,6 +19,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.media3.common.Player
+import com.example.iimusica.screens.PlaybackController
 import com.example.iimusica.screens.PlayerViewModel
 
 
@@ -30,26 +31,26 @@ fun DurationBar(duration: Long, playerViewModel: PlayerViewModel, isMiniPlayer: 
     var dragging by remember { mutableStateOf(false) }
     var draggingPosition by remember { mutableLongStateOf(0L) }
 
-    DisposableEffect(playerViewModel.exoPlayer, duration) {
+    DisposableEffect(PlaybackController.getExoPlayer(), duration) {
         val listener = object : Player.Listener {
             override fun onPlaybackStateChanged(playbackState: Int) {
-                if (playbackState == Player.STATE_ENDED && playerViewModel.exoPlayer.currentMediaItem != null) {
+                if (playbackState == Player.STATE_ENDED && PlaybackController.getExoPlayer().currentMediaItem != null) {
                     playerViewModel.playNext()
                 }
             }
         }
-        playerViewModel.exoPlayer.addListener(listener)
+        PlaybackController.getExoPlayer().addListener(listener)
 
         onDispose {
-            playerViewModel.exoPlayer.removeListener(listener)
+            PlaybackController.getExoPlayer().removeListener(listener)
         }
     }
 
     // Position tracking coroutine
-    LaunchedEffect(playerViewModel.exoPlayer, duration) {
+    LaunchedEffect(PlaybackController.getExoPlayer(), duration) {
         while (true) {
             if (!dragging) {
-                currentPosition = playerViewModel.exoPlayer.currentPosition
+                currentPosition = PlaybackController.getExoPlayer().currentPosition
                 if (currentPosition >= duration - 500) {
                     playerViewModel.playNext()
                 }
@@ -76,7 +77,6 @@ fun DurationBar(duration: Long, playerViewModel: PlayerViewModel, isMiniPlayer: 
     }
 
     CustomSlider(
-        playerViewModel = playerViewModel,
         duration = duration,
         currentPosition = currentPosition,
         onDragging = { isDragging, position ->

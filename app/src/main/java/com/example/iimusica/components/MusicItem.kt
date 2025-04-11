@@ -91,11 +91,7 @@ fun MusicItem(music: MusicFile,
                             }
                         }
                     }
-
-                    // Update the last tap time
                     lastTapTime = currentTime
-
-
             }
             .padding(vertical = 2.dp)
             .then(
@@ -110,18 +106,17 @@ fun MusicItem(music: MusicFile,
             model = music.albumArtUri ?: R.drawable.default_image
         )
 
-        val imageModifier = if (music.albumArtUri == null) {
-            Modifier.size(60.dp) // Smaller size for the default image
-        } else {
-            Modifier.size(80.dp) // Regular size for other images
-        }
-
-
-        Box(
+        BoxWithConstraints(
             modifier = Modifier
-                .size(80.dp)  // Fixed size for the Box that wraps the image
+                .size(80.dp) // This still defines a fixed max constraint
                 .wrapContentSize(Alignment.Center)
         ) {
+            val imageModifier = if (music.albumArtUri == null) {
+                Modifier.size(this.maxWidth * 0.75f) // Smaller for default image
+            } else {
+                Modifier.size(this.maxWidth) // Full size for other images
+            }
+
             Image(
                 painter = painter,
                 contentDescription = "Album Art",
@@ -131,6 +126,7 @@ fun MusicItem(music: MusicFile,
                 contentScale = ContentScale.FillBounds
             )
         }
+
 
         Column(
             modifier = Modifier

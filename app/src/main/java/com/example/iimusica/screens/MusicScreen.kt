@@ -1,7 +1,6 @@
 package com.example.iimusica.screens
 
 
-import androidx.annotation.OptIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
@@ -19,7 +18,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.example.iimusica.components.ButtonNext
 import com.example.iimusica.components.ButtonPlayPause
@@ -39,7 +37,6 @@ import com.example.iimusica.utils.getMusicFileFromPath
 import com.example.iimusica.utils.parseDuration
 
 
-@OptIn(UnstableApi::class)
 @Composable
 fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: NavController) {
 
@@ -54,12 +51,18 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
     }
 
     LaunchedEffect(currentPath) {
-        val currentMediaItem = playerViewModel.exoPlayer.currentMediaItem?.localConfiguration?.uri?.toString()
+        val currentMediaItem = PlaybackController.getExoPlayer().currentMediaItem?.localConfiguration?.uri?.toString()
         if (currentPath != currentMediaItem ) {
-            if (playerViewModel.exoPlayer.currentMediaItem == null) {
+            playerViewModel.setCurrentPath(currentPath, true)
+            if (currentMediaItem == null) {
                 playerViewModel.playMusic(currentPath)
             }
-            playerViewModel.setCurrentPath(currentPath, true)
+            else {
+                with(playerViewModel.queueManager) {
+                    setCurrentIndex(updateIndex(currentPath, getQueue(), getCurrentIndex()))
+                    setShuffledIndex(updateIndex(currentPath, getShuffledQueue(), getShuffledIndex()))
+                }
+            }
         }
         musicFile = getMusicFileFromPath(context, currentPath.toString())
     }
@@ -97,15 +100,22 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
                         .fillMaxWidth()
                         .padding(horizontal = 32.dp)
                 ) {
-                    Image(
-                        painter = painter,
-                        contentDescription = "Album Art",
+                    BoxWithConstraints(
                         modifier = Modifier
-                            .size(500.dp)
-                            .padding(top = 64.dp)
                             .fillMaxWidth()
-                            .align(Alignment.CenterHorizontally)
-                    )
+                            .padding(top = 64.dp)
+                    ) {
+                        val imageSize = this.maxWidth * 0.95f
+
+                        Image(
+                            painter = painter,
+                            contentDescription = "Album Art",
+                            modifier = Modifier
+                                .size(imageSize)
+                                .align(Alignment.Center)
+                        )
+                    }
+
 
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -134,11 +144,11 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = (Alignment.CenterVertically)
                     ) {
-                        ButtonShuffle(playerViewModel, modifier = Modifier.weight(1f))
-                        ButtonPrevious(playerViewModel, modifier = Modifier.weight(1f))
+                        ButtonShuffle(playerViewModel, modifier = Modifier.weight(1f).size(28.dp))
+                        ButtonPrevious(playerViewModel, modifier = Modifier.weight(1f).size(28.dp))
                         ButtonPlayPause(playerViewModel)
-                        ButtonNext(playerViewModel, modifier = Modifier.weight(1f))
-                        ButtonRepeat(playerViewModel, modifier = Modifier.weight(1f))
+                        ButtonNext(playerViewModel, modifier = Modifier.weight(1f).size(28.dp))
+                        ButtonRepeat(playerViewModel, modifier = Modifier.weight(1f).size(28.dp))
                     }
                 }
 

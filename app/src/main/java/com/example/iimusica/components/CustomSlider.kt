@@ -19,13 +19,12 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
-import com.example.iimusica.screens.PlayerViewModel
+import com.example.iimusica.screens.PlaybackController
 import com.example.iimusica.ui.theme.LocalAppColors
 
 @Composable
 @OptIn(UnstableApi::class)
 fun CustomSlider(
-    playerViewModel: PlayerViewModel,
     duration: Long,
     currentPosition: Long,
     onDragging: (Boolean, Long) -> Unit,
@@ -55,7 +54,7 @@ fun CustomSlider(
                         onDragging(true, position.toLong())
                                   },
                     onDragEnd = {
-                        playerViewModel.exoPlayer.seekTo(position.toLong())
+                        PlaybackController.getExoPlayer().seekTo(position.toLong())
                         onDragging(false, position.toLong())
 
                     },
@@ -75,7 +74,7 @@ fun CustomSlider(
                 detectTapGestures(
                     onTap = { change ->
                         position = (change.x / sliderWidth.floatValue) * duration
-                        playerViewModel.exoPlayer.seekTo(position.toLong())
+                        PlaybackController.getExoPlayer().seekTo(position.toLong())
                         onDragging(false, position.toLong())
                     }
                 )
