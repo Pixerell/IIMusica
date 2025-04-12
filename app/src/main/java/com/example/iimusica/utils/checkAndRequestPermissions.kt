@@ -27,6 +27,12 @@ fun checkAndRequestPermissions(activity: Activity) {
         ) {
             permissions.add(Manifest.permission.READ_MEDIA_AUDIO)
         }
+
+        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.POST_NOTIFICATIONS)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            permissions.add(Manifest.permission.POST_NOTIFICATIONS)
+        }
     }
 
     if (permissions.isNotEmpty()) {

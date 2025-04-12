@@ -1,9 +1,7 @@
 package com.example.iimusica.components
 
 import android.net.Uri
-import androidx.annotation.OptIn
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -14,27 +12,21 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import androidx.compose.foundation.Image
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.media3.common.util.UnstableApi
 import com.example.iimusica.utils.MusicFile
 import com.example.iimusica.R
 import com.example.iimusica.screens.PlayerViewModel
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.example.iimusica.utils.LocalDismissSearch
 
-@OptIn(UnstableApi::class)
+
 @Composable
 fun MusicItem(music: MusicFile,
               navController: NavController,
@@ -50,48 +42,33 @@ fun MusicItem(music: MusicFile,
     }
 
     val currentRoute = navController.currentBackStackEntry?.destination?.route
+    val dismissSearch = LocalDismissSearch.current
 
-    // State for handling single and double click
-    var lastTapTime by remember { mutableLongStateOf(0L) }
-    val doubleTapThreshold  = 500L // in milliseconds
-    val coroutineScope = rememberCoroutineScope()
-
-    var isDoubleTapDetected by remember { mutableStateOf(false) }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable {
-                val currentTime = System.currentTimeMillis()
-
-                    val isDoubleTap = currentTime - lastTapTime < doubleTapThreshold
-
-                if (isDoubleTap) {
-                        isDoubleTapDetected = true
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = {
+                        dismissSearch()
+                        if (music.path == playerViewModel.currentPath.value) {
+                            playerViewModel.togglePlayPause()
+                        } else {
+                            playerViewModel.playMusic(music.path)
+                            playerViewModel.setCurrentPath(music.path, false)
+                        }
+                    },
+                    onDoubleTap = {
+                        dismissSearch()
                         if (currentRoute != null) {
                             playerViewModel.setCurrentPath(music.path, false)
-
                             navController.navigate("music_detail/${Uri.encode(music.path)}") {
                                 launchSingleTop = true
                             }
                         }
-                    } else {
-                        isDoubleTapDetected = false
-
-                        coroutineScope.launch {
-                            delay(doubleTapThreshold  / 2)
-
-                            if (!isDoubleTapDetected) {
-                                if (music.path == playerViewModel.currentPath.value) {
-                                    playerViewModel.togglePlayPause()
-                                } else {
-                                    playerViewModel.playMusic(music.path)
-                                    playerViewModel.setCurrentPath(music.path, false)
-                                }
-                            }
-                        }
                     }
-                    lastTapTime = currentTime
+                )
             }
             .padding(vertical = 2.dp)
             .then(

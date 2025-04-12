@@ -7,6 +7,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateOffsetAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -14,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
@@ -31,11 +33,11 @@ import com.example.iimusica.components.MusicTopBar
 import com.example.iimusica.utils.SortOption
 import com.example.iimusica.utils.sortFiles
 import com.example.iimusica.ui.theme.LocalAppColors
+import com.example.iimusica.utils.LocalDismissSearch
 
 
 @Composable
 fun MusicListScreen(navController: NavController, context: Context, toggleTheme:() -> Unit, viewModel: MusicViewModel = viewModel(), playerViewModel: PlayerViewModel) {
-    var searchQuery by remember { mutableStateOf("") }
     var isSearching by remember { mutableStateOf(false) }
 
     val mFiles by viewModel.mFiles
@@ -68,7 +70,7 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
         return sortedFiles  // Return sorted files)
     }
 
-    val filteredFiles by remember { derivedStateOf { filterFiles(mFiles, searchQuery) } }
+    val filteredFiles by remember { derivedStateOf { filterFiles(mFiles, viewModel.searchQuery.value) } }
     val sortedFiles by remember { derivedStateOf { sortFiles(filteredFiles, selectedSortOption, isDescending) } }
 
 
@@ -114,12 +116,15 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
         label = "FABOffset"
     )
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier
+        .fillMaxSize())
+
+    {
         Scaffold(
             topBar = {
                 MusicTopBar(
-                    searchQuery = searchQuery,
-                    onSearchQueryChange = { searchQuery = it },
+                    searchQuery = viewModel.searchQuery.value,
+                    onSearchQueryChange = { viewModel.searchQuery.value = it },
                     isSearching = isSearching,
                     onToggleSearch = { isSearching = !isSearching },
                     onSortOptionSelected = { onSortOptionSelected(it) },
@@ -143,6 +148,11 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
                     .background(
                         brush = appColors.accentGradient
                     )
+                    .pointerInput(Unit) {
+                        detectTapGestures(onTap = {
+                            isSearching = false
+                        })
+                    }
             ) {
                 if (isLoading) {
                     Loader(modifier = Modifier.align(Alignment.Center))
@@ -168,11 +178,14 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
                         if (playerViewModel.queueManager.getQueue().isEmpty()) {
                             playerViewModel.queueManager.setQueue(sortedFiles)  // Initialize the queue with sorted files only if it's empty
                         }
-                        MusicList(
-                            musicFiles = sortedFiles,
-                            navController = navController,
-                            playerViewModel = playerViewModel
-                        )
+                        CompositionLocalProvider(LocalDismissSearch provides { isSearching = false }) {
+                            MusicList(
+                                musicFiles = sortedFiles,
+                                navController = navController,
+                                playerViewModel = playerViewModel
+                            )
+                        }
+
 
 
                     }
@@ -185,8 +198,9 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
                 .align(Alignment.BottomCenter)
                 .zIndex(1f)
                 .offset { intOffset }
+
         ) {
-            MiniPlayer(playerViewModel = playerViewModel, navController = navController)
+                MiniPlayer(playerViewModel = playerViewModel, navController = navController)
         }
     }
 }

@@ -24,6 +24,9 @@ class MusicViewModel : ViewModel() {
     private val _errorMessage = mutableStateOf<String?>(null)
     val errorMessage: String get() = _errorMessage.value ?: ""
 
+    private val _searchQuery = mutableStateOf("")
+    val searchQuery: MutableState<String> get() = _searchQuery
+
     private val _selectedSortOption = mutableStateOf(SortOption.NAME)
     val selectedSortOption: MutableState<SortOption> get() = _selectedSortOption
 

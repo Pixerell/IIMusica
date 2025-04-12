@@ -13,6 +13,7 @@ import androidx.compose.runtime.setValue
 import androidx.navigation.compose.rememberNavController
 import com.example.iimusica.screens.PlayerViewModel
 import com.example.iimusica.ui.theme.IIMusicaTheme
+import com.example.iimusica.utils.NotificationUtils
 import com.example.iimusica.utils.checkAndRequestPermissions
 
 class MainActivity : ComponentActivity() {
@@ -23,7 +24,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         checkAndRequestPermissions(this)
         enableEdgeToEdge()
-
+        NotificationUtils.init(applicationContext)
 
         setContent {
             val systemDarkTheme = isSystemInDarkTheme()

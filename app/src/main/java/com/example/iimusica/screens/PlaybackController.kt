@@ -1,6 +1,7 @@
 package com.example.iimusica.screens
 
 import android.app.Application
+import android.content.Context
 import androidx.annotation.OptIn
 import androidx.compose.runtime.IntState
 import androidx.compose.runtime.MutableState
@@ -9,6 +10,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import com.example.iimusica.utils.MusicFile
+import com.example.iimusica.utils.NotificationUtils
 
 object PlaybackController {
 
@@ -18,6 +20,7 @@ object PlaybackController {
     private lateinit var isPlayingState: MutableState<Boolean>
     private lateinit var currentPath: MutableState<String?>
     private lateinit var repeatMode: IntState
+    private lateinit var appContext : Context
 
     fun init(
         application: Application,
@@ -26,6 +29,7 @@ object PlaybackController {
         repeatModeState: IntState
     ) {
         exoPlayer = ExoPlayer.Builder(application).build()
+        appContext = application.applicationContext
         isPlayingState = isPlaying
         currentPath = pathState
         repeatMode = repeatModeState
@@ -55,6 +59,8 @@ object PlaybackController {
             onTrackChange?.invoke(path)
             isPlayingState.value = shouldPlay
             currentPath.value = path
+
+            NotificationUtils.showPlaybackNotification(appContext, shouldPlay)
         } catch (e: Exception) {
             Log.e(TAG, "Error playing music: ${e.message}", e)
         }
@@ -86,9 +92,11 @@ object PlaybackController {
         if (exoPlayer.isPlaying) {
             exoPlayer.pause()
             isPlayingState.value = false
+            NotificationUtils.showPlaybackNotification(appContext, false)
         } else {
             exoPlayer.play()
             isPlayingState.value = true
+            NotificationUtils.showPlaybackNotification(appContext, true)
         }
     }
 
@@ -97,6 +105,7 @@ object PlaybackController {
         isPlayingState.value = false
         exoPlayer.stop()
         exoPlayer.clearMediaItems()
+        NotificationUtils.cancelNotification(appContext)
     }
 
     fun replaceMediaItems(path : String) {
@@ -108,6 +117,7 @@ object PlaybackController {
         isPlayingState.value = false
         exoPlayer.pause()
         exoPlayer.seekTo(0)
+        NotificationUtils.cancelNotification(appContext)
     }
 
     private var onTrackChange: ((String) -> Unit)? = null
