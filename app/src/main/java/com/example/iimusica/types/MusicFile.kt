@@ -1,4 +1,4 @@
-package com.example.iimusica.utils
+package com.example.iimusica.types
 
 import android.graphics.Bitmap
 

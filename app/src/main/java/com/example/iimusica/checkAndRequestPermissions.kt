@@ -1,4 +1,4 @@
-package com.example.iimusica.utils
+package com.example.iimusica
 
 import android.Manifest
 import android.app.Activity

@@ -1,4 +1,4 @@
-package com.example.iimusica.components
+package com.example.iimusica.components.mediacomponents
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -21,11 +21,11 @@ import androidx.compose.runtime.setValue
 import androidx.media3.common.Player
 import com.example.iimusica.screens.PlaybackController
 import com.example.iimusica.screens.PlayerViewModel
+import kotlinx.coroutines.delay
 
 
 @Composable
 fun DurationBar(duration: Long, playerViewModel: PlayerViewModel, isMiniPlayer: Boolean = false) {
-
     val appColors = LocalAppColors.current
     var currentPosition by remember { mutableLongStateOf(0L) }
     var dragging by remember { mutableStateOf(false) }
@@ -55,13 +55,14 @@ fun DurationBar(duration: Long, playerViewModel: PlayerViewModel, isMiniPlayer: 
                     playerViewModel.playNext()
                 }
             }
-            kotlinx.coroutines.delay(200)
+            delay(200)
         }
     }
 
     if (!isMiniPlayer) {
         Row(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .offset(y = (-8).dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -73,7 +74,6 @@ fun DurationBar(duration: Long, playerViewModel: PlayerViewModel, isMiniPlayer: 
             )
             Text(text = formatDuration(duration), color = appColors.font, fontSize = 14.sp)
         }
-
     }
 
     CustomSlider(

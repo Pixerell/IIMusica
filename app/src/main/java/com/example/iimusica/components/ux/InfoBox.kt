@@ -1,4 +1,4 @@
-package com.example.iimusica.components
+package com.example.iimusica.components.ux
 
 
 import androidx.compose.ui.graphics.Color
@@ -67,7 +67,9 @@ fun InfoBox(
     }
 
     Box(
-        modifier = Modifier.fillMaxWidth().padding(32.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(32.dp)
             .shadow(
                 elevation = 4.dp,
                 shape = RoundedCornerShape(20.dp),
@@ -76,12 +78,11 @@ fun InfoBox(
                 clip = false
             )
     ) {
-        Column (
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(shape = RoundedCornerShape(16.dp))
         ) {
-
             Box {
                 Row(
                     modifier = Modifier

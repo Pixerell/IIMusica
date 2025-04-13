@@ -1,4 +1,4 @@
-package com.example.iimusica.utils
+package com.example.iimusica.utils.fetchers
 
 
 import android.content.Context
@@ -6,7 +6,8 @@ import android.database.Cursor
 import android.media.MediaScannerConnection
 import android.provider.MediaStore
 import android.util.Log
-
+import com.example.iimusica.types.MusicFile
+import com.example.iimusica.utils.formatDuration
 
 
 val projection = arrayOf(

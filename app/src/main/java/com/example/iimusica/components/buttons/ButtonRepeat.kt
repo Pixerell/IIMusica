@@ -1,4 +1,4 @@
-package com.example.iimusica.components
+package com.example.iimusica.components.buttons
 
 
 import androidx.compose.foundation.layout.size
@@ -13,21 +13,22 @@ import com.example.iimusica.R
 import com.example.iimusica.screens.PlayerViewModel
 import com.example.iimusica.ui.theme.LocalAppColors
 
+
 @Composable
 fun ButtonRepeat(playerViewModel: PlayerViewModel, modifier: Modifier) {
     val appColors = LocalAppColors.current
     val repeatMode = playerViewModel.repeatMode.value
-    IconButton(onClick = {playerViewModel.toggleRepeat() },  modifier = modifier.size(28.dp)) {
+    IconButton(onClick = { playerViewModel.toggleRepeat() }, modifier = modifier.size(28.dp)) {
         val repeatIcon = when (repeatMode) {
             ExoPlayer.REPEAT_MODE_OFF -> painterResource(R.drawable.repeatico)
             ExoPlayer.REPEAT_MODE_ALL -> painterResource(R.drawable.repeatico)
             ExoPlayer.REPEAT_MODE_ONE -> painterResource(R.drawable.repeatsongico)
             else -> painterResource(R.drawable.repeatico)
         }
-
         Icon(
             painter = repeatIcon,
             contentDescription = "Repeat mode",
-            tint = if (playerViewModel.repeatMode.value != ExoPlayer.REPEAT_MODE_OFF) appColors.active else appColors.icon                            )
+            tint = if (playerViewModel.repeatMode.value != ExoPlayer.REPEAT_MODE_OFF) appColors.active else appColors.icon
+        )
     }
 }

@@ -18,7 +18,14 @@ fun AppNavGraph(
     playerViewModel: PlayerViewModel
 ) {
     NavHost(navController, startDestination = "music_list") {
-        composable("music_list") { MusicListScreen(navController, context, toggleTheme, playerViewModel = playerViewModel) }
+        composable("music_list") {
+            MusicListScreen(
+                navController,
+                context,
+                toggleTheme,
+                playerViewModel = playerViewModel
+            )
+        }
 
         composable("music_detail/{path}") { backStackEntry ->
             val path = Uri.decode(backStackEntry.arguments?.getString("path") ?: "Unknown")

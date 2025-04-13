@@ -1,4 +1,4 @@
-package com.example.iimusica.components
+package com.example.iimusica.components.mediacomponents
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
@@ -32,7 +32,7 @@ import androidx.compose.ui.Alignment
 
 @Composable
 fun QueuePanel(
-    playerViewModel : PlayerViewModel,
+    playerViewModel: PlayerViewModel,
     isPanelExpanded: Boolean,
     togglePanelState: (Boolean) -> Unit,
     modifier: Modifier = Modifier

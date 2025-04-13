@@ -1,4 +1,4 @@
-package com.example.iimusica.components
+package com.example.iimusica.components.mediacomponents
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.BasicTextField
@@ -19,7 +19,11 @@ fun SearchBar(searchQuery: String, onSearchQueryChange: (String) -> Unit) {
     BasicTextField(
         value = searchQuery,
         onValueChange = onSearchQueryChange,
-        textStyle = TextStyle(color = appColors.font, fontSize = Typography.bodyMedium.fontSize, fontFamily = Typography.bodyMedium.fontFamily),
+        textStyle = TextStyle(
+            color = appColors.font,
+            fontSize = Typography.bodyMedium.fontSize,
+            fontFamily = Typography.bodyMedium.fontFamily
+        ),
         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
         keyboardActions = KeyboardActions(),
         modifier = Modifier.fillMaxWidth()
@@ -28,7 +32,11 @@ fun SearchBar(searchQuery: String, onSearchQueryChange: (String) -> Unit) {
     if (searchQuery.isEmpty()) {
         Text(
             text = "Search Music...",
-            style = TextStyle(fontSize = Typography.bodyMedium.fontSize, color = appColors.secondaryFont, fontFamily = Typography.bodyMedium.fontFamily)
+            style = TextStyle(
+                fontSize = Typography.bodyMedium.fontSize,
+                color = appColors.secondaryFont,
+                fontFamily = Typography.bodyMedium.fontFamily
+            )
         )
     }
 }

@@ -7,6 +7,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.media3.exoplayer.ExoPlayer
+import com.example.iimusica.screens.PlaybackController.PlaybackBridge
+import com.example.iimusica.types.PlaybackActionHandler
 
 class PlayerViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -23,6 +25,11 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     val repeatMode: State<Int> get() = _repeatMode
 
     init {
+        PlaybackBridge.actionHandler = object : PlaybackActionHandler {
+            override fun onPlayPause() = togglePlayPause()
+            override fun onPlayNext() = playNext()
+            override fun onPlayPrevious() = playPrevious()
+        }
         PlaybackController.init(
             application,
             _isPlaying,
@@ -42,7 +49,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     )
 
 
-    fun playMusic(path: String, shouldPlay : Boolean = true ) {
+    fun playMusic(path: String, shouldPlay: Boolean = true) {
         PlaybackController.playMusic(path, shouldPlay)
     }
 
@@ -74,7 +81,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     }
 
 
-    fun setCurrentPath(path: String, isReplacing : Boolean) {
+    fun setCurrentPath(path: String, isReplacing: Boolean) {
         if (isReplacing) {
             PlaybackController.replaceMediaItems(path)
         }

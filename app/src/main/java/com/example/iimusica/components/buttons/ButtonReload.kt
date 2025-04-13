@@ -1,4 +1,4 @@
-package com.example.iimusica.components
+package com.example.iimusica.components.buttons
 
 
 import android.content.Context
@@ -34,9 +34,7 @@ fun ButtonReload(playerViewModel: PlayerViewModel, viewModel: MusicViewModel, co
                 .align(Alignment.BottomCenter),
             contentColor = appColors.icon,
             containerColor = appColors.backgroundDarker,
-
-
-            ) {
+        ) {
             Icon(Icons.Default.Refresh, contentDescription = "Refresh Music Files")
         }
     }

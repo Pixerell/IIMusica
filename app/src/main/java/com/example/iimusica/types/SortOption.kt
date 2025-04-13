@@ -1,4 +1,4 @@
-package com.example.iimusica.utils
+package com.example.iimusica.types
 
 enum class SortOption(val displayName: String) {
     NAME("Name"),

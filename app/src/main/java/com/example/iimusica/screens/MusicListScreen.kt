@@ -23,21 +23,28 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.iimusica.components.ButtonReload
-import com.example.iimusica.components.InfoBox
-import com.example.iimusica.components.Loader
-import com.example.iimusica.components.MessageType
-import com.example.iimusica.utils.MusicFile
-import com.example.iimusica.components.MusicList
-import com.example.iimusica.components.MusicTopBar
-import com.example.iimusica.utils.SortOption
+import com.example.iimusica.components.MiniPlayer
+import com.example.iimusica.components.buttons.ButtonReload
+import com.example.iimusica.components.ux.InfoBox
+import com.example.iimusica.components.ux.Loader
+import com.example.iimusica.components.ux.MessageType
+import com.example.iimusica.types.MusicFile
+import com.example.iimusica.components.mediacomponents.MusicList
+import com.example.iimusica.components.mediacomponents.MusicTopBar
+import com.example.iimusica.types.SortOption
 import com.example.iimusica.utils.sortFiles
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.utils.LocalDismissSearch
 
 
 @Composable
-fun MusicListScreen(navController: NavController, context: Context, toggleTheme:() -> Unit, viewModel: MusicViewModel = viewModel(), playerViewModel: PlayerViewModel) {
+fun MusicListScreen(
+    navController: NavController,
+    context: Context,
+    toggleTheme: () -> Unit,
+    viewModel: MusicViewModel = viewModel(),
+    playerViewModel: PlayerViewModel
+) {
     var isSearching by remember { mutableStateOf(false) }
 
     val mFiles by viewModel.mFiles
@@ -64,14 +71,33 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
     }
 
     // Function to sort files based on the selected option and direction
-    fun sortFiles(files: List<MusicFile>, sortOption: SortOption, descending: Boolean): List<MusicFile> {
+    fun sortFiles(
+        files: List<MusicFile>,
+        sortOption: SortOption,
+        descending: Boolean
+    ): List<MusicFile> {
         val sortedFiles = files.sortFiles(sortOption, descending)  // Perform sorting
         playerViewModel.queueManager.setQueue(sortedFiles)
         return sortedFiles  // Return sorted files)
     }
 
-    val filteredFiles by remember { derivedStateOf { filterFiles(mFiles, viewModel.searchQuery.value) } }
-    val sortedFiles by remember { derivedStateOf { sortFiles(filteredFiles, selectedSortOption, isDescending) } }
+    val filteredFiles by remember {
+        derivedStateOf {
+            filterFiles(
+                mFiles,
+                viewModel.searchQuery.value
+            )
+        }
+    }
+    val sortedFiles by remember {
+        derivedStateOf {
+            sortFiles(
+                filteredFiles,
+                selectedSortOption,
+                isDescending
+            )
+        }
+    }
 
 
     // Use LaunchedEffect to launch a coroutine for fetching music files
@@ -82,9 +108,11 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
 
     }
     // Get the screen height using LocalDensity
-    val screenHeight = with(LocalDensity.current) { LocalConfiguration.current.screenHeightDp.dp.toPx() }
+    val screenHeight =
+        with(LocalDensity.current) { LocalConfiguration.current.screenHeightDp.dp.toPx() }
     // Set the initial offset to be off-screen (below the screen)
-    val targetOffset = if (!viewModel.isFirstTimeEnteredMusic) Offset(0f, 0f) else Offset(0f, screenHeight)
+    val targetOffset =
+        if (!viewModel.isFirstTimeEnteredMusic) Offset(0f, 0f) else Offset(0f, screenHeight)
 
     // Use the animation to slide the MiniPlayer in from off-screen
     val offset by animateOffsetAsState(
@@ -116,8 +144,10 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
         label = "FABOffset"
     )
 
-    Box(modifier = Modifier
-        .fillMaxSize())
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    )
 
     {
         Scaffold(
@@ -167,25 +197,24 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
                             message = "No files found on your device. Please download them to your storage",
                             type = MessageType.Warning,
                         )
-                    }
-
-                    else if (sortedFiles.isEmpty()) {
-                            InfoBox(
-                                message = "All files were sorted and filtered out",
-                                type = MessageType.Info,
-                            )
+                    } else if (sortedFiles.isEmpty()) {
+                        InfoBox(
+                            message = "All files were sorted and filtered out",
+                            type = MessageType.Info,
+                        )
                     } else {
                         if (playerViewModel.queueManager.getQueue().isEmpty()) {
                             playerViewModel.queueManager.setQueue(sortedFiles)  // Initialize the queue with sorted files only if it's empty
                         }
-                        CompositionLocalProvider(LocalDismissSearch provides { isSearching = false }) {
+                        CompositionLocalProvider(LocalDismissSearch provides {
+                            isSearching = false
+                        }) {
                             MusicList(
                                 musicFiles = sortedFiles,
                                 navController = navController,
                                 playerViewModel = playerViewModel
                             )
                         }
-
 
 
                     }
@@ -200,7 +229,7 @@ fun MusicListScreen(navController: NavController, context: Context, toggleTheme:
                 .offset { intOffset }
 
         ) {
-                MiniPlayer(playerViewModel = playerViewModel, navController = navController)
+            MiniPlayer(playerViewModel = playerViewModel, navController = navController)
         }
     }
 }

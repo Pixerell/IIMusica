@@ -1,4 +1,4 @@
-package com.example.iimusica.screens
+package com.example.iimusica.components
 
 import android.net.Uri
 import androidx.compose.foundation.Image
@@ -19,14 +19,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
-import com.example.iimusica.components.ButtonNext
-import com.example.iimusica.components.ButtonPlayPause
-import com.example.iimusica.components.ButtonPrevious
-import com.example.iimusica.components.DurationBar
-import com.example.iimusica.components.MarqueeText
+import com.example.iimusica.components.buttons.ButtonNext
+import com.example.iimusica.components.buttons.ButtonPlayPause
+import com.example.iimusica.components.buttons.ButtonPrevious
+import com.example.iimusica.components.mediacomponents.DurationBar
+import com.example.iimusica.components.ux.MarqueeText
+import com.example.iimusica.screens.PlayerViewModel
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
-import com.example.iimusica.utils.albumPainter
+import com.example.iimusica.utils.fetchers.albumPainter
 import com.example.iimusica.utils.parseDuration
 
 @Composable
@@ -51,7 +52,11 @@ fun MiniPlayer(playerViewModel: PlayerViewModel, navController: NavController) {
                 }
             },
     ) {
-        DurationBar(duration = parseDuration(currentMusic.duration.toString()), playerViewModel = playerViewModel, isMiniPlayer = true)
+        DurationBar(
+            duration = parseDuration(currentMusic.duration.toString()),
+            playerViewModel = playerViewModel,
+            isMiniPlayer = true
+        )
 
         Row(
             modifier = Modifier
@@ -67,7 +72,9 @@ fun MiniPlayer(playerViewModel: PlayerViewModel, navController: NavController) {
             )
 
             Column(
-                modifier = Modifier.padding(horizontal = 16.dp).weight(10f)
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .weight(10f)
             ) {
 
                 MarqueeText(
@@ -83,9 +90,13 @@ fun MiniPlayer(playerViewModel: PlayerViewModel, navController: NavController) {
                 )
 
             }
-            ButtonPrevious(playerViewModel, modifier = Modifier.weight(1f).size(18.dp))
+            ButtonPrevious(playerViewModel, modifier = Modifier
+                .weight(1f)
+                .size(18.dp))
             ButtonPlayPause(playerViewModel, isSmallMode = true)
-            ButtonNext(playerViewModel, modifier = Modifier.weight(1f).size(18.dp))
+            ButtonNext(playerViewModel, modifier = Modifier
+                .weight(1f)
+                .size(18.dp))
         }
     }
 }

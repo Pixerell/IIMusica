@@ -1,6 +1,6 @@
-package com.example.iimusica.components
+package com.example.iimusica.components.mediacomponents
 
-import androidx.annotation.OptIn
+
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -18,18 +18,17 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.util.UnstableApi
 import com.example.iimusica.screens.PlaybackController
 import com.example.iimusica.ui.theme.LocalAppColors
 
+
 @Composable
-@OptIn(UnstableApi::class)
 fun CustomSlider(
     duration: Long,
     currentPosition: Long,
     onDragging: (Boolean, Long) -> Unit,
     dragging: Boolean,
-    isMiniPlayer : Boolean
+    isMiniPlayer: Boolean
 ) {
     val appColors = LocalAppColors.current
     val sliderWidth = remember { mutableFloatStateOf(0f) }
@@ -43,7 +42,6 @@ fun CustomSlider(
         }
     }
 
-
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -52,14 +50,15 @@ fun CustomSlider(
                 detectDragGestures(
                     onDragStart = {
                         onDragging(true, position.toLong())
-                                  },
+                    },
                     onDragEnd = {
                         PlaybackController.getExoPlayer().seekTo(position.toLong())
                         onDragging(false, position.toLong())
 
                     },
                     onDragCancel = {
-                        onDragging(false, position.toLong()) },
+                        onDragging(false, position.toLong())
+                    },
                     onDrag = { change, _ ->
                         change.consume()  // Consume the drag event
 

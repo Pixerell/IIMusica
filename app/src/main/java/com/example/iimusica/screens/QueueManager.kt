@@ -5,12 +5,14 @@ import androidx.compose.runtime.MutableState
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
-import com.example.iimusica.utils.MusicFile
+import com.example.iimusica.types.MusicFile
 
-class QueueManager(private val _isShuffleEnabled: MutableState<Boolean>,
-                   private val _currentPath: MutableState<String?>,
-                   private var _repeatMode: MutableState<Int>,
-                   private val exoPlayer: ExoPlayer) {
+class QueueManager(
+    private val _isShuffleEnabled: MutableState<Boolean>,
+    private val _currentPath: MutableState<String?>,
+    private var _repeatMode: MutableState<Int>,
+    private val exoPlayer: ExoPlayer
+) {
 
     private val queue = mutableListOf<MusicFile>()
     private var currentIndex = 0
@@ -22,7 +24,8 @@ class QueueManager(private val _isShuffleEnabled: MutableState<Boolean>,
         _isShuffleEnabled.value = !_isShuffleEnabled.value
 
         if (_isShuffleEnabled.value) {
-            if (shuffledQueue.isEmpty() || shuffledQueue.size != queue.size || shuffledQueue.map { it.path }.toSet() != queue.map { it.path }.toSet()) {
+            if (shuffledQueue.isEmpty() || shuffledQueue.size != queue.size || shuffledQueue.map { it.path }
+                    .toSet() != queue.map { it.path }.toSet()) {
                 shuffledQueue.clear()
                 shuffledQueue.addAll(queue.shuffled())
             }
@@ -50,8 +53,7 @@ class QueueManager(private val _isShuffleEnabled: MutableState<Boolean>,
         if (newQueue.isEmpty()) {
             Log.d("queuemanager", "Empty queue brother")
             return
-        }
-        else if (newQueue != queue) {
+        } else if (newQueue != queue) {
             clearQueue()
             queue.addAll(newQueue)
             currentIndex = startIndex
@@ -63,7 +65,7 @@ class QueueManager(private val _isShuffleEnabled: MutableState<Boolean>,
         return queue.indexOfFirst { it.path == path }.takeIf { it >= 0 } ?: currentIndex
     }
 
-    fun updateIndexes(path : String) {
+    fun updateIndexes(path: String) {
         currentIndex = updateIndex(path, queue, currentIndex)
         shuffledIndex = updateIndex(path, shuffledQueue, shuffledIndex)
     }
@@ -72,12 +74,12 @@ class QueueManager(private val _isShuffleEnabled: MutableState<Boolean>,
     fun getShuffledQueue(): List<MusicFile> = shuffledQueue.toList()
 
     fun getCurrentIndex(): Int = currentIndex
-    fun setCurrentIndex(ind: Int){
+    fun setCurrentIndex(ind: Int) {
         currentIndex = ind
     }
 
     fun getShuffledIndex(): Int = shuffledIndex
-    fun setShuffledIndex(ind: Int){
+    fun setShuffledIndex(ind: Int) {
         shuffledIndex = ind
     }
 

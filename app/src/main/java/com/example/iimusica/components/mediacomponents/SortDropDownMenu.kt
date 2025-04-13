@@ -1,4 +1,4 @@
-package com.example.iimusica.components
+package com.example.iimusica.components.mediacomponents
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -12,9 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
-import com.example.iimusica.utils.SortOption
+import com.example.iimusica.types.SortOption
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SortDropdownMenu(
     expanded: Boolean,
@@ -25,14 +24,11 @@ fun SortDropdownMenu(
 ) {
     val appColors = LocalAppColors.current
 
-    // Sort dropdown
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
         modifier = Modifier.padding(8.dp),
         containerColor = appColors.backgroundDarker,
-
-
     ) {
         SortOption.entries.forEach { option ->
             DropdownMenuItem(
@@ -40,7 +36,7 @@ fun SortDropdownMenu(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = option.displayName,
-                            color =  appColors.font,
+                            color = appColors.font,
                             fontSize = Typography.bodyMedium.fontSize,
                             fontFamily = Typography.bodyMedium.fontFamily
                         )

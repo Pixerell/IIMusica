@@ -7,9 +7,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.iimusica.utils.MusicFile
-import com.example.iimusica.utils.SortOption
-import com.example.iimusica.utils.getAllMusicFiles
+import com.example.iimusica.types.MusicFile
+import com.example.iimusica.types.SortOption
+import com.example.iimusica.utils.fetchers.getAllMusicFiles
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

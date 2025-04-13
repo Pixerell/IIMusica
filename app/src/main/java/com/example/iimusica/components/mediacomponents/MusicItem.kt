@@ -1,4 +1,4 @@
-package com.example.iimusica.components
+package com.example.iimusica.components.mediacomponents
 
 import android.net.Uri
 import androidx.compose.foundation.background
@@ -19,8 +19,9 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
-import com.example.iimusica.utils.MusicFile
+import com.example.iimusica.types.MusicFile
 import com.example.iimusica.R
+import com.example.iimusica.components.ux.AudioVisualizerView
 import com.example.iimusica.screens.PlayerViewModel
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
@@ -28,11 +29,13 @@ import com.example.iimusica.utils.LocalDismissSearch
 
 
 @Composable
-fun MusicItem(music: MusicFile,
-              navController: NavController,
-              isLastItem: Boolean,
-              playerViewModel: PlayerViewModel,
-              isCurrentPlaying: Boolean) {
+fun MusicItem(
+    music: MusicFile,
+    navController: NavController,
+    isLastItem: Boolean,
+    playerViewModel: PlayerViewModel,
+    isCurrentPlaying: Boolean
+) {
 
     val appColors = LocalAppColors.current
     val fontColor = if (isCurrentPlaying) {
@@ -73,9 +76,13 @@ fun MusicItem(music: MusicFile,
             .padding(vertical = 2.dp)
             .then(
                 if (isLastItem) Modifier.shadow(
-                    8.dp, shape = RectangleShape, ambientColor = appColors.font, spotColor = appColors.font
+                    8.dp,
+                    shape = RectangleShape,
+                    ambientColor = appColors.font,
+                    spotColor = appColors.font
                 ) else Modifier
-            )            .background(appColors.background),
+            )
+            .background(appColors.background),
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -116,12 +123,23 @@ fun MusicItem(music: MusicFile,
                 text = music.name,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                style = TextStyle(fontWeight = FontWeight.Bold, fontSize = Typography.bodyMedium.fontSize, color = fontColor, fontFamily = Typography.bodyLarge.fontFamily),
+                style = TextStyle(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = Typography.bodyMedium.fontSize,
+                    color = fontColor,
+                    fontFamily = Typography.bodyLarge.fontFamily
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
             )
-            Text(text = music.artist, style = TextStyle(fontSize = Typography.bodySmall.fontSize, color = appColors.font, fontFamily = Typography.bodySmall.fontFamily),
+            Text(
+                text = music.artist,
+                style = TextStyle(
+                    fontSize = Typography.bodySmall.fontSize,
+                    color = appColors.font,
+                    fontFamily = Typography.bodySmall.fontFamily
+                ),
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier

@@ -1,4 +1,4 @@
-package com.example.iimusica.components
+package com.example.iimusica.components.ux
 
 
 import androidx.compose.foundation.BorderStroke

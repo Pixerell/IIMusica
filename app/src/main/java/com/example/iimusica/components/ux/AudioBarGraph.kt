@@ -1,6 +1,5 @@
-package com.example.iimusica.components
+package com.example.iimusica.components.ux
 
-import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,15 +8,15 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.util.UnstableApi
 import com.example.iimusica.ui.theme.LocalAppColors
 
-@OptIn(UnstableApi::class)
+
 @Composable
 fun AudioBarGraph(audioAmplitude: List<Float>) {
     val barWidth = 1.dp
@@ -28,7 +27,7 @@ fun AudioBarGraph(audioAmplitude: List<Float>) {
         modifier = Modifier
             .height(maxHeight.dp)
             .fillMaxHeight()
-            .clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(8.dp))
             .rotate(180f)
             .padding(16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -36,7 +35,6 @@ fun AudioBarGraph(audioAmplitude: List<Float>) {
 
         // Loop through the audioAmplitude data and create bars
         audioAmplitude.forEach { amplitude ->
-
             Box(
 
                 modifier = Modifier

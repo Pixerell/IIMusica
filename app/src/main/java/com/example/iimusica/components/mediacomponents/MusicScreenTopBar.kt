@@ -1,4 +1,4 @@
-package com.example.iimusica.components
+package com.example.iimusica.components.mediacomponents
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -41,7 +41,12 @@ fun MusicScreenTopBar(isPlaying: Boolean, onBackClick: () -> Unit, onSettingsCli
 
                 .background(appColors.font.copy(alpha = 0.2f))
                 .align(Alignment.BottomCenter)
-                .shadow(8.dp, shape = RectangleShape, ambientColor = appColors.font, spotColor = appColors.font)
+                .shadow(
+                    8.dp,
+                    shape = RectangleShape,
+                    ambientColor = appColors.font,
+                    spotColor = appColors.font
+                )
         )
 
         Row(

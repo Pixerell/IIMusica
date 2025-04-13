@@ -19,21 +19,21 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.iimusica.components.ButtonNext
-import com.example.iimusica.components.ButtonPlayPause
-import com.example.iimusica.components.ButtonPrevious
-import com.example.iimusica.components.ButtonRepeat
-import com.example.iimusica.components.ButtonShuffle
-import com.example.iimusica.components.DurationBar
-import com.example.iimusica.components.InfoBox
-import com.example.iimusica.components.MarqueeText
-import com.example.iimusica.components.MessageType
-import com.example.iimusica.components.MusicScreenTopBar
-import com.example.iimusica.components.QueuePanel
+import com.example.iimusica.components.buttons.ButtonNext
+import com.example.iimusica.components.buttons.ButtonPlayPause
+import com.example.iimusica.components.buttons.ButtonPrevious
+import com.example.iimusica.components.buttons.ButtonRepeat
+import com.example.iimusica.components.buttons.ButtonShuffle
+import com.example.iimusica.components.mediacomponents.DurationBar
+import com.example.iimusica.components.ux.InfoBox
+import com.example.iimusica.components.ux.MarqueeText
+import com.example.iimusica.components.ux.MessageType
+import com.example.iimusica.components.mediacomponents.MusicScreenTopBar
+import com.example.iimusica.components.mediacomponents.QueuePanel
 import com.example.iimusica.ui.theme.LocalAppColors
-import com.example.iimusica.utils.MusicFile
-import com.example.iimusica.utils.albumPainter
-import com.example.iimusica.utils.getMusicFileFromPath
+import com.example.iimusica.types.MusicFile
+import com.example.iimusica.utils.fetchers.albumPainter
+import com.example.iimusica.utils.fetchers.getMusicFileFromPath
 import com.example.iimusica.utils.parseDuration
 
 
@@ -51,16 +51,22 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
     }
 
     LaunchedEffect(currentPath) {
-        val currentMediaItem = PlaybackController.getExoPlayer().currentMediaItem?.localConfiguration?.uri?.toString()
-        if (currentPath != currentMediaItem ) {
+        val currentMediaItem =
+            PlaybackController.getExoPlayer().currentMediaItem?.localConfiguration?.uri?.toString()
+        if (currentPath != currentMediaItem) {
             playerViewModel.setCurrentPath(currentPath, true)
             if (currentMediaItem == null) {
                 playerViewModel.playMusic(currentPath)
-            }
-            else {
+            } else {
                 with(playerViewModel.queueManager) {
                     setCurrentIndex(updateIndex(currentPath, getQueue(), getCurrentIndex()))
-                    setShuffledIndex(updateIndex(currentPath, getShuffledQueue(), getShuffledIndex()))
+                    setShuffledIndex(
+                        updateIndex(
+                            currentPath,
+                            getShuffledQueue(),
+                            getShuffledIndex()
+                        )
+                    )
                 }
             }
         }
@@ -68,7 +74,7 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
     }
 
 
-    val painter =  albumPainter(musicFile, context)
+    val painter = albumPainter(musicFile, context)
 
     Box(
         modifier = Modifier
@@ -89,12 +95,13 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
             modifier = Modifier
                 .fillMaxSize(),
         ) {
-            MusicScreenTopBar(isPlaying = playerViewModel.isPlaying.value,
-                onBackClick = {navController.navigateUp()},
-                onSettingsClick = { }  )
+            MusicScreenTopBar(
+                isPlaying = playerViewModel.isPlaying.value,
+                onBackClick = { navController.navigateUp() },
+                onSettingsClick = { })
 
             if (musicFile != null) {
-                Column (
+                Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -124,7 +131,8 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
 
                         MarqueeText(
                             text = musicFile!!.name,
-                            modifier = Modifier.padding(horizontal = 16.dp))
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
 
                         Text(
                             text = "by ${musicFile!!.artist}",
@@ -134,7 +142,10 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
-                    DurationBar(duration = parseDuration((musicFile?.duration ?: 0L).toString()), playerViewModel)
+                    DurationBar(
+                        duration = parseDuration((musicFile?.duration ?: 0L).toString()),
+                        playerViewModel
+                    )
 
                     Row(
                         modifier = Modifier
@@ -144,11 +155,27 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = (Alignment.CenterVertically)
                     ) {
-                        ButtonShuffle(playerViewModel, modifier = Modifier.weight(1f).size(28.dp))
-                        ButtonPrevious(playerViewModel, modifier = Modifier.weight(1f).size(28.dp))
+                        ButtonShuffle(
+                            playerViewModel, modifier = Modifier
+                                .weight(1f)
+                                .size(28.dp)
+                        )
+                        ButtonPrevious(
+                            playerViewModel, modifier = Modifier
+                                .weight(1f)
+                                .size(28.dp)
+                        )
                         ButtonPlayPause(playerViewModel)
-                        ButtonNext(playerViewModel, modifier = Modifier.weight(1f).size(28.dp))
-                        ButtonRepeat(playerViewModel, modifier = Modifier.weight(1f).size(28.dp))
+                        ButtonNext(
+                            playerViewModel, modifier = Modifier
+                                .weight(1f)
+                                .size(28.dp)
+                        )
+                        ButtonRepeat(
+                            playerViewModel, modifier = Modifier
+                                .weight(1f)
+                                .size(28.dp)
+                        )
                     }
                 }
 
@@ -160,7 +187,9 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
                 )
             }
         }
-        QueuePanel(playerViewModel, isPanelExpanded, togglePanelState,
-            modifier = Modifier.align(Alignment.BottomCenter))
-        }
+        QueuePanel(
+            playerViewModel, isPanelExpanded, togglePanelState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
+}

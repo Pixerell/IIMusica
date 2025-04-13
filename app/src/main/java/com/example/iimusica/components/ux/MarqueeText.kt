@@ -1,7 +1,6 @@
-package com.example.iimusica.components
+package com.example.iimusica.components.ux
 
 
-import androidx.annotation.OptIn
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -16,12 +15,10 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
-import androidx.media3.common.util.UnstableApi
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
 
 
-@OptIn(UnstableApi::class)
 @Composable
 fun MarqueeText(
     text: String,
@@ -77,7 +74,6 @@ fun MarqueeText(
             }
         }
     }
-
     Box(
         modifier = modifier
             .fillMaxWidth()

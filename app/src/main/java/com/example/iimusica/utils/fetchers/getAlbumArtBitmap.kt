@@ -1,4 +1,4 @@
-package com.example.iimusica.utils
+package com.example.iimusica.utils.fetchers
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.util.Log
 import androidx.core.net.toUri
+import com.example.iimusica.types.MusicFile
 
 fun getAlbumArtBitmap(context: Context, musicFile: MusicFile): Bitmap? {
 

@@ -1,4 +1,4 @@
-package com.example.iimusica.components
+package com.example.iimusica.components.mediacomponents
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.size
@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.dp
 import com.example.iimusica.R
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
-import com.example.iimusica.utils.SortOption
+import com.example.iimusica.types.SortOption
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,7 +43,7 @@ fun MusicTopBar(
                         fontFamily = Typography.headlineLarge.fontFamily,
                         fontWeight = Typography.headlineLarge.fontWeight
                     ),
-                    modifier = Modifier.clickable{ toggleTheme() }
+                    modifier = Modifier.clickable { toggleTheme() }
                 )
             }
         },
@@ -85,7 +85,12 @@ fun MusicTopBar(
         },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = appColors.background),
         modifier = Modifier
-            .shadow(16.dp, shape = RectangleShape, ambientColor = appColors.font, spotColor = appColors.font)
+            .shadow(
+                16.dp,
+                shape = RectangleShape,
+                ambientColor = appColors.font,
+                spotColor = appColors.font
+            )
     )
 
 }
