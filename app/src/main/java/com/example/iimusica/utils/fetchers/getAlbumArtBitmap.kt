@@ -6,12 +6,11 @@ import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.util.Log
 import androidx.core.net.toUri
-import com.example.iimusica.types.MusicFile
 
-fun getAlbumArtBitmap(context: Context, musicFile: MusicFile): Bitmap? {
+fun getAlbumArtBitmap(context: Context, albumId: Long, path: String): Bitmap? {
 
     // If the albumId is invalid (0), we won't try to fetch the album art URI
-    if (musicFile.albumId <= 0) {
+    if (albumId <= 0 && albumId != -1337L) {
         Log.d("MusicFiles", "Invalid albumId, skipping content URI fetch.")
         return null
     }
@@ -19,20 +18,20 @@ fun getAlbumArtBitmap(context: Context, musicFile: MusicFile): Bitmap? {
     // Try retrieving embedded album art from the media file, no need to mix albums
     try {
         val retriever = MediaMetadataRetriever()
-        retriever.setDataSource(musicFile.path)
+        retriever.setDataSource(path)
         val art = retriever.embeddedPicture
         retriever.release()
         if (art != null) {
-            Log.d("MusicFiles", "Got the art from retriever for ${musicFile.name}")
+            Log.d("MusicFiles", "Got the art from retriever for $albumId and $path")
             return BitmapFactory.decodeByteArray(art, 0, art.size)
         } else {
-            Log.d("MusicFiles", "No embedded album art found for ${musicFile.name}")
+            Log.d("MusicFiles", "No embedded album art found for $path")
         }
     } catch (e: Exception) {
         Log.e("MusicFiles", "Failed to get album art from file metadata | ${e.message}")
     }
 
-    val albumArtUri = "content://media/external/audio/albumart/${musicFile.albumId}".toUri()
+    val albumArtUri = "content://media/external/audio/albumart/$albumId".toUri()
 
     // Fallback: Try fetching album art from content URI
     try {

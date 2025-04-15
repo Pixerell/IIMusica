@@ -6,7 +6,7 @@ import androidx.compose.runtime.remember
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import com.example.iimusica.R
-import com.example.iimusica.utils.AlbumCache
+import com.example.iimusica.utils.cachers.AlbumCache
 import com.example.iimusica.types.MusicFile
 
 
@@ -20,7 +20,7 @@ fun albumPainter(musicFile: MusicFile?, context: Context): AsyncImagePainter {
     val albumArtBitmap = remember(musicFile) {
         if (isCacheExpired || cachedTimestamp == null) {
             musicFile?.let {
-                val newAlbumArt = getAlbumArtBitmap(context, it)
+                val newAlbumArt = getAlbumArtBitmap(context, musicFile.albumId, musicFile.path)
                 AlbumCache.setAlbumArt(musicFile.path, newAlbumArt)  // Cache it in ViewModel
                 AlbumCache.setAlbumArtTimestamp(musicFile.path, currentTime)  // Update timestamp
                 newAlbumArt

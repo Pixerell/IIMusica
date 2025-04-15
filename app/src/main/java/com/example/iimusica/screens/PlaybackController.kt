@@ -1,7 +1,11 @@
 package com.example.iimusica.screens
 
 import android.app.Application
+import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
+import android.os.IBinder
 import androidx.annotation.OptIn
 import androidx.compose.runtime.IntState
 import androidx.compose.runtime.MutableState
@@ -10,12 +14,12 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import com.example.iimusica.types.MusicFile
-import com.example.iimusica.types.PlaybackActionHandler
-import com.example.iimusica.utils.NotificationUtils
+import com.example.iimusica.utils.notifications.PlaybackService
 
+@UnstableApi
 object PlaybackController {
 
-    private const val TAG = "PlaybackController"
+    private const val TAG = "notifz"
 
     private lateinit var exoPlayer: ExoPlayer
     private lateinit var isPlayingState: MutableState<Boolean>
@@ -23,23 +27,39 @@ object PlaybackController {
     private lateinit var repeatMode: IntState
     private lateinit var appContext: Context
 
+    private var boundService: PlaybackService? = null
+    private var isBound = false
 
-    object PlaybackBridge {
-        var actionHandler: PlaybackActionHandler? = null
+
+    private val connection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as PlaybackService.LocalBinder
+            boundService = binder.getService()
+            exoPlayer = boundService!!.getExoPlayer()
+            isBound = true
+            Log.i(TAG, "Service connected and ExoPlayer bound.")
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            boundService = null
+            exoPlayer.release()
+            isBound = false
+            Log.w(TAG, "Service disconnected.")
+        }
     }
-
 
     fun init(
         application: Application,
         isPlaying: MutableState<Boolean>,
         pathState: MutableState<String?>,
-        repeatModeState: IntState
+        repeatModeState: IntState,
     ) {
-        exoPlayer = ExoPlayer.Builder(application).build()
         appContext = application.applicationContext
         isPlayingState = isPlaying
         currentPath = pathState
         repeatMode = repeatModeState
+        exoPlayer = ExoPlayer.Builder(application).build()
+
     }
 
     fun getExoPlayer(): ExoPlayer = exoPlayer
@@ -51,6 +71,13 @@ object PlaybackController {
                 Log.e(TAG, "playMusic called with an empty path.")
                 return
             }
+            val intent = Intent(appContext, PlaybackService::class.java)
+            appContext.startForegroundService(intent)
+
+            if (!isBound) {
+                appContext.bindService(intent, connection, Context.BIND_AUTO_CREATE)
+            }
+
 
             exoPlayer.stop()
             exoPlayer.clearMediaItems()
@@ -58,15 +85,18 @@ object PlaybackController {
             exoPlayer.prepare()
 
             if (shouldPlay) {
-                exoPlayer.playWhenReady = true
                 exoPlayer.play()
             } else {
                 exoPlayer.playWhenReady = false
             }
-            NotificationUtils.showPlaybackNotification(appContext, true, path)
             onTrackChange?.invoke(path)
             isPlayingState.value = shouldPlay
             currentPath.value = path
+
+
+            if (isBound) {
+                boundService?.getExoPlayer()?.play()
+            }
 
         } catch (e: Exception) {
             Log.e(TAG, "Error playing music: ${e.message}", e)
@@ -99,13 +129,9 @@ object PlaybackController {
         if (exoPlayer.isPlaying) {
             exoPlayer.pause()
             isPlayingState.value = false
-            NotificationUtils.showPlaybackNotification(appContext, false, currentPath.value.toString())
         } else {
             exoPlayer.play()
             isPlayingState.value = true
-            NotificationUtils.showPlaybackNotification(appContext, true,
-                currentPath.value.toString()
-            )
         }
     }
 
@@ -114,7 +140,6 @@ object PlaybackController {
         isPlayingState.value = false
         exoPlayer.stop()
         exoPlayer.clearMediaItems()
-        NotificationUtils.cancelNotification(appContext)
     }
 
     fun replaceMediaItems(path: String) {
@@ -126,7 +151,6 @@ object PlaybackController {
         isPlayingState.value = false
         exoPlayer.pause()
         exoPlayer.seekTo(0)
-        NotificationUtils.cancelNotification(appContext)
     }
 
     private var onTrackChange: ((String) -> Unit)? = null

@@ -12,11 +12,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.media3.common.util.UnstableApi
 import androidx.navigation.compose.rememberNavController
 import com.example.iimusica.screens.PlayerViewModel
 import com.example.iimusica.ui.theme.IIMusicaTheme
-import com.example.iimusica.utils.NotificationUtils
 
+@UnstableApi
 class MainActivity : ComponentActivity() {
     // keep only one player across the app and pass it down as props
     private val playerViewModel: PlayerViewModel by viewModels()
@@ -27,7 +28,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         checkAndRequestPermissions(this)
         enableEdgeToEdge()
-        NotificationUtils.init(applicationContext)
 
         setContent {
             val systemDarkTheme = isSystemInDarkTheme()

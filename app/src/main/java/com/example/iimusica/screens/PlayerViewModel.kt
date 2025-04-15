@@ -7,9 +7,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.media3.exoplayer.ExoPlayer
-import com.example.iimusica.screens.PlaybackController.PlaybackBridge
-import com.example.iimusica.types.PlaybackActionHandler
 
+@androidx.media3.common.util.UnstableApi
 class PlayerViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _isPlaying = mutableStateOf(false)
@@ -24,17 +23,14 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     private val _repeatMode = mutableIntStateOf(ExoPlayer.REPEAT_MODE_OFF)
     val repeatMode: State<Int> get() = _repeatMode
 
+
     init {
-        PlaybackBridge.actionHandler = object : PlaybackActionHandler {
-            override fun onPlayPause() = togglePlayPause()
-            override fun onPlayNext() = playNext()
-            override fun onPlayPrevious() = playPrevious()
-        }
         PlaybackController.init(
             application,
             _isPlaying,
             _currentPath,
-            _repeatMode
+            _repeatMode,
+
         )
         PlaybackController.setQueueUpdateCallback { path ->
             queueManager.updateIndexes(path)

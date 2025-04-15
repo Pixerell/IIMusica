@@ -51,8 +51,10 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.coil.compose)
     implementation(libs.androidx.navigation.compose)
+    // media3
     implementation(libs.androidx.media3.exoplayer)
-    implementation("androidx.media:media:1.7.0")
+    implementation(libs.androidx.media3.ui)
+    implementation(libs.androidx.media3.session)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
