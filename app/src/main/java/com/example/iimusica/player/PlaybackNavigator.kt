@@ -1,4 +1,4 @@
-package com.example.iimusica.screens
+package com.example.iimusica.player
 
 
 import androidx.media3.exoplayer.ExoPlayer

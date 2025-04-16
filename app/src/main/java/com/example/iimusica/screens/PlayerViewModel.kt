@@ -7,32 +7,30 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.media3.exoplayer.ExoPlayer
+import com.example.iimusica.player.PlaybackController
+import com.example.iimusica.player.QueueManager
 
 @androidx.media3.common.util.UnstableApi
-class PlayerViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val _isPlaying = mutableStateOf(false)
-    val isPlaying: State<Boolean> get() = _isPlaying
+class PlayerViewModel(application: Application, val playbackController: PlaybackController) :
+    AndroidViewModel(application) {
 
     private val _isShuffleEnabled = mutableStateOf(false)
     val isShuffleEnabled: State<Boolean> get() = _isShuffleEnabled
 
+    private val _isPlaying = mutableStateOf(false)
     private val _currentPath = mutableStateOf<String?>(null)
-    val currentPath: State<String?> = _currentPath
-
     private val _repeatMode = mutableIntStateOf(ExoPlayer.REPEAT_MODE_OFF)
+
+    val isPlaying: State<Boolean> get() = _isPlaying
+    val currentPath: State<String?> get() = _currentPath
     val repeatMode: State<Int> get() = _repeatMode
 
-
     init {
-        PlaybackController.init(
-            application,
-            _isPlaying,
-            _currentPath,
-            _repeatMode,
+        playbackController.isPlaying = _isPlaying
+        playbackController.pathState = _currentPath
+        playbackController.repeatModeState = _repeatMode
 
-        )
-        PlaybackController.setQueueUpdateCallback { path ->
+        playbackController.setQueueUpdateCallback { path ->
             queueManager.updateIndexes(path)
         }
     }
@@ -41,31 +39,31 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         _isShuffleEnabled = _isShuffleEnabled,
         _currentPath = _currentPath,
         _repeatMode = _repeatMode,
-        exoPlayer = PlaybackController.getExoPlayer()
-    )
+        onRepeatModeChanged = { newMode ->
+            playbackController.exoPlayer?.repeatMode = newMode
+        })
 
 
     fun playMusic(path: String, shouldPlay: Boolean = true) {
-        PlaybackController.playMusic(path, shouldPlay)
+        playbackController.playMusic(path, shouldPlay)
     }
 
     fun playNext() {
         val (queuer, indexer) = queueManager.getNextTrack()
-        PlaybackController.playNext(queuer, indexer)
+        playbackController.playNext(queuer, indexer)
     }
 
     fun playPrevious() {
         val (queuer, indexer) = queueManager.getNextTrack()
-        PlaybackController.playPrevious(queuer, indexer)
+        playbackController.playPrevious(queuer, indexer)
     }
 
-
     fun togglePlayPause() {
-        PlaybackController.togglePlayPause()
+        playbackController.togglePlayPause()
     }
 
     fun stopPlay() {
-        PlaybackController.stopPlay()
+        playbackController.stopPlay()
     }
 
     fun toggleShuffle() {
@@ -76,19 +74,16 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         queueManager.toggleRepeat()
     }
 
-
     fun setCurrentPath(path: String, isReplacing: Boolean) {
         if (isReplacing) {
-            PlaybackController.replaceMediaItems(path)
+            playbackController.replaceMediaItems(path)
         }
         _currentPath.value = path
     }
 
-
     override fun onCleared() {
         super.onCleared()
-        // We don't release the player here as it is managed across multiple screens
+        playbackController.onDestroy()
     }
-
 
 }

@@ -1,4 +1,4 @@
-package com.example.iimusica.screens
+package com.example.iimusica.player
 
 import androidx.annotation.OptIn
 import androidx.compose.runtime.MutableState
@@ -11,14 +11,14 @@ class QueueManager(
     private val _isShuffleEnabled: MutableState<Boolean>,
     private val _currentPath: MutableState<String?>,
     private var _repeatMode: MutableState<Int>,
-    private val exoPlayer: ExoPlayer
+    private val onRepeatModeChanged: (Int) -> Unit
 ) {
 
+    //TODO Make a unified queue while keeping the shuffled order index mapping. No need for 2 queue's
     private val queue = mutableListOf<MusicFile>()
     private var currentIndex = 0
     private val shuffledQueue = mutableListOf<MusicFile>()
     private var shuffledIndex = 0
-
 
     fun toggleShuffle() {
         _isShuffleEnabled.value = !_isShuffleEnabled.value
@@ -40,7 +40,7 @@ class QueueManager(
             ExoPlayer.REPEAT_MODE_ONE -> ExoPlayer.REPEAT_MODE_OFF
             else -> ExoPlayer.REPEAT_MODE_OFF
         }
-        exoPlayer.repeatMode = _repeatMode.value
+        onRepeatModeChanged(_repeatMode.value)
     }
 
     fun clearQueue() {

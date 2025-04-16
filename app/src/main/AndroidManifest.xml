@@ -22,7 +22,7 @@
         android:theme="@style/Theme.IIMusica"
         tools:targetApi="31">
         <service
-            android:name=".utils.notifications.PlaybackService"
+            android:name=".player.PlaybackService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
 

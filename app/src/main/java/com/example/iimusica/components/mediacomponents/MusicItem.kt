@@ -1,6 +1,7 @@
 package com.example.iimusica.components.mediacomponents
 
 import android.net.Uri
+import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
@@ -19,6 +20,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.media3.common.util.UnstableApi
 import com.example.iimusica.types.MusicFile
 import com.example.iimusica.R
 import com.example.iimusica.components.ux.AudioVisualizerView
@@ -28,6 +30,7 @@ import com.example.iimusica.ui.theme.Typography
 import com.example.iimusica.utils.LocalDismissSearch
 
 
+@OptIn(UnstableApi::class)
 @Composable
 fun MusicItem(
     music: MusicFile,

@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.example.iimusica.components.MiniPlayer
 import com.example.iimusica.components.buttons.ButtonReload
@@ -37,6 +38,7 @@ import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.utils.LocalDismissSearch
 
 
+@androidx.annotation.OptIn(UnstableApi::class)
 @Composable
 fun MusicListScreen(
     navController: NavController,

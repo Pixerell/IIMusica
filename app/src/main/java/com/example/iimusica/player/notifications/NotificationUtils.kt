@@ -1,4 +1,4 @@
-package com.example.iimusica.utils.notifications
+package com.example.iimusica.player.notifications
 
 
 import android.app.NotificationChannel
@@ -7,21 +7,17 @@ import android.content.Context
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.PlayerNotificationManager
+import com.example.iimusica.player.PlaybackService.Companion.CHANNEL_ID
+import com.example.iimusica.player.PlaybackService.Companion.NOTIFICATION_ID
 
 
 @UnstableApi
 object NotificationUtils {
-    const val CHANNEL_ID = "music_status_channel"
-    const val NOTIFICATION_ID = 1
     private var isChannelInitialized = false
-
-
     private fun initNotificationChannel(context: Context) {
         if (!isChannelInitialized) {
             val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Music Playback",
-                NotificationManager.IMPORTANCE_LOW
+                CHANNEL_ID, "Music Playback", NotificationManager.IMPORTANCE_LOW
             )
             val manager =
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

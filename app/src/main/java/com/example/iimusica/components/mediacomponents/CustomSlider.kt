@@ -1,6 +1,7 @@
 package com.example.iimusica.components.mediacomponents
 
 
+import androidx.annotation.OptIn
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -18,23 +19,24 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import com.example.iimusica.screens.PlaybackController
+import androidx.media3.common.util.UnstableApi
 import com.example.iimusica.ui.theme.LocalAppColors
 
 
+@OptIn(UnstableApi::class)
 @Composable
 fun CustomSlider(
     duration: Long,
     currentPosition: Long,
     onDragging: (Boolean, Long) -> Unit,
     dragging: Boolean,
-    isMiniPlayer: Boolean
+    isMiniPlayer: Boolean,
+    exoPlayer: androidx.media3.exoplayer.ExoPlayer?
 ) {
     val appColors = LocalAppColors.current
     val sliderWidth = remember { mutableFloatStateOf(0f) }
 
     var position by remember { mutableFloatStateOf(currentPosition.toFloat()) }
-    // Reset the position when the duration or currentPosition changes
     LaunchedEffect(currentPosition) {
         if (!dragging) {
             position = currentPosition.toFloat().coerceIn(0f, duration.toFloat())
@@ -52,7 +54,7 @@ fun CustomSlider(
                         onDragging(true, position.toLong())
                     },
                     onDragEnd = {
-                        PlaybackController.getExoPlayer().seekTo(position.toLong())
+                        exoPlayer?.seekTo(position.toLong())
                         onDragging(false, position.toLong())
 
                     },
@@ -73,7 +75,7 @@ fun CustomSlider(
                 detectTapGestures(
                     onTap = { change ->
                         position = (change.x / sliderWidth.floatValue) * duration
-                        PlaybackController.getExoPlayer().seekTo(position.toLong())
+                        exoPlayer?.seekTo(position.toLong())
                         onDragging(false, position.toLong())
                     }
                 )

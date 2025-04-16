@@ -1,6 +1,7 @@
 package com.example.iimusica.screens
 
 
+import androidx.annotation.OptIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
@@ -18,6 +19,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.example.iimusica.components.buttons.ButtonNext
 import com.example.iimusica.components.buttons.ButtonPlayPause
@@ -37,6 +39,7 @@ import com.example.iimusica.utils.fetchers.getMusicFileFromPath
 import com.example.iimusica.utils.parseDuration
 
 
+@OptIn(UnstableApi::class)
 @Composable
 fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: NavController) {
 
@@ -52,7 +55,7 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
 
     LaunchedEffect(currentPath) {
         val currentMediaItem =
-            PlaybackController.getExoPlayer().currentMediaItem?.localConfiguration?.uri?.toString()
+            playerViewModel.playbackController.exoPlayer!!.currentMediaItem!!.localConfiguration?.uri?.toString()
         if (currentPath != currentMediaItem) {
             playerViewModel.setCurrentPath(currentPath, true)
             if (currentMediaItem == null) {
