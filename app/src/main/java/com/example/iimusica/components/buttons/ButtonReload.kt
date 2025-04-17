@@ -13,10 +13,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.util.UnstableApi
 import com.example.iimusica.screens.MusicViewModel
 import com.example.iimusica.screens.PlayerViewModel
 import com.example.iimusica.ui.theme.LocalAppColors
+import com.example.iimusica.utils.reloadmlist
 
+@UnstableApi
 @Composable
 fun ButtonReload(playerViewModel: PlayerViewModel, viewModel: MusicViewModel, context: Context) {
     val appColors = LocalAppColors.current
@@ -26,8 +29,7 @@ fun ButtonReload(playerViewModel: PlayerViewModel, viewModel: MusicViewModel, co
     ) {
         FloatingActionButton(
             onClick = {
-                playerViewModel.stopPlay()
-                viewModel.loadMusicFiles(context)
+                reloadmlist(playerViewModel, viewModel, context)
             },
             modifier = Modifier
                 .padding(16.dp)

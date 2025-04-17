@@ -64,6 +64,9 @@ class PlayerViewModel(application: Application, val playbackController: Playback
 
     fun stopPlay() {
         playbackController.stopPlay()
+        _isPlaying.value = false
+        _isShuffleEnabled.value = false
+        _currentPath.value = ""
     }
 
     fun toggleShuffle() {

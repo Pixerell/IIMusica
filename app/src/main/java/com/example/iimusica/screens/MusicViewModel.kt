@@ -27,11 +27,22 @@ class MusicViewModel : ViewModel() {
     private val _searchQuery = mutableStateOf("")
     val searchQuery: MutableState<String> get() = _searchQuery
 
+    private val _isSearching = mutableStateOf(false)
+    val isSearching: MutableState<Boolean> get() = _isSearching
+
+    private val _animationComplete = mutableStateOf(false)
+    val animationComplete: MutableState<Boolean> get() = _animationComplete
+
     private val _selectedSortOption = mutableStateOf(SortOption.NAME)
     val selectedSortOption: MutableState<SortOption> get() = _selectedSortOption
 
     private val _isDescending = mutableStateOf(false)
     val isDescending: MutableState<Boolean> get() = _isDescending
+
+    private val _miniPlayerVisible = mutableStateOf(false)
+    val miniPlayerVisible: MutableState<Boolean> get() = _miniPlayerVisible
+
+
 
     fun setSortOption(option: SortOption) {
         if (_selectedSortOption.value == option) {
@@ -40,6 +51,10 @@ class MusicViewModel : ViewModel() {
             _selectedSortOption.value = option
             _isDescending.value = false
         }
+    }
+
+    fun toggleMiniPlayerVisibility() {
+        _miniPlayerVisible.value = !_miniPlayerVisible.value
     }
 
     private var lastSuccessfulFiles: List<MusicFile> = emptyList()

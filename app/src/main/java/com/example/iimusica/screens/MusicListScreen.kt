@@ -11,6 +11,10 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.PositionalThreshold
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,6 +40,7 @@ import com.example.iimusica.types.SortOption
 import com.example.iimusica.utils.sortFiles
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.utils.LocalDismissSearch
+import com.example.iimusica.utils.reloadmlist
 
 
 @androidx.annotation.OptIn(UnstableApi::class)
@@ -47,17 +52,29 @@ fun MusicListScreen(
     viewModel: MusicViewModel = viewModel(),
     playerViewModel: PlayerViewModel
 ) {
-    var isSearching by remember { mutableStateOf(false) }
-
+    var isSearching by viewModel.isSearching
     val mFiles by viewModel.mFiles
     val isLoading by viewModel.isLoading
     val errorMessage = viewModel.errorMessage
-
     val selectedSortOption by viewModel.selectedSortOption
     val isDescending by viewModel.isDescending
-
     val appColors = LocalAppColors.current
 
+    val state = rememberPullToRefreshState()
+
+
+    // Get the screen height using LocalDensity
+    val screenHeight =
+        with(LocalDensity.current) { LocalConfiguration.current.screenHeightDp.dp.toPx() }
+    val targetOffset =
+        if (!viewModel.isFirstTimeEnteredMusic) Offset(0f, 0f) else Offset(0f, screenHeight)
+    val offset by animateOffsetAsState(
+        targetValue = targetOffset,
+        animationSpec = tween(durationMillis = 1000, delayMillis = 0),
+        label = "MiniPlayerSlideIn"
+    )
+    var animationComplete by viewModel.animationComplete
+    val intOffset = IntOffset(offset.x.toInt(), offset.y.toInt())
 
     fun onSortOptionSelected(option: SortOption) {
         viewModel.setSortOption(option)
@@ -72,36 +89,34 @@ fun MusicListScreen(
         }
     }
 
-    // Function to sort files based on the selected option and direction
+    // Function to sort files based on the selected optfion and direction
     fun sortFiles(
-        files: List<MusicFile>,
-        sortOption: SortOption,
-        descending: Boolean
+        files: List<MusicFile>, sortOption: SortOption, descending: Boolean
     ): List<MusicFile> {
-        val sortedFiles = files.sortFiles(sortOption, descending)  // Perform sorting
-        playerViewModel.queueManager.setQueue(sortedFiles)
-        return sortedFiles  // Return sorted files)
+        val sortedFiles = files.sortFiles(sortOption, descending)
+        return sortedFiles
     }
 
     val filteredFiles by remember {
         derivedStateOf {
             filterFiles(
-                mFiles,
-                viewModel.searchQuery.value
+                mFiles, viewModel.searchQuery.value
             )
         }
     }
     val sortedFiles by remember {
         derivedStateOf {
             sortFiles(
-                filteredFiles,
-                selectedSortOption,
-                isDescending
+                filteredFiles, selectedSortOption, isDescending
             )
         }
     }
 
-
+    val fabOffsetY by animateDpAsState(
+        targetValue = if (!viewModel.miniPlayerVisible.value) 0.dp else 140.dp,
+        animationSpec = tween(durationMillis = 1000),
+        label = "FABOffset"
+    )
     // Use LaunchedEffect to launch a coroutine for fetching music files
     LaunchedEffect(Unit) {
         if (mFiles.isEmpty()) {
@@ -109,29 +124,12 @@ fun MusicListScreen(
         }
 
     }
-    // Get the screen height using LocalDensity
-    val screenHeight =
-        with(LocalDensity.current) { LocalConfiguration.current.screenHeightDp.dp.toPx() }
-    // Set the initial offset to be off-screen (below the screen)
-    val targetOffset =
-        if (!viewModel.isFirstTimeEnteredMusic) Offset(0f, 0f) else Offset(0f, screenHeight)
-
-    // Use the animation to slide the MiniPlayer in from off-screen
-    val offset by animateOffsetAsState(
-        targetValue = targetOffset,
-        animationSpec = tween(durationMillis = 1000, delayMillis = 0),
-        label = "MiniPlayerSlideIn"
-    )
-
-    var animationComplete by remember { mutableStateOf(false) }
-
     // Reset flag after animation completes
     LaunchedEffect(offset, playerViewModel.isPlaying.value) {
         if (offset == targetOffset && viewModel.isFirstTimeEnteredMusic && playerViewModel.isPlaying.value) {
             animationComplete = true
         }
     }
-
     // Reset the flag after animation is complete
     LaunchedEffect(animationComplete) {
         if (animationComplete) {
@@ -139,16 +137,8 @@ fun MusicListScreen(
         }
     }
 
-    val intOffset = IntOffset(offset.x.toInt(), offset.y.toInt())
-    val fabOffsetY by animateDpAsState(
-        targetValue = if (playerViewModel.isPlaying.value || !viewModel.isFirstTimeEnteredMusic) 100.dp else 0.dp,
-        animationSpec = tween(durationMillis = 1000),
-        label = "FABOffset"
-    )
-
     Box(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     )
 
     {
@@ -184,8 +174,7 @@ fun MusicListScreen(
                         detectTapGestures(onTap = {
                             isSearching = false
                         })
-                    }
-            ) {
+                    }) {
                 if (isLoading) {
                     Loader(modifier = Modifier.align(Alignment.Center))
                 } else if (errorMessage.isNotEmpty()) {
@@ -211,13 +200,34 @@ fun MusicListScreen(
                         CompositionLocalProvider(LocalDismissSearch provides {
                             isSearching = false
                         }) {
-                            MusicList(
-                                musicFiles = sortedFiles,
-                                navController = navController,
-                                playerViewModel = playerViewModel
-                            )
-                        }
+                            PullToRefreshBox(
+                                state = state,
+                                isRefreshing = viewModel.isLoading.value,
+                                indicator = {
+                                    Indicator(
+                                        isRefreshing = viewModel.isLoading.value,
+                                        containerColor = appColors.backgroundDarker,
+                                        color = appColors.icon,
+                                        state = state,
+                                        threshold = PositionalThreshold,
+                                        modifier = Modifier
+                                            .align(Alignment.TopCenter)
+                                            .size(90.dp)
+                                            .padding(16.dp)
+                                    )
+                                },
+                                onRefresh = {
+                                    reloadmlist(playerViewModel, viewModel, context)
+                                }
+                            ) {
+                                MusicList(
+                                    musicFiles = sortedFiles,
+                                    navController = navController,
+                                    playerViewModel = playerViewModel,
+                                )
+                            }
 
+                        }
 
                     }
                 }
@@ -231,7 +241,11 @@ fun MusicListScreen(
                 .offset { intOffset }
 
         ) {
-            MiniPlayer(playerViewModel = playerViewModel, navController = navController)
+            MiniPlayer(
+                playerViewModel = playerViewModel,
+                musicViewModel = viewModel,
+                navController = navController
+            )
         }
     }
 }

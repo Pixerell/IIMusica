@@ -8,11 +8,13 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.example.iimusica.screens.PlayerViewModel
 import com.example.iimusica.types.MusicFile
 
 
+@UnstableApi
 @Composable
 fun MusicList(
     musicFiles: List<MusicFile>,
@@ -23,6 +25,7 @@ fun MusicList(
     val bottomPadding = PaddingValues(bottom = 124.dp)
     val listState = rememberLazyListState()
     val currentPath = playerViewModel.currentPath.value
+
 
     LazyColumn(
         state = listState,
