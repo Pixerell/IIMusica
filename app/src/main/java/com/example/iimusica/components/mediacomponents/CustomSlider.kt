@@ -31,7 +31,8 @@ fun CustomSlider(
     onDragging: (Boolean, Long) -> Unit,
     dragging: Boolean,
     isMiniPlayer: Boolean,
-    exoPlayer: androidx.media3.exoplayer.ExoPlayer?
+    exoPlayer: androidx.media3.exoplayer.ExoPlayer?,
+    modifier: Modifier
 ) {
     val appColors = LocalAppColors.current
     val sliderWidth = remember { mutableFloatStateOf(0f) }
@@ -45,7 +46,7 @@ fun CustomSlider(
     }
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(10.dp)
             .pointerInput(duration) {

@@ -55,7 +55,6 @@ class PlaybackController(
             boundService?.let { playbackService ->
                 playbackService.setPlaybackController(this@PlaybackController)
                 setPlayer(playbackService.getPlayer())
-                onPlayerReadyCallbacks.forEach { it(playbackService.getPlayer()) }
             }
             isBound = true
             Log.i(tag, "Service connected and ExoPlayer bound.")

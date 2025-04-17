@@ -141,7 +141,7 @@ fun MusicListScreen(
 
     val intOffset = IntOffset(offset.x.toInt(), offset.y.toInt())
     val fabOffsetY by animateDpAsState(
-        targetValue = if (playerViewModel.isPlaying.value || animationComplete) 100.dp else 0.dp,
+        targetValue = if (playerViewModel.isPlaying.value || !viewModel.isFirstTimeEnteredMusic) 100.dp else 0.dp,
         animationSpec = tween(durationMillis = 1000),
         label = "FABOffset"
     )

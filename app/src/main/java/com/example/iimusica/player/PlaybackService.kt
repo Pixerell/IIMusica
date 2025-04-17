@@ -30,10 +30,19 @@ class PlaybackService : MediaSessionService() {
         const val ACTION_CONTINUE = "com.example.iimusica.CONTINUE"
     }
 
-    private lateinit var mediaSession: MediaSession
-    private lateinit var notificationManager: PlayerNotificationManager
-    private lateinit var exoPlayer: ExoPlayer
-    private lateinit var playbackController: PlaybackController
+    private var notificationManager: PlayerNotificationManager? = null
+    private val exoPlayer by lazy {
+        ExoPlayer.Builder(this).build()
+    }
+    private val mediaSession by lazy {
+        MediaSession.Builder(this, exoPlayer)
+            .setId("IIMusicaSession")
+            .build()
+    }
+
+
+
+    private var playbackController: PlaybackController? = null
 
     inner class LocalBinder : Binder() {
         fun getService(): PlaybackService = this@PlaybackService
@@ -48,16 +57,13 @@ class PlaybackService : MediaSessionService() {
 
     override fun onCreate() {
         super.onCreate()
-        exoPlayer = ExoPlayer.Builder(this).build()
-        mediaSession = MediaSession.Builder(this, exoPlayer).setId("IIMusicaSession").build()
-
         // Set up an event listener for playback state changes
         exoPlayer.addListener(object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 super.onMediaItemTransition(mediaItem, reason)
                 val path = mediaItem?.mediaId
                 if (path != null) {
-                    playbackController.onTrackChange?.invoke(path)
+                    playbackController?.onTrackChange?.invoke(path)
                 }
             }
         })
@@ -81,10 +87,6 @@ class PlaybackService : MediaSessionService() {
         when (intent?.action) {
 
             ACTION_PLAY, null -> {
-                Log.d(
-                    "notifz",
-                    "In action: $exoPlayer - exo, $path - path, $shouldPlay - shouldPlay, "
-                )
                 if (path != null) {
                     exoPlayer.seekTo(0)
                     exoPlayer.stop()
@@ -92,17 +94,14 @@ class PlaybackService : MediaSessionService() {
                     val mediaItem = MediaItem.Builder().setUri(path).setMediaId(path).build()
                     exoPlayer.setMediaItem(mediaItem)
                     exoPlayer.prepare()
-                    Log.d(
-                        "notifz",
-                        "In action: $exoPlayer - exo, $path - path, $shouldPlay - shouldPlay, "
-                    )
-
                     if (shouldPlay) {
                         exoPlayer.play()
-                        startPlaybackNotification()
                     } else {
                         exoPlayer.playWhenReady = false
                     }
+                }
+                else {
+                    Log.i("PlaybackService", "The path was null")
                 }
             }
 
@@ -131,27 +130,11 @@ class PlaybackService : MediaSessionService() {
         return super.onStartCommand(intent, flags, startId)
     }
 
-    private fun startPlaybackNotification() {
-        notificationManager = NotificationUtils.showPlaybackNotification(this)
-        notificationManager.setPlayer(exoPlayer)
-
-        val notification = NotificationCompat.Builder(
-            this, CHANNEL_ID
-        ).setContentTitle("Musica").setContentText("Preparing playback...")
-            .setSmallIcon(R.drawable.default_image).build()
-
-        startForeground(
-            NOTIFICATION_ID, notification
-        )
-
-        Log.d("notifz", "Playback notification started")
-    }
-
 
     override fun onDestroy() {
-        notificationManager.setPlayer(null)
+        notificationManager?.setPlayer(null)
         mediaSession.release()
-        // exoPlayer.release()
+        exoPlayer.release()
         super.onDestroy()
     }
 

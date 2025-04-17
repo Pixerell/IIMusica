@@ -147,7 +147,7 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
                     Spacer(modifier = Modifier.height(16.dp))
                     DurationBar(
                         duration = parseDuration((musicFile?.duration ?: 0L).toString()),
-                        playerViewModel
+                        playerViewModel = playerViewModel
                     )
 
                     Row(

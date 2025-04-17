@@ -28,7 +28,7 @@ import kotlinx.coroutines.delay
 
 @OptIn(UnstableApi::class)
 @Composable
-fun DurationBar(duration: Long, playerViewModel: PlayerViewModel, isMiniPlayer: Boolean = false) {
+fun DurationBar(modifier: Modifier = Modifier, duration: Long, playerViewModel: PlayerViewModel, isMiniPlayer: Boolean = false) {
     val appColors = LocalAppColors.current
     var currentPosition by remember { mutableLongStateOf(0L) }
     var dragging by remember { mutableStateOf(false) }
@@ -92,6 +92,7 @@ fun DurationBar(duration: Long, playerViewModel: PlayerViewModel, isMiniPlayer: 
         },
         dragging = dragging,
         isMiniPlayer = isMiniPlayer,
-        exoPlayer = exoPlayer
+        exoPlayer = exoPlayer,
+        modifier = modifier
     )
 }
