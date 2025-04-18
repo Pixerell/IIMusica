@@ -1,8 +1,8 @@
 package com.example.iimusica.player
 
+import android.util.Log
 import androidx.annotation.OptIn
 import androidx.compose.runtime.MutableState
-import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.example.iimusica.types.MusicFile
@@ -14,22 +14,19 @@ class QueueManager(
     private val onRepeatModeChanged: (Int) -> Unit
 ) {
 
-    //TODO Make a unified queue while keeping the shuffled order index mapping. No need for 2 queue's
     private val queue = mutableListOf<MusicFile>()
     private var currentIndex = 0
-    private val shuffledQueue = mutableListOf<MusicFile>()
+    private val shuffleOrder = mutableListOf<Int>()
     private var shuffledIndex = 0
 
     fun toggleShuffle() {
         _isShuffleEnabled.value = !_isShuffleEnabled.value
 
         if (_isShuffleEnabled.value) {
-            if (shuffledQueue.isEmpty() || shuffledQueue.size != queue.size || shuffledQueue.map { it.path }
-                    .toSet() != queue.map { it.path }.toSet()) {
-                shuffledQueue.clear()
-                shuffledQueue.addAll(queue.shuffled())
+            if (shuffleOrder.size != queue.size) {
+                regenerateShuffleOrder()
             }
-            shuffledIndex = updateIndex(_currentPath.value ?: "", shuffledQueue, 0)
+            shuffledIndex = getShuffledIndexByPath(_currentPath.value ?: "") ?: 0
         }
     }
 
@@ -43,9 +40,18 @@ class QueueManager(
         onRepeatModeChanged(_repeatMode.value)
     }
 
+    private fun regenerateShuffleOrder() {
+        shuffleOrder.clear()
+        shuffleOrder.addAll(queue.indices.shuffled())
+    }
+
+    private fun getShuffledIndexByPath(path: String): Int? {
+        return shuffleOrder.indexOfFirst { queue[it].path == path }.takeIf { it >= 0 }
+    }
+
     fun clearQueue() {
         queue.clear()
-        shuffledQueue.clear()
+        shuffleOrder.clear()
     }
 
     @OptIn(UnstableApi::class)
@@ -57,8 +63,10 @@ class QueueManager(
             clearQueue()
             queue.addAll(newQueue)
             currentIndex = startIndex
-            shuffledQueue.addAll(newQueue.shuffled())
+            regenerateShuffleOrder()
+            return
         }
+        Log.d("queuemanager", "Queue already filled with the same items")
     }
 
     fun updateIndex(path: String, queue: List<MusicFile>, currentIndex: Int): Int {
@@ -67,11 +75,13 @@ class QueueManager(
 
     fun updateIndexes(path: String) {
         currentIndex = updateIndex(path, queue, currentIndex)
-        shuffledIndex = updateIndex(path, shuffledQueue, shuffledIndex)
+        shuffledIndex = getShuffledIndexByPath(path) ?: shuffledIndex
     }
 
     fun getQueue(): List<MusicFile> = queue.toList()
-    fun getShuffledQueue(): List<MusicFile> = shuffledQueue.toList()
+    fun getShuffledView(): List<MusicFile> {
+        return shuffleOrder.map { queue[it] }
+    }
 
     fun getCurrentIndex(): Int = currentIndex
     fun setCurrentIndex(ind: Int) {
@@ -84,9 +94,12 @@ class QueueManager(
     }
 
     fun getNextTrack(): Pair<List<MusicFile>, Int> {
-        var queuer = if (_isShuffleEnabled.value) getShuffledQueue() else getQueue()
-        var indexer = if (_isShuffleEnabled.value) getShuffledIndex() else getCurrentIndex()
-        return queuer to indexer
+        return if (_isShuffleEnabled.value) {
+            val shuffledQueue = shuffleOrder.map { queue[it] }
+            shuffledQueue to shuffledIndex
+        } else {
+            queue to currentIndex
+        }
     }
 
 }

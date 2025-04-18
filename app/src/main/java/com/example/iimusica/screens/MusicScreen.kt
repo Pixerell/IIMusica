@@ -66,7 +66,7 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
                     setShuffledIndex(
                         updateIndex(
                             currentPath,
-                            getShuffledQueue(),
+                            getShuffledView(),
                             getShuffledIndex()
                         )
                     )

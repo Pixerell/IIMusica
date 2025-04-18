@@ -62,8 +62,6 @@ fun MusicListScreen(
 
     val state = rememberPullToRefreshState()
 
-
-    // Get the screen height using LocalDensity
     val screenHeight =
         with(LocalDensity.current) { LocalConfiguration.current.screenHeightDp.dp.toPx() }
     val targetOffset =
@@ -132,8 +130,9 @@ fun MusicListScreen(
     }
     // Reset the flag after animation is complete
     LaunchedEffect(animationComplete) {
-        if (animationComplete) {
+        if (animationComplete && viewModel.isFirstTimeEnteredMusic) {
             viewModel.isFirstTimeEnteredMusic = false
+            viewModel.miniPlayerVisible.value = true
         }
     }
 
