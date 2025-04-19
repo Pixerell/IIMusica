@@ -1,27 +1,28 @@
 package com.example.iimusica.player
 
+
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
-import androidx.core.app.NotificationCompat
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
-import androidx.media3.session.MediaSessionService
-import androidx.media3.ui.PlayerNotificationManager
-import com.example.iimusica.R
-import com.example.iimusica.player.notifications.NotificationUtils
+import com.example.iimusica.notification.buildPlaybackNotification
+import com.example.iimusica.player.notifications.createNotificationChannel
 
 
 @UnstableApi
-class PlaybackService : MediaSessionService() {
+class PlaybackService : MediaLibraryService() {
 
     companion object {
         const val NOTIFICATION_ID = 1
         const val CHANNEL_ID = "musica_channel"
+        const val CHANNEL_NAME = "IIMusica"
+        const val CHANNEL_DESCRIPTION = "Main Music Player Channel"
         const val ACTION_PLAY = "com.example.iimusica.PLAY"
         const val ACTION_PAUSE = "com.example.iimusica.PAUSE"
         const val ACTION_STOP = "com.example.iimusica.STOP"
@@ -30,17 +31,12 @@ class PlaybackService : MediaSessionService() {
         const val ACTION_CONTINUE = "com.example.iimusica.CONTINUE"
     }
 
-    private var notificationManager: PlayerNotificationManager? = null
     private val exoPlayer by lazy {
         ExoPlayer.Builder(this).build()
     }
-    private val mediaSession by lazy {
-        MediaSession.Builder(this, exoPlayer)
-            .setId("IIMusicaSession")
-            .build()
-    }
 
 
+    private lateinit var mediaLibrarySession: MediaLibrarySession
 
     private var playbackController: PlaybackController? = null
 
@@ -57,20 +53,27 @@ class PlaybackService : MediaSessionService() {
 
     override fun onCreate() {
         super.onCreate()
-        // Set up an event listener for playback state changes
+        createNotificationChannel(this, CHANNEL_ID, CHANNEL_NAME, CHANNEL_DESCRIPTION)
+
+        mediaLibrarySession = MediaLibrarySession.Builder(this, exoPlayer, librarySessionCallback)
+            .setId("IIMusicaSession")
+            .build()
+
         exoPlayer.addListener(object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 super.onMediaItemTransition(mediaItem, reason)
                 val path = mediaItem?.mediaId
                 if (path != null) {
+                    showNotification(mediaItem)
                     playbackController?.onTrackChange?.invoke(path)
                 }
             }
         })
     }
 
-    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession {
-        return mediaSession
+
+    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? {
+        return mediaLibrarySession
     }
 
     fun setPlaybackController(controller: PlaybackController) {
@@ -78,6 +81,22 @@ class PlaybackService : MediaSessionService() {
     }
 
     fun getPlayer(): ExoPlayer = exoPlayer
+
+    private val librarySessionCallback = object : MediaLibrarySession.Callback {
+        override fun onConnect(
+            session: MediaSession,
+            controller: MediaSession.ControllerInfo
+        ): MediaSession.ConnectionResult {
+            val defaultResult = super.onConnect(session, controller)
+            val availableSessionCommands = defaultResult.availableSessionCommands
+                .buildUpon()
+            return MediaSession.ConnectionResult.accept(
+                availableSessionCommands.build(),
+                defaultResult.availablePlayerCommands
+            )
+        }
+    }
+
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
@@ -89,10 +108,8 @@ class PlaybackService : MediaSessionService() {
             ACTION_PLAY, null -> {
                 if (path != null) {
                     exoPlayer.seekTo(0)
-                    exoPlayer.stop()
                     exoPlayer.clearMediaItems()
-                    val mediaItem = MediaItem.Builder().setUri(path).setMediaId(path).build()
-                    exoPlayer.setMediaItem(mediaItem)
+                    exoPlayer.setMediaItem(buildMediaItem(path))
                     exoPlayer.prepare()
                     if (shouldPlay) {
                         exoPlayer.play()
@@ -110,7 +127,7 @@ class PlaybackService : MediaSessionService() {
             ACTION_REPLACE_MEDIA_ITEMS -> {
                 if (path != null) {
                     exoPlayer.clearMediaItems()
-                    exoPlayer.setMediaItem(MediaItem.fromUri(path))
+                    exoPlayer.setMediaItem(buildMediaItem(path))
                     exoPlayer.prepare()
                 }
             }
@@ -130,12 +147,19 @@ class PlaybackService : MediaSessionService() {
         return super.onStartCommand(intent, flags, startId)
     }
 
+    private fun buildMediaItem(path: String) =
+        MediaItem.Builder().setUri(path).setMediaId(path).build()
+
 
     override fun onDestroy() {
-        notificationManager?.setPlayer(null)
-        mediaSession.release()
+        mediaLibrarySession.release()
         exoPlayer.release()
         super.onDestroy()
     }
 
+    private fun showNotification(mediaItem: MediaItem) {
+        val notification = buildPlaybackNotification(this, mediaItem, mediaLibrarySession, CHANNEL_ID)
+            .build()
+        startForeground(NOTIFICATION_ID, notification)
+    }
 }

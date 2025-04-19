@@ -20,5 +20,6 @@ fun reloadmlist(
     viewModel.miniPlayerVisible.value = false
     viewModel.isSearching.value = false
     viewModel.searchQuery.value = ""
+    playerViewModel.queueManager.setQueue(viewModel.mFiles.value)
 
 }

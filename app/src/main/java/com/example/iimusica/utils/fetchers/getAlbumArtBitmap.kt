@@ -7,6 +7,8 @@ import android.media.MediaMetadataRetriever
 import android.util.Log
 import androidx.core.net.toUri
 
+const val SKIP_CHECK_CODE = -1337L
+
 fun getAlbumArtBitmap(context: Context, albumId: Long, path: String): Bitmap? {
 
     // If the albumId is invalid (0), we won't try to fetch the album art URI
