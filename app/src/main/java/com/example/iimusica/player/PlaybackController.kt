@@ -9,9 +9,13 @@ import android.os.IBinder
 import androidx.annotation.OptIn
 import androidx.compose.runtime.IntState
 import androidx.compose.runtime.MutableState
+import androidx.core.content.ContextCompat
+import androidx.media3.common.Player
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.MediaController
+import androidx.media3.session.SessionToken
 import com.example.iimusica.types.MusicFile
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -44,6 +48,14 @@ class PlaybackController(
 
     fun setPlayer(player: ExoPlayer) {
         exoPlayer = player
+
+        player.addListener(object : Player.Listener {
+            override fun onIsPlayingChanged(isPlayingNow: Boolean) {
+                isPlaying.value = isPlayingNow
+                Log.i(tag, "onIsPlayingChanged: $isPlayingNow")
+            }
+        })
+
         onPlayerReadyCallbacks.forEach { it(player) }
         onPlayerReadyCallbacks.clear()
     }
@@ -55,6 +67,13 @@ class PlaybackController(
             boundService?.let { playbackService ->
                 playbackService.setPlaybackController(this@PlaybackController)
                 setPlayer(playbackService.getPlayer())
+
+                val sessionToken = SessionToken(appContext, ComponentName(appContext, PlaybackService::class.java))
+                val controllerFuture = MediaController.Builder(appContext, sessionToken).buildAsync()
+                controllerFuture.addListener({
+                    controllerFuture.get().release()
+                }, ContextCompat.getMainExecutor(appContext))
+
             }
             isBound = true
             Log.i(tag, "Service connected and ExoPlayer bound.")
@@ -66,6 +85,8 @@ class PlaybackController(
             Log.w(tag, "Service disconnected.")
         }
     }
+
+
 
     init {
 
@@ -92,9 +113,7 @@ class PlaybackController(
             intent.action = PlaybackService.ACTION_PLAY
             appContext.startForegroundService(intent)
 
-            isPlaying.value = true
             pathState.value = path
-
             onTrackChange?.invoke(path)
 
         } catch (e: Exception) {
@@ -138,8 +157,6 @@ class PlaybackController(
 
     fun stopPlay() {
         pathState.value = null
-        isPlaying.value = false
-
         val intent = Intent(appContext, PlaybackService::class.java).apply {
             action = PlaybackService.ACTION_STOP
         }
@@ -157,7 +174,6 @@ class PlaybackController(
 
     fun noMoreTracks() {
         isPlaying.value = false
-
         val intent = Intent(appContext, PlaybackService::class.java).apply {
             action = PlaybackService.ACTION_NO_MORE_TRACKS
         }

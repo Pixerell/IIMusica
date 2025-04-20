@@ -82,24 +82,27 @@ fun CustomSlider(
                 )
             }
     ) {
-        Canvas(modifier = Modifier.fillMaxWidth()) {
+        Canvas(
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
             sliderWidth.floatValue = size.width
             val progress = position / duration
 
 
             drawLine(
                 color = appColors.secondaryFont,
-                start = Offset(0f, size.height / 2),
-                end = Offset(size.width, size.height / 2),
-                strokeWidth = 10f,
+                start = Offset(x = 0f, size.height / 2),
+                end = Offset(x = size.width, size.height / 2),
+                strokeWidth = 8f,
                 cap = StrokeCap.Round
             )
 
             drawLine(
                 color = appColors.font,
-                start = Offset(0f, size.height / 2),
-                end = Offset(size.width * progress, size.height / 2),
-                strokeWidth = 10f,
+                start = Offset(x = 0f, size.height / 2),
+                end = Offset(x = size.width * progress, size.height / 2),
+                strokeWidth = 8f,
                 cap = StrokeCap.Round
             )
 

@@ -1,4 +1,5 @@
-package com.example.iimusica.notification
+package com.example.iimusica.player.notifications
+
 
 import android.content.Context
 import androidx.annotation.OptIn
@@ -11,6 +12,7 @@ import com.example.iimusica.R
 import com.example.iimusica.utils.fetchers.SKIP_CHECK_CODE
 import com.example.iimusica.utils.fetchers.getAlbumArtBitmap
 
+
 @OptIn(UnstableApi::class)
 fun buildPlaybackNotification(
     context: Context,
@@ -18,11 +20,15 @@ fun buildPlaybackNotification(
     mediaLibrarySession: MediaLibrarySession,
     channelId: String
 ): NotificationCompat.Builder {
+
     return NotificationCompat.Builder(context, channelId)
         .setContentTitle(mediaItem.mediaMetadata.title)
         .setContentText(mediaItem.mediaMetadata.artist)
         .setSmallIcon(R.drawable.applogosimple)
         .setLargeIcon(getAlbumArtBitmap(context, SKIP_CHECK_CODE, mediaItem.mediaId))
-        .setStyle(MediaStyle(mediaLibrarySession))
+        .setStyle(
+            MediaStyle(mediaLibrarySession))
         .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+        .setOnlyAlertOnce(true)
+
 }
