@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.media3.exoplayer.ExoPlayer
 import com.example.iimusica.player.PlaybackController
 import com.example.iimusica.player.QueueManager
+import kotlinx.coroutines.flow.StateFlow
 
 @androidx.media3.common.util.UnstableApi
 class PlayerViewModel(application: Application, val playbackController: PlaybackController) :
@@ -17,16 +18,14 @@ class PlayerViewModel(application: Application, val playbackController: Playback
     private val _isShuffleEnabled = mutableStateOf(false)
     val isShuffleEnabled: State<Boolean> get() = _isShuffleEnabled
 
-    private val _isPlaying = mutableStateOf(false)
     private val _currentPath = mutableStateOf<String?>(null)
     private val _repeatMode = mutableIntStateOf(ExoPlayer.REPEAT_MODE_OFF)
 
-    val isPlaying: State<Boolean> get() = _isPlaying
+    val isPlaying: StateFlow<Boolean> get() = playbackController.isPlaying
     val currentPath: State<String?> get() = _currentPath
     val repeatMode: State<Int> get() = _repeatMode
 
     init {
-        playbackController.isPlaying = _isPlaying
         playbackController.pathState = _currentPath
         playbackController.repeatModeState = _repeatMode
 
@@ -64,7 +63,6 @@ class PlayerViewModel(application: Application, val playbackController: Playback
 
     fun stopPlay() {
         playbackController.stopPlay()
-        _isPlaying.value = false
         _isShuffleEnabled.value = false
         _currentPath.value = ""
     }

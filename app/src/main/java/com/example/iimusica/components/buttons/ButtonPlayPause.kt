@@ -1,5 +1,6 @@
 package com.example.iimusica.components.buttons
 
+import androidx.annotation.OptIn
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -11,16 +12,19 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.util.UnstableApi
 import com.example.iimusica.R
 import com.example.iimusica.screens.PlayerViewModel
 import com.example.iimusica.ui.theme.LocalAppColors
 
+@OptIn(UnstableApi::class)
 @Composable
 fun ButtonPlayPause(playerViewModel: PlayerViewModel, isSmallMode: Boolean = false) {
     val appColors = LocalAppColors.current
@@ -42,13 +46,13 @@ fun ButtonPlayPause(playerViewModel: PlayerViewModel, isSmallMode: Boolean = fal
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    painter = painterResource(if (playerViewModel.isPlaying.value) R.drawable.pauseico else R.drawable.playico),
-                    contentDescription = if (playerViewModel.isPlaying.value) "Pause" else "Play",
+                    painter = painterResource(if (playerViewModel.isPlaying.collectAsState().value) R.drawable.pauseico else R.drawable.playico),
+                    contentDescription = if (playerViewModel.isPlaying.collectAsState().value) "Pause" else "Play",
                     tint = appColors.active,
                     modifier = Modifier
                         .size(28.dp)
                         .then(
-                            if (!playerViewModel.isPlaying.value) {
+                            if (!playerViewModel.isPlaying.collectAsState().value) {
                                 Modifier.offset(x = 2.dp)
                             } else {
                                 Modifier

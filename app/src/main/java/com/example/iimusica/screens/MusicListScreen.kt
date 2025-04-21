@@ -123,7 +123,7 @@ fun MusicListScreen(
 
     }
     // Reset flag after animation completes
-    LaunchedEffect(offset, playerViewModel.isPlaying.value) {
+    LaunchedEffect(offset, playerViewModel.isPlaying.collectAsState().value) {
         if (offset == targetOffset && viewModel.isFirstTimeEnteredMusic && playerViewModel.isPlaying.value) {
             animationComplete = true
         }

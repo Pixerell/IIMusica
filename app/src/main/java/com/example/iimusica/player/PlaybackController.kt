@@ -10,7 +10,6 @@ import androidx.annotation.OptIn
 import androidx.compose.runtime.IntState
 import androidx.compose.runtime.MutableState
 import androidx.core.content.ContextCompat
-import androidx.media3.common.Player
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
@@ -25,7 +24,9 @@ class PlaybackController(
     application: Application,
 ) {
 
-    lateinit var isPlaying: MutableState<Boolean>
+    private val _isPlaying = MutableStateFlow(false)
+    val isPlaying: StateFlow<Boolean> get() = _isPlaying
+
     lateinit var pathState: MutableState<String?>
     lateinit var repeatModeState: IntState
 
@@ -48,14 +49,6 @@ class PlaybackController(
 
     fun setPlayer(player: ExoPlayer) {
         exoPlayer = player
-
-        player.addListener(object : Player.Listener {
-            override fun onIsPlayingChanged(isPlayingNow: Boolean) {
-                isPlaying.value = isPlayingNow
-                Log.i(tag, "onIsPlayingChanged: $isPlayingNow")
-            }
-        })
-
         onPlayerReadyCallbacks.forEach { it(player) }
         onPlayerReadyCallbacks.clear()
     }
@@ -88,6 +81,7 @@ class PlaybackController(
 
 
 
+
     init {
 
         val intent = Intent(appContext, PlaybackService::class.java)
@@ -106,6 +100,7 @@ class PlaybackController(
                 Log.e(tag, "playMusic called with an empty path.")
                 return
             }
+            Log.i(tag, "Play music trigger: ${shouldPlay}")
 
             val intent = Intent(appContext, PlaybackService::class.java)
             intent.putExtra("path", path)
@@ -113,6 +108,7 @@ class PlaybackController(
             intent.action = PlaybackService.ACTION_PLAY
             appContext.startForegroundService(intent)
 
+            _isPlaying.value = true
             pathState.value = path
             onTrackChange?.invoke(path)
 
@@ -150,12 +146,13 @@ class PlaybackController(
         } else {
             intent.action = PlaybackService.ACTION_CONTINUE
         }
-        isPlaying.value = !isPlaying.value
+        _isPlaying.value = !isPlaying.value
         appContext.startService(intent)
 
     }
 
     fun stopPlay() {
+        _isPlaying.value = false
         pathState.value = null
         val intent = Intent(appContext, PlaybackService::class.java).apply {
             action = PlaybackService.ACTION_STOP
@@ -173,7 +170,7 @@ class PlaybackController(
     }
 
     fun noMoreTracks() {
-        isPlaying.value = false
+        _isPlaying.value = false
         val intent = Intent(appContext, PlaybackService::class.java).apply {
             action = PlaybackService.ACTION_NO_MORE_TRACKS
         }

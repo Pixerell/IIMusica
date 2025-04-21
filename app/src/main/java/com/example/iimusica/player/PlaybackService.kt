@@ -11,16 +11,21 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.CommandButton
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionResult
+import com.example.iimusica.player.notifications.CUSTOM_COMMAND_PLAY_PAUSE
 import com.example.iimusica.player.notifications.CUSTOM_COMMAND_SKIP_NEXT
 import com.example.iimusica.player.notifications.CUSTOM_COMMAND_SKIP_PREV
+import com.example.iimusica.player.notifications.CUSTOM_COMMAND_TOGGLE_REPEAT
 import com.example.iimusica.player.notifications.CustomNotificationCommand
 import com.example.iimusica.player.notifications.CustomNotificationProvider
 import com.example.iimusica.player.notifications.buildPlaybackNotification
 import com.example.iimusica.player.notifications.createNotificationChannel
+import com.example.iimusica.player.notifications.getPlayPauseCommandButton
+import com.example.iimusica.player.notifications.getRepeatCommandButton
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 
@@ -71,6 +76,7 @@ class PlaybackService : MediaLibraryService() {
             .setId("IIMusicaSession")
             .build()
 
+
         mediaLibrarySession.setCustomLayout(customCommandButtons)
         setMediaNotificationProvider(CustomNotificationProvider(this, mediaLibrarySession))
 
@@ -85,6 +91,17 @@ class PlaybackService : MediaLibraryService() {
                 }
             }
         })
+        exoPlayer.addListener(object : Player.Listener {
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                updateCustomLayout()
+            }
+            override fun onRepeatModeChanged(repeatMode: Int) {
+                updateCustomLayout()
+            }
+        })
+
+
+
     }
 
 
@@ -105,24 +122,51 @@ class PlaybackService : MediaLibraryService() {
             controller: MediaSession.ControllerInfo
         ): MediaSession.ConnectionResult {
             Log.d("notifz", "adding buttons $customCommandButtons")
+            val allButtons = mutableListOf<CommandButton>().apply {
+                addAll(customCommandButtons)  // Adds PREVIOUS and NEXT buttons from the enum
+            }
+
+            // Add dynamic buttons (Play/Pause, Repeat)
+            val isPlaying = exoPlayer.isPlaying
+            val repeatMode = exoPlayer.repeatMode
+
+            // Add dynamic buttons to the list
+            allButtons.apply {
+                add(getPlayPauseCommandButton(isPlaying))
+                add(getRepeatCommandButton(repeatMode))
+            }
+
+            mediaLibrarySession.setCustomLayout(allButtons)
             val defaultResult = super.onConnect(session, controller)
             val commands = defaultResult.availableSessionCommands.buildUpon()
-            customCommandButtons.forEach { cmd ->
+
+            allButtons.forEach { cmd ->
                 cmd.sessionCommand?.let(commands::add)
             }
 
+            // This removes the default media3 button and default prevbutton
+            val playerCommands = defaultResult.availablePlayerCommands.buildUpon()
+                .remove(Player.COMMAND_PLAY_PAUSE)
+                .remove(Player.COMMAND_SEEK_TO_PREVIOUS)
+                .remove(Player.COMMAND_SEEK_BACK)
+                .remove(Player.COMMAND_SEEK_TO_NEXT)
+                .remove(Player.COMMAND_SEEK_FORWARD)
+                .remove(Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM)
+                .remove(Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM)
+                .build()
+
+
             return MediaSession.ConnectionResult.accept(
                 commands.build(),
-                defaultResult.availablePlayerCommands
+                playerCommands
             )
         }
 
         override fun onPostConnect(session: MediaSession, controller: MediaSession.ControllerInfo) {
             Log.d("notifz", "post connect")
             super.onPostConnect(session, controller)
-            if (customCommandButtons.isNotEmpty()) {
-                mediaLibrarySession.setCustomLayout(customCommandButtons)
-            }
+            updateCustomLayout()
+
         }
 
         override fun onCustomCommand(
@@ -134,7 +178,24 @@ class PlaybackService : MediaLibraryService() {
             when (customCommand.customAction) {
                 CUSTOM_COMMAND_SKIP_PREV -> exoPlayer.seekToPrevious()
                 CUSTOM_COMMAND_SKIP_NEXT -> exoPlayer.seekToNext()
+                CUSTOM_COMMAND_PLAY_PAUSE -> if (exoPlayer.isPlaying) {
+                    exoPlayer.pause()
+                }
+                else {
+                    exoPlayer.play()
+                }
+                CUSTOM_COMMAND_TOGGLE_REPEAT -> {
+                    val newRepeatMode = when (exoPlayer.repeatMode) {
+                        Player.REPEAT_MODE_OFF -> Player.REPEAT_MODE_ALL
+                        Player.REPEAT_MODE_ALL -> Player.REPEAT_MODE_ONE
+                        Player.REPEAT_MODE_ONE -> Player.REPEAT_MODE_OFF
+                        else -> Player.REPEAT_MODE_OFF
+                    }
+                    exoPlayer.repeatMode = newRepeatMode
+                }
             }
+            updateCustomLayout()
+
             Log.d("notifz", "inside custom command")
 
             return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
@@ -142,55 +203,57 @@ class PlaybackService : MediaLibraryService() {
     }
 
 
-
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         val path = intent?.getStringExtra("path")
         val shouldPlay = intent?.getBooleanExtra("shouldPlay", true) != false
-        Log.d("notifz", "inside start command")
 
-        when (intent?.action) {
+        if (intent?.action == null) {
+            return START_NOT_STICKY
+        } else {
+            Log.d("notifz", "onStartCommand received with action: ${intent.action}")
+            when (intent.action) {
+                ACTION_PLAY -> {
+                    if (path != null) {
+                        if (exoPlayer.currentMediaItem?.mediaId != path) {
+                            exoPlayer.setMediaItem(buildMediaItem(path))
+                            exoPlayer.prepare()
+                        }
+                        exoPlayer.playWhenReady = shouldPlay
 
-            ACTION_PLAY, null -> {
-                if (path != null) {
-                    if (exoPlayer.currentMediaItem?.mediaId != path) {
+                    } else {
+                        Log.i("PlaybackService", "The path was null")
+                    }
+                }
+
+                ACTION_PAUSE -> exoPlayer.pause()
+                ACTION_CONTINUE -> exoPlayer.play()
+                ACTION_REPLACE_MEDIA_ITEMS -> {
+                    if (path != null) {
+                        exoPlayer.clearMediaItems()
                         exoPlayer.setMediaItem(buildMediaItem(path))
                         exoPlayer.prepare()
                     }
-                    exoPlayer.playWhenReady = shouldPlay
-
                 }
-                else {
-                    Log.i("PlaybackService", "The path was null")
-                }
-            }
 
-            ACTION_PAUSE -> exoPlayer.pause()
-            ACTION_CONTINUE -> exoPlayer.play()
-            ACTION_REPLACE_MEDIA_ITEMS -> {
-                if (path != null) {
+                ACTION_NEXT -> exoPlayer.seekToNext()
+                ACTION_SKIP -> exoPlayer.seekToPrevious()
+
+
+                ACTION_NO_MORE_TRACKS -> {
+                    exoPlayer.pause()
+                    exoPlayer.seekTo(0)
+                }
+
+                ACTION_STOP -> {
+                    exoPlayer.stop()
                     exoPlayer.clearMediaItems()
-                    exoPlayer.setMediaItem(buildMediaItem(path))
-                    exoPlayer.prepare()
+                    stopSelf()
                 }
+
             }
-
-            ACTION_NEXT -> exoPlayer.seekToNext()
-            ACTION_SKIP -> exoPlayer.seekToPrevious()
-
-
-            ACTION_NO_MORE_TRACKS -> {
-                exoPlayer.pause()
-                exoPlayer.seekTo(0)
-            }
-
-            ACTION_STOP -> {
-                exoPlayer.stop()
-                exoPlayer.clearMediaItems()
-                stopSelf()
-            }
-
         }
+
         return super.onStartCommand(intent, flags, startId)
     }
 
@@ -204,10 +267,10 @@ class PlaybackService : MediaLibraryService() {
         super.onDestroy()
     }
 
-    //TODO there is a possible duplication bug, that shows same notifications twice
     private fun showNotification(mediaItem: MediaItem) {
-        val notification = buildPlaybackNotification(this, mediaItem, mediaLibrarySession, CHANNEL_ID)
-            .build()
+        val notification =
+            buildPlaybackNotification(this, mediaItem, mediaLibrarySession, CHANNEL_ID)
+                .build()
         val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         if (!isForegroundStarted) {
             startForeground(NOTIFICATION_ID, notification)
@@ -216,5 +279,20 @@ class PlaybackService : MediaLibraryService() {
             manager.notify(NOTIFICATION_ID, notification)
         }
 
+    }
+
+
+    private fun updateCustomLayout() {
+        val repeatButton = getRepeatCommandButton(exoPlayer.repeatMode)
+        val playPauseButton = getPlayPauseCommandButton(exoPlayer.isPlaying)
+
+        mediaLibrarySession.setCustomLayout(
+            listOf(
+                repeatButton,
+                CustomNotificationCommand.PREVIOUS.button,
+                playPauseButton,
+                CustomNotificationCommand.NEXT.button
+            )
+        )
     }
 }

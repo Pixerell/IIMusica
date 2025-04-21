@@ -27,7 +27,9 @@ fun buildPlaybackNotification(
         .setSmallIcon(R.drawable.applogosimple)
         .setLargeIcon(getAlbumArtBitmap(context, SKIP_CHECK_CODE, mediaItem.mediaId))
         .setStyle(
-            MediaStyle(mediaLibrarySession))
+            MediaStyle(mediaLibrarySession)
+                .setShowActionsInCompactView()
+        )
         .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
         .setOnlyAlertOnce(true)
 
