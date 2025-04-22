@@ -14,7 +14,6 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.RectangleShape
@@ -151,7 +150,7 @@ fun MusicItem(
             )
         }
 
-        if (playerViewModel.isPlaying.collectAsState().value && music.path == playerViewModel.currentPath.value) {
+        if (playerViewModel.isPlaying && music.path == playerViewModel.currentPath.value) {
             Box(
                 modifier = Modifier
                     .padding(end = 16.dp)

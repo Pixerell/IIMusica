@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -55,6 +56,8 @@ fun MiniPlayer(
     val appColors = LocalAppColors.current
     val currentPath = playerViewModel.currentPath.value
     val currentMusic = playerViewModel.queueManager.getQueue().find { it.path == currentPath }
+
+    val isLandscape = LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
 
     val visible = musicViewModel.miniPlayerVisible.value
     val rotation by animateFloatAsState(
@@ -91,7 +94,7 @@ fun MiniPlayer(
             modifier = Modifier.fillMaxWidth()
         ) {
             DurationBar(
-                modifier = Modifier.weight(8f),
+                modifier = Modifier.weight(if (isLandscape) 18f else 8f),
                 duration = parseDuration(currentMusic.duration.toString()),
                 playerViewModel = playerViewModel,
                 isMiniPlayer = true,

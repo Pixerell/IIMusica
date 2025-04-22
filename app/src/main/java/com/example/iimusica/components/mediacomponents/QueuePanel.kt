@@ -1,5 +1,6 @@
 package com.example.iimusica.components.mediacomponents
 
+import androidx.annotation.OptIn
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -29,7 +30,11 @@ import androidx.navigation.compose.rememberNavController
 import com.example.iimusica.screens.PlayerViewModel
 import com.example.iimusica.ui.theme.LocalAppColors
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.media3.common.util.UnstableApi
+import com.example.iimusica.ui.theme.QUEUE_PANEL_OFFSET
 
+@OptIn(UnstableApi::class)
 @Composable
 fun QueuePanel(
     playerViewModel: PlayerViewModel,
@@ -38,7 +43,10 @@ fun QueuePanel(
     modifier: Modifier = Modifier
 ) {
 
-    val panelHeight by animateDpAsState(targetValue = if (isPanelExpanded) 400.dp else 50.dp)
+    val isLandscape =
+        LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+    val expandedHeight = if (isLandscape) 180.dp else 400.dp
+    val panelHeight by animateDpAsState(targetValue = if (isPanelExpanded) expandedHeight else QUEUE_PANEL_OFFSET)
 
 
     val appColors = LocalAppColors.current
@@ -69,7 +77,6 @@ fun QueuePanel(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .offset(y = (-24).dp) // Overlap the icon slightly
-                .size(56.dp)
                 .clip(CircleShape)
                 .background(appColors.backgroundDarker)
                 .clickable { togglePanelState(!isPanelExpanded) }

@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.example.iimusica.components.MiniPlayer
@@ -36,11 +37,13 @@ import com.example.iimusica.components.ux.MessageType
 import com.example.iimusica.types.MusicFile
 import com.example.iimusica.components.mediacomponents.MusicList
 import com.example.iimusica.components.mediacomponents.MusicTopBar
+import com.example.iimusica.player.PlaybackCommandBus
 import com.example.iimusica.types.SortOption
 import com.example.iimusica.utils.sortFiles
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.utils.LocalDismissSearch
 import com.example.iimusica.utils.reloadmlist
+import kotlinx.coroutines.flow.collectLatest
 
 
 @androidx.annotation.OptIn(UnstableApi::class)
@@ -110,6 +113,13 @@ fun MusicListScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        PlaybackCommandBus.commands.collectLatest {
+            Log.d("notifz", "Command from Compose screen: $it")
+        }
+    }
+
+
     val fabOffsetY by animateDpAsState(
         targetValue = if (!viewModel.miniPlayerVisible.value) 0.dp else 140.dp,
         animationSpec = tween(durationMillis = 1000),
@@ -123,8 +133,8 @@ fun MusicListScreen(
 
     }
     // Reset flag after animation completes
-    LaunchedEffect(offset, playerViewModel.isPlaying.collectAsState().value) {
-        if (offset == targetOffset && viewModel.isFirstTimeEnteredMusic && playerViewModel.isPlaying.value) {
+    LaunchedEffect(offset, playerViewModel.isPlaying) {
+        if (offset == targetOffset && viewModel.isFirstTimeEnteredMusic && playerViewModel.isPlaying) {
             animationComplete = true
         }
     }
@@ -165,6 +175,7 @@ fun MusicListScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
+                    // This padding is required so that list doesnt go **inside** the topappbar
                     .padding(padding)
                     .background(
                         brush = appColors.accentGradient

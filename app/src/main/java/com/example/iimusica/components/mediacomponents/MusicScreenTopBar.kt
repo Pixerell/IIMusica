@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.iimusica.ui.theme.LocalAppColors
@@ -27,6 +28,9 @@ import com.example.iimusica.ui.theme.Typography
 @Composable
 fun MusicScreenTopBar(isPlaying: Boolean, onBackClick: () -> Unit, onSettingsClick: () -> Unit) {
     val appColors = LocalAppColors.current
+    val isLandscape =
+        LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+
 
     Box(
         modifier = Modifier
@@ -53,7 +57,7 @@ fun MusicScreenTopBar(isPlaying: Boolean, onBackClick: () -> Unit, onSettingsCli
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 1.dp)
-                .padding(horizontal = 32.dp, vertical = 24.dp),
+                .padding(horizontal = 32.dp, vertical = if (isLandscape) 8.dp else 24.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {

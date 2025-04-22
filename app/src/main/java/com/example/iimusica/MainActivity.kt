@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.compose.rememberNavController
@@ -41,6 +42,12 @@ class MainActivity : ComponentActivity() {
             val toggleTheme: () -> Unit = {
                 isDarkTheme = !isDarkTheme
             }
+
+
+            val controller = WindowInsetsControllerCompat(window, window.decorView)
+            controller.isAppearanceLightStatusBars = isDarkTheme
+
+
 
             IIMusicaTheme(darkTheme = isDarkTheme) {
                 val navController = rememberNavController()

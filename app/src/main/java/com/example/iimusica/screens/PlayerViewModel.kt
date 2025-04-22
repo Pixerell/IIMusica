@@ -6,10 +6,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.lifecycle.viewModelScope
 import androidx.media3.exoplayer.ExoPlayer
+import com.example.iimusica.player.PlaybackCommandBus
 import com.example.iimusica.player.PlaybackController
 import com.example.iimusica.player.QueueManager
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 @androidx.media3.common.util.UnstableApi
 class PlayerViewModel(application: Application, val playbackController: PlaybackController) :
@@ -21,7 +24,8 @@ class PlayerViewModel(application: Application, val playbackController: Playback
     private val _currentPath = mutableStateOf<String?>(null)
     private val _repeatMode = mutableIntStateOf(ExoPlayer.REPEAT_MODE_OFF)
 
-    val isPlaying: StateFlow<Boolean> get() = playbackController.isPlaying
+    val isPlaying: Boolean get() = playbackController.isPlaying.value
+
     val currentPath: State<String?> get() = _currentPath
     val repeatMode: State<Int> get() = _repeatMode
 
@@ -32,6 +36,17 @@ class PlayerViewModel(application: Application, val playbackController: Playback
         playbackController.setQueueUpdateCallback { path ->
             queueManager.updateIndexes(path)
         }
+
+        viewModelScope.launch {
+            PlaybackCommandBus.commands.collectLatest { cmd ->
+                when (cmd) {
+                    PlaybackCommandBus.BUS_NEXT -> playNext()
+                    PlaybackCommandBus.BUS_PREV -> playPrevious()
+                    PlaybackCommandBus.BUS_TOGGLE_REPEAT -> toggleRepeat()
+                }
+            }
+        }
+
     }
 
     val queueManager = QueueManager(

@@ -9,6 +9,7 @@ import android.os.IBinder
 import androidx.annotation.OptIn
 import androidx.compose.runtime.IntState
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
@@ -24,8 +25,8 @@ class PlaybackController(
     application: Application,
 ) {
 
-    private val _isPlaying = MutableStateFlow(false)
-    val isPlaying: StateFlow<Boolean> get() = _isPlaying
+    private val _isPlaying = mutableStateOf(false)
+    val isPlaying: MutableState<Boolean> get() = _isPlaying
 
     lateinit var pathState: MutableState<String?>
     lateinit var repeatModeState: IntState
