@@ -1,5 +1,6 @@
 package com.example.iimusica
 
+
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -43,20 +44,13 @@ class MainActivity : ComponentActivity() {
                 isDarkTheme = !isDarkTheme
             }
 
-
             val controller = WindowInsetsControllerCompat(window, window.decorView)
             controller.isAppearanceLightStatusBars = isDarkTheme
-
-
 
             IIMusicaTheme(darkTheme = isDarkTheme) {
                 val navController = rememberNavController()
                 AppNavGraph(navController, this, toggleTheme, playerViewModel)
             }
         }
-
-
     }
-
-
 }

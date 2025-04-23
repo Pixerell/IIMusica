@@ -6,9 +6,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
-import androidx.annotation.OptIn
 import androidx.compose.runtime.IntState
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
 import androidx.media3.common.util.Log
@@ -25,28 +25,24 @@ class PlaybackController(
     application: Application,
 ) {
 
-    private val _isPlaying = mutableStateOf(false)
-    val isPlaying: MutableState<Boolean> get() = _isPlaying
-
-    lateinit var pathState: MutableState<String?>
-    lateinit var repeatModeState: IntState
-
-    private val tag = "notifz"
-    private val appContext: Context = application.applicationContext
-
-    private var boundService: PlaybackService? = null
-    private var isBound = false
-
-    private val _exoPlayerState = MutableStateFlow<ExoPlayer?>(null)
-    val exoPlayerState: StateFlow<ExoPlayer?> = _exoPlayerState
+    var pathState: MutableState<String?> = mutableStateOf(null)
+    var repeatModeState: IntState = mutableIntStateOf(0)
 
     var exoPlayer: ExoPlayer?
         get() = _exoPlayerState.value
         set(value) {
             _exoPlayerState.value = value
         }
-
+    private val _exoPlayerState = MutableStateFlow<ExoPlayer?>(null)
+    val exoPlayerState: StateFlow<ExoPlayer?> = _exoPlayerState
     val onPlayerReadyCallbacks = mutableListOf<(ExoPlayer) -> Unit>()
+
+    private val tag = "notifz"
+    private val appContext: Context = application.applicationContext
+    private var boundService: PlaybackService? = null
+    private var isBound = false
+    private val _isPlaying = mutableStateOf(false)
+    val isPlaying: MutableState<Boolean> get() = _isPlaying
 
     fun setPlayer(player: ExoPlayer) {
         exoPlayer = player
@@ -61,13 +57,20 @@ class PlaybackController(
             boundService?.let { playbackService ->
                 playbackService.setPlaybackController(this@PlaybackController)
                 setPlayer(playbackService.getPlayer())
-
-                val sessionToken = SessionToken(appContext, ComponentName(appContext, PlaybackService::class.java))
-                val controllerFuture = MediaController.Builder(appContext, sessionToken).buildAsync()
+                // This controller setup is specifically for starting medialibrary service
+                // Possible optimization?
+                val sessionToken =
+                    SessionToken(appContext, ComponentName(appContext, PlaybackService::class.java))
+                val controllerFuture =
+                    MediaController.Builder(appContext, sessionToken).buildAsync()
                 controllerFuture.addListener({
-                    controllerFuture.get().release()
+                    // Surround with try/catch to avoid blocking main thread
+                    try {
+                        controllerFuture.get().release()
+                    } catch (e: Exception) {
+                        Log.e(tag, "Failed to release MediaController", e)
+                    }
                 }, ContextCompat.getMainExecutor(appContext))
-
             }
             isBound = true
             Log.i(tag, "Service connected and ExoPlayer bound.")
@@ -80,11 +83,7 @@ class PlaybackController(
         }
     }
 
-
-
-
     init {
-
         val intent = Intent(appContext, PlaybackService::class.java)
         isBound = appContext.bindService(intent, connection, Context.BIND_AUTO_CREATE)
         if (isBound) {
@@ -94,21 +93,16 @@ class PlaybackController(
         }
     }
 
-    @OptIn(UnstableApi::class)
     fun playMusic(path: String, shouldPlay: Boolean = true) {
         try {
             if (path.isEmpty()) {
                 Log.e(tag, "playMusic called with an empty path.")
                 return
             }
-            Log.i(tag, "Play music trigger: ${shouldPlay}")
-
-            val intent = Intent(appContext, PlaybackService::class.java)
-            intent.putExtra("path", path)
-            intent.putExtra("shouldPlay", shouldPlay)
-            intent.action = PlaybackService.ACTION_PLAY
-            appContext.startForegroundService(intent)
-
+            sendAction(PlaybackService.ACTION_PLAY, foreground = true) {
+                putExtra("path", path)
+                putExtra("shouldPlay", shouldPlay)
+            }
             _isPlaying.value = true
             pathState.value = path
             onTrackChange?.invoke(path)
@@ -128,7 +122,6 @@ class PlaybackController(
         }
     }
 
-    @OptIn(UnstableApi::class)
     fun playPrevious(queue: List<MusicFile>, index: Int) {
         val prevIndex = navigateToIndex(isNext = false, queue.size, index, repeatModeState.intValue)
         if (prevIndex != -1) {
@@ -139,43 +132,32 @@ class PlaybackController(
         }
     }
 
-
     fun togglePlayPause() {
-        val intent = Intent(appContext, PlaybackService::class.java)
-        if (isPlaying.value) {
-            intent.action = PlaybackService.ACTION_PAUSE
+        val action = if (isPlaying.value) {
+            PlaybackService.ACTION_PAUSE
         } else {
-            intent.action = PlaybackService.ACTION_CONTINUE
+            PlaybackService.ACTION_CONTINUE
         }
-        _isPlaying.value = !isPlaying.value
-        appContext.startService(intent)
-
+        _isPlaying.value = !_isPlaying.value
+        sendAction(action)
     }
 
     fun stopPlay() {
         _isPlaying.value = false
         pathState.value = null
-        val intent = Intent(appContext, PlaybackService::class.java).apply {
-            action = PlaybackService.ACTION_STOP
-        }
-        appContext.startService(intent)
+        sendAction(PlaybackService.ACTION_STOP)
     }
 
 
     fun replaceMediaItems(path: String) {
-        val intent = Intent(appContext, PlaybackService::class.java).apply {
-            action = PlaybackService.ACTION_REPLACE_MEDIA_ITEMS
+        sendAction(PlaybackService.ACTION_REPLACE_MEDIA_ITEMS) {
             putExtra("path", path)
         }
-        appContext.startService(intent)
     }
 
     fun noMoreTracks() {
         _isPlaying.value = false
-        val intent = Intent(appContext, PlaybackService::class.java).apply {
-            action = PlaybackService.ACTION_NO_MORE_TRACKS
-        }
-        appContext.startService(intent)
+        sendAction(PlaybackService.ACTION_NO_MORE_TRACKS)
     }
 
     var onTrackChange: ((String) -> Unit)? = null
@@ -184,7 +166,23 @@ class PlaybackController(
         onTrackChange = callback
     }
 
-     fun onDestroy(){
+    private fun sendAction(
+        action: String,
+        foreground: Boolean = false,
+        extras: Intent.() -> Unit = {}
+    ) {
+        val intent = Intent(appContext, PlaybackService::class.java).apply {
+            this.action = action
+            extras()
+        }
+        if (foreground) {
+            appContext.startForegroundService(intent)
+        } else {
+            appContext.startService(intent)
+        }
+    }
+
+    fun onDestroy() {
         if (isBound) {
             appContext.unbindService(connection)
             isBound = false

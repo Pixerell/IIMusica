@@ -20,7 +20,6 @@ fun buildPlaybackNotification(
     mediaLibrarySession: MediaLibrarySession,
     channelId: String
 ): NotificationCompat.Builder {
-
     return NotificationCompat.Builder(context, channelId)
         .setContentTitle(mediaItem.mediaMetadata.title)
         .setContentText(mediaItem.mediaMetadata.artist)
@@ -29,8 +28,6 @@ fun buildPlaybackNotification(
         .setStyle(
             MediaStyle(mediaLibrarySession)
                 .setShowActionsInCompactView()
-        )
-        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+        ).setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
         .setOnlyAlertOnce(true)
-
 }

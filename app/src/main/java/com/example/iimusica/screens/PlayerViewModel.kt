@@ -37,18 +37,25 @@ class PlayerViewModel(application: Application, val playbackController: Playback
             queueManager.updateIndexes(path)
         }
 
-        viewModelScope.launch {
-            PlaybackCommandBus.commands.collectLatest { cmd ->
-                when (cmd) {
-                    PlaybackCommandBus.BUS_NEXT -> playNext()
-                    PlaybackCommandBus.BUS_PREV -> playPrevious()
-                    PlaybackCommandBus.BUS_TOGGLE_REPEAT -> toggleRepeat()
-                }
-            }
-        }
-
+        // Launch coroutine to collect playback commands
+        observePlaybackCommands()
     }
 
+    private fun observePlaybackCommands() {
+        viewModelScope.launch {
+            PlaybackCommandBus.commands.collectLatest { cmd ->
+                handlePlaybackCommand(cmd)
+            }
+        }
+    }
+
+    private fun handlePlaybackCommand(cmd: String) {
+        when (cmd) {
+            PlaybackCommandBus.BUS_NEXT -> playNext()
+            PlaybackCommandBus.BUS_PREV -> playPrevious()
+            PlaybackCommandBus.BUS_TOGGLE_REPEAT -> toggleRepeat()
+        }
+    }
     val queueManager = QueueManager(
         _isShuffleEnabled = _isShuffleEnabled,
         _currentPath = _currentPath,

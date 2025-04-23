@@ -24,9 +24,11 @@ class CustomNotificationProvider(
         actionFactory: MediaNotification.ActionFactory,
         onNotificationChangedCallback: MediaNotification.Provider.Callback
     ): MediaNotification {
-        val mediaItem = mediaSession.player.currentMediaItem ?: return MediaNotification(1, Notification())
-        val notification = buildPlaybackNotification(context, mediaItem, mediaLibrarySession, CHANNEL_ID)
-            .build()
+        val mediaItem =
+            mediaSession.player.currentMediaItem ?: return MediaNotification(1, Notification())
+        val notification =
+            buildPlaybackNotification(context, mediaItem, mediaLibrarySession, CHANNEL_ID)
+                .build()
         return MediaNotification(NOTIFICATION_ID, notification)
     }
 

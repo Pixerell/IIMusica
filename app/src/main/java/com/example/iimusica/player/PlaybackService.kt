@@ -1,6 +1,7 @@
 package com.example.iimusica.player
 
 
+import android.app.Notification
 import android.app.NotificationManager
 import android.content.Intent
 import android.os.Binder
@@ -11,6 +12,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.CommandButton
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionCommand
@@ -52,28 +54,25 @@ class PlaybackService : MediaLibraryService() {
         ExoPlayer.Builder(this).build()
     }
     private lateinit var mediaLibrarySession: MediaLibrarySession
+    private val librarySessionCallback = MusicaSessionCallback()
     private var playbackController: PlaybackController? = null
     private var isForegroundStarted: Boolean = false
-
+    private val binder = LocalBinder()
 
     inner class LocalBinder : Binder() {
         fun getService(): PlaybackService = this@PlaybackService
     }
 
-    private val binder = LocalBinder()
-
     override fun onBind(intent: Intent?): IBinder? {
-        Log.d("notifz", "Binder intents? $intent")
         // Let MediaBrowserService (i.e. MediaLibraryService) handle its own binds...
+        // ...but when an app explicitly binds for LocalBinder, give that instead.
         val superBinder = super.onBind(intent)
-        // ...but when an app explicitly binds for your LocalBinder, give that instead.
         return if (intent?.action == SERVICE_INTERFACE) {
             superBinder
         } else {
             binder
         }
     }
-
 
     override fun onCreate() {
         super.onCreate()
@@ -82,13 +81,10 @@ class PlaybackService : MediaLibraryService() {
         if (!::mediaLibrarySession.isInitialized) {
             mediaLibrarySession =
                 MediaLibrarySession.Builder(this, exoPlayer, librarySessionCallback)
-                    .setId("IIMusicaSession")
-                    .build()
+                    .setId("IIMusicaSession").build()
         }
 
         setMediaNotificationProvider(CustomNotificationProvider(this, mediaLibrarySession))
-
-        Log.d("notifz", "media lib session $mediaLibrarySession")
         exoPlayer.addListener(object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 super.onMediaItemTransition(mediaItem, reason)
@@ -98,8 +94,7 @@ class PlaybackService : MediaLibraryService() {
                     showNotification(mediaItem)
                 }
             }
-        })
-        exoPlayer.addListener(object : Player.Listener {
+
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 updateCustomLayout()
             }
@@ -108,13 +103,10 @@ class PlaybackService : MediaLibraryService() {
                 updateCustomLayout()
             }
         })
-
-
     }
 
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? {
-        Log.d("notifz", "onGetSession called")
         return mediaLibrarySession
     }
 
@@ -124,48 +116,35 @@ class PlaybackService : MediaLibraryService() {
 
     fun getPlayer(): ExoPlayer = exoPlayer
 
-    private val librarySessionCallback = object : MediaLibrarySession.Callback {
+    private inner class MusicaSessionCallback : MediaLibrarySession.Callback {
         override fun onConnect(
-            session: MediaSession,
-            controller: MediaSession.ControllerInfo
+            session: MediaSession, controller: MediaSession.ControllerInfo
         ): MediaSession.ConnectionResult {
-            val customCommandButtons = orderedCustomActions.map { action ->
-                getCustomActionButton(action, getIconResIdForAction(action, exoPlayer))
-            }
 
-            Log.d("notifz", "adding buttons $customCommandButtons")
-
+            val customCommandButtons = generateCustomActionButtons()
             updateCustomLayout()
+
             val defaultResult = super.onConnect(session, controller)
             val commands = defaultResult.availableSessionCommands.buildUpon()
-
             customCommandButtons.forEach { cmd ->
                 cmd.sessionCommand?.let(commands::add)
             }
 
             // This removes the default media3 button and default prevbutton
-            val playerCommands = defaultResult.availablePlayerCommands.buildUpon()
-                .remove(Player.COMMAND_PLAY_PAUSE)
-                .remove(Player.COMMAND_SEEK_TO_PREVIOUS)
-                .remove(Player.COMMAND_SEEK_BACK)
-                .remove(Player.COMMAND_SEEK_TO_NEXT)
-                .remove(Player.COMMAND_SEEK_FORWARD)
-                .remove(Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM)
-                .remove(Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM)
-                .build()
-
-
+            val playerCommands =
+                defaultResult.availablePlayerCommands.buildUpon().remove(Player.COMMAND_PLAY_PAUSE)
+                    .remove(Player.COMMAND_SEEK_TO_PREVIOUS).remove(Player.COMMAND_SEEK_BACK)
+                    .remove(Player.COMMAND_SEEK_TO_NEXT).remove(Player.COMMAND_SEEK_FORWARD)
+                    .remove(Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM)
+                    .remove(Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM).build()
             return MediaSession.ConnectionResult.accept(
-                commands.build(),
-                playerCommands
+                commands.build(), playerCommands
             )
         }
 
         override fun onPostConnect(session: MediaSession, controller: MediaSession.ControllerInfo) {
-            Log.d("notifz", "post connect")
             super.onPostConnect(session, controller)
             updateCustomLayout()
-
         }
 
         override fun onCustomCommand(
@@ -177,7 +156,10 @@ class PlaybackService : MediaLibraryService() {
             when (customCommand.customAction) {
                 CUSTOM_COMMAND_SKIP_PREV -> PlaybackCommandBus.sendCommand(BUS_PREV)
                 CUSTOM_COMMAND_SKIP_NEXT -> PlaybackCommandBus.sendCommand(BUS_NEXT)
-                CUSTOM_COMMAND_PLAY_PAUSE -> playbackController!!.togglePlayPause()
+                CUSTOM_COMMAND_PLAY_PAUSE -> requireNotNull(playbackController) {
+                    "PlaybackController must be set before handling play/pause"
+                }.togglePlayPause()
+
                 CUSTOM_COMMAND_TOGGLE_REPEAT -> PlaybackCommandBus.sendCommand(BUS_TOGGLE_REPEAT)
             }
             updateCustomLayout()
@@ -187,59 +169,57 @@ class PlaybackService : MediaLibraryService() {
 
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-
-        val path = intent?.getStringExtra("path")
-        val shouldPlay = intent?.getBooleanExtra("shouldPlay", true) != false
-
-        if (intent?.action == null) {
-            return START_NOT_STICKY
-        } else {
-            Log.d("notifz", "onStartCommand received with action: ${intent.action}")
-            when (intent.action) {
-                ACTION_PLAY -> {
-                    if (path != null) {
-                        if (exoPlayer.currentMediaItem?.mediaId != path) {
-                            exoPlayer.setMediaItem(buildMediaItem(path))
-                            exoPlayer.prepare()
-                        }
-                        exoPlayer.seekTo(0)
-                        exoPlayer.playWhenReady = shouldPlay
-
-                    } else {
-                        Log.i("PlaybackService", "The path was null")
-                    }
-                }
-
-                ACTION_PAUSE -> exoPlayer.pause()
-                ACTION_CONTINUE -> exoPlayer.play()
-                ACTION_REPLACE_MEDIA_ITEMS -> {
-                    if (path != null) {
-                        exoPlayer.clearMediaItems()
-                        exoPlayer.setMediaItem(buildMediaItem(path))
-                        exoPlayer.prepare()
-                    }
-                }
-
-                ACTION_NO_MORE_TRACKS -> {
-                    exoPlayer.pause()
-                    exoPlayer.seekTo(0)
-                }
-
-                ACTION_STOP -> {
-                    exoPlayer.stop()
-                    exoPlayer.clearMediaItems()
-                    stopSelf()
-                }
-
-            }
-        }
-
+        intent?.action?.let {
+            handleIntentAction(intent)
+        } ?: return START_NOT_STICKY
         return super.onStartCommand(intent, flags, startId)
     }
 
-    private fun buildMediaItem(path: String) =
-        MediaItem.Builder().setUri(path).setMediaId(path).build()
+    private fun handleIntentAction(intent: Intent) {
+        val path = intent.getStringExtra("path")
+        val shouldPlay = intent.getBooleanExtra("shouldPlay", true)
 
+        when (intent.action) {
+            ACTION_PLAY -> {
+                if (path != null) {
+                    if (exoPlayer.currentMediaItem?.mediaId != path) {
+                        exoPlayer.setMediaItem(buildMediaItem(path))
+                        exoPlayer.prepare()
+                    }
+                    exoPlayer.seekTo(0)
+                    exoPlayer.playWhenReady = shouldPlay
+                } else {
+                    Log.i("PlaybackService", "The path was null")
+                }
+            }
+
+            ACTION_PAUSE -> exoPlayer.pause()
+            ACTION_CONTINUE -> exoPlayer.play()
+            ACTION_REPLACE_MEDIA_ITEMS -> {
+                if (path != null) {
+                    exoPlayer.clearMediaItems()
+                    exoPlayer.setMediaItem(buildMediaItem(path))
+                    exoPlayer.prepare()
+                }
+            }
+
+            ACTION_NO_MORE_TRACKS -> {
+                exoPlayer.pause()
+                exoPlayer.seekTo(0)
+            }
+
+            ACTION_STOP -> {
+                exoPlayer.stop()
+                exoPlayer.clearMediaItems()
+                stopSelf()
+            }
+        }
+    }
+
+    private fun buildMediaItem(path: String) = MediaItem.Builder().apply {
+        setUri(path)
+        setMediaId(path)
+    }.build()
 
     override fun onDestroy() {
         mediaLibrarySession.release()
@@ -247,10 +227,7 @@ class PlaybackService : MediaLibraryService() {
         super.onDestroy()
     }
 
-    private fun showNotification(mediaItem: MediaItem) {
-        val notification =
-            buildPlaybackNotification(this, mediaItem, mediaLibrarySession, CHANNEL_ID)
-                .build()
+    private fun startOrUpdateForeground(notification: Notification) {
         val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         if (!isForegroundStarted) {
             startForeground(NOTIFICATION_ID, notification)
@@ -258,15 +235,23 @@ class PlaybackService : MediaLibraryService() {
         } else {
             manager.notify(NOTIFICATION_ID, notification)
         }
-
     }
 
+    private fun showNotification(mediaItem: MediaItem) {
+        val notification =
+            buildPlaybackNotification(this, mediaItem, mediaLibrarySession, CHANNEL_ID).build()
+        startOrUpdateForeground(notification)
+    }
 
-    private fun updateCustomLayout() {
-        val customActionButtons = orderedCustomActions.map { action ->
+    private fun generateCustomActionButtons(): List<CommandButton> {
+        return orderedCustomActions.map { action ->
             val icon = getIconResIdForAction(action, exoPlayer)
             getCustomActionButton(action, icon)
         }
+    }
+
+    private fun updateCustomLayout() {
+        val customActionButtons = generateCustomActionButtons()
         mediaLibrarySession.setCustomLayout(customActionButtons)
     }
 }

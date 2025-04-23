@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.example.iimusica.components.MiniPlayer
@@ -113,9 +112,9 @@ fun MusicListScreen(
         }
     }
 
+    // Eats commands from bus for notifications
     LaunchedEffect(Unit) {
         PlaybackCommandBus.commands.collectLatest {
-            Log.d("notifz", "Command from Compose screen: $it")
         }
     }
 
