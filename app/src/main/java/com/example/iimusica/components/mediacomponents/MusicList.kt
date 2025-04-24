@@ -3,6 +3,7 @@ package com.example.iimusica.components.mediacomponents
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
@@ -19,13 +20,12 @@ import com.example.iimusica.types.MusicFile
 fun MusicList(
     musicFiles: List<MusicFile>,
     navController: NavController,
-    playerViewModel: PlayerViewModel
+    playerViewModel: PlayerViewModel,
+    listState : LazyListState = rememberLazyListState()
 ) {
     val lastIndex = musicFiles.lastIndex
     val bottomPadding = PaddingValues(bottom = 124.dp)
-    val listState = rememberLazyListState()
     val currentPath = playerViewModel.currentPath.value
-
 
     LazyColumn(
         state = listState,

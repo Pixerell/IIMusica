@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.iimusica.types.MusicFile
 import com.example.iimusica.types.SortOption
 import com.example.iimusica.utils.fetchers.getAllMusicFiles
+import com.example.iimusica.utils.sortFiles
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -30,6 +31,10 @@ class MusicViewModel : ViewModel() {
     private val _isSearching = mutableStateOf(false)
     val isSearching: MutableState<Boolean> get() = _isSearching
 
+    private val _filteredFiles = mutableStateOf<List<MusicFile>>(emptyList())
+    val filteredFiles: MutableState<List<MusicFile>> get() = _filteredFiles
+
+
     private val _animationComplete = mutableStateOf(false)
     val animationComplete: MutableState<Boolean> get() = _animationComplete
 
@@ -42,16 +47,6 @@ class MusicViewModel : ViewModel() {
     private val _miniPlayerVisible = mutableStateOf(false)
     val miniPlayerVisible: MutableState<Boolean> get() = _miniPlayerVisible
 
-
-
-    fun setSortOption(option: SortOption) {
-        if (_selectedSortOption.value == option) {
-            _isDescending.value = !_isDescending.value
-        } else {
-            _selectedSortOption.value = option
-            _isDescending.value = false
-        }
-    }
 
     fun toggleMiniPlayerVisibility() {
         _miniPlayerVisible.value = !_miniPlayerVisible.value
@@ -69,6 +64,7 @@ class MusicViewModel : ViewModel() {
                 lastSuccessfulFiles = files
                 withContext(Dispatchers.Main) {
                     _mFiles.value = files.toList()
+                    updateFilteredFiles()
                     _isLoading.value = false
                 }
             } catch (e: Exception) {
@@ -77,6 +73,41 @@ class MusicViewModel : ViewModel() {
                     _errorMessage.value = "Error fetching music files: ${e.message}"
                     _isLoading.value = false
                 }
+            }
+        }
+    }
+
+    fun setSearchQuery(query: String) {
+        _searchQuery.value = query
+        updateFilteredFiles()
+    }
+
+
+    fun setSortOption(option: SortOption) {
+        if (_selectedSortOption.value == option) {
+            _isDescending.value = !_isDescending.value
+        } else {
+            _selectedSortOption.value = option
+            _isDescending.value = false
+        }
+        updateFilteredFiles()
+    }
+
+    private fun updateFilteredFiles() {
+        viewModelScope.launch(Dispatchers.Default) {
+            val query = _searchQuery.value
+            val filtered = if (query.isEmpty()) {
+                _mFiles.value
+            } else {
+                _mFiles.value.filter {
+                    it.name.contains(query, ignoreCase = true)
+                }
+            }
+
+            val sorted = filtered.sortFiles(_selectedSortOption.value, _isDescending.value)
+
+            withContext(Dispatchers.Main) {
+                _filteredFiles.value = sorted
             }
         }
     }

@@ -62,7 +62,15 @@ class QueueManager(
         } else if (newQueue != queue) {
             clearQueue()
             queue.addAll(newQueue)
-            currentIndex = startIndex
+
+            // If playing track exists in new queue - map index to it or set to 0 if it doesnt
+            val currentTrack = _currentPath.value
+            currentIndex = if (currentTrack != null) {
+                newQueue.indexOfFirst { it.path == currentTrack }.takeIf { it >= 0 } ?: 0
+            } else {
+                startIndex
+            }
+
             regenerateShuffleOrder()
             return
         }

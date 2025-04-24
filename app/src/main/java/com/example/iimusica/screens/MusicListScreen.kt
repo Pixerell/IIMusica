@@ -9,6 +9,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -61,8 +62,9 @@ fun MusicListScreen(
     val selectedSortOption by viewModel.selectedSortOption
     val isDescending by viewModel.isDescending
     val appColors = LocalAppColors.current
-
     val state = rememberPullToRefreshState()
+    val lazylistState = rememberLazyListState()
+
 
     val screenHeight =
         with(LocalDensity.current) { LocalConfiguration.current.screenHeightDp.dp.toPx() }
@@ -76,47 +78,7 @@ fun MusicListScreen(
     var animationComplete by viewModel.animationComplete
     val intOffset = IntOffset(offset.x.toInt(), offset.y.toInt())
 
-    fun onSortOptionSelected(option: SortOption) {
-        viewModel.setSortOption(option)
-    }
-
-    // Function to filter files based on search query
-    fun filterFiles(files: List<MusicFile>, query: String): List<MusicFile> {
-        return if (query.isEmpty()) {
-            files
-        } else {
-            files.filter { it.name.contains(query, ignoreCase = true) }
-        }
-    }
-
-    // Function to sort files based on the selected optfion and direction
-    fun sortFiles(
-        files: List<MusicFile>, sortOption: SortOption, descending: Boolean
-    ): List<MusicFile> {
-        val sortedFiles = files.sortFiles(sortOption, descending)
-        return sortedFiles
-    }
-
-    val filteredFiles by remember {
-        derivedStateOf {
-            filterFiles(
-                mFiles, viewModel.searchQuery.value
-            )
-        }
-    }
-    val sortedFiles by remember {
-        derivedStateOf {
-            sortFiles(
-                filteredFiles, selectedSortOption, isDescending
-            )
-        }
-    }
-
-    // Eats commands from bus for notifications
-    LaunchedEffect(Unit) {
-        PlaybackCommandBus.commands.collectLatest {
-        }
-    }
+    val filteredFiles by viewModel.filteredFiles
 
 
     val fabOffsetY by animateDpAsState(
@@ -124,12 +86,13 @@ fun MusicListScreen(
         animationSpec = tween(durationMillis = 1000),
         label = "FABOffset"
     )
-    // Use LaunchedEffect to launch a coroutine for fetching music files
+    // To launch a coroutine for fetching music files
     LaunchedEffect(Unit) {
         if (mFiles.isEmpty()) {
             viewModel.loadMusicFiles(context)
         }
-
+        //eats commands from bus for notifications
+        PlaybackCommandBus.commands.collectLatest {}
     }
     // Reset flag after animation completes
     LaunchedEffect(offset, playerViewModel.isPlaying) {
@@ -144,20 +107,23 @@ fun MusicListScreen(
             viewModel.miniPlayerVisible.value = true
         }
     }
+    LaunchedEffect(filteredFiles) {
+        lazylistState.animateScrollToItem(0)
+        playerViewModel.queueManager.setQueue(filteredFiles)
+    }
+
 
     Box(
         modifier = Modifier.fillMaxSize()
-    )
-
-    {
+    ) {
         Scaffold(
             topBar = {
                 MusicTopBar(
                     searchQuery = viewModel.searchQuery.value,
-                    onSearchQueryChange = { viewModel.searchQuery.value = it },
+                    onSearchQueryChange = { viewModel.setSearchQuery(it) },
                     isSearching = isSearching,
                     onToggleSearch = { isSearching = !isSearching },
-                    onSortOptionSelected = { onSortOptionSelected(it) },
+                    onSortOptionSelected = { viewModel.setSortOption(it) },
                     selectedSortOption = selectedSortOption,
                     isDescending = isDescending,
                     toggleTheme = toggleTheme
@@ -197,14 +163,14 @@ fun MusicListScreen(
                             message = "No files found on your device. Please download them to your storage",
                             type = MessageType.Warning,
                         )
-                    } else if (sortedFiles.isEmpty()) {
+                    } else if (filteredFiles.isEmpty()) {
                         InfoBox(
                             message = "All files were sorted and filtered out",
                             type = MessageType.Info,
                         )
                     } else {
                         if (playerViewModel.queueManager.getQueue().isEmpty()) {
-                            playerViewModel.queueManager.setQueue(sortedFiles)  // Initialize the queue with sorted files only if it's empty
+                            playerViewModel.queueManager.setQueue(filteredFiles)  // Initialize the queue with sorted files only if it's empty
                         }
                         CompositionLocalProvider(LocalDismissSearch provides {
                             isSearching = false
@@ -230,9 +196,10 @@ fun MusicListScreen(
                                 }
                             ) {
                                 MusicList(
-                                    musicFiles = sortedFiles,
+                                    musicFiles = filteredFiles,
                                     navController = navController,
                                     playerViewModel = playerViewModel,
+                                    listState = lazylistState
                                 )
                             }
 

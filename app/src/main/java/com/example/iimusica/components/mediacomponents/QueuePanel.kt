@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -47,7 +48,6 @@ fun QueuePanel(
         LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
     val expandedHeight = if (isLandscape) 180.dp else 400.dp
     val panelHeight by animateDpAsState(targetValue = if (isPanelExpanded) expandedHeight else QUEUE_PANEL_OFFSET)
-
 
     val appColors = LocalAppColors.current
 
