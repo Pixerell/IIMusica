@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,21 +34,31 @@ import com.example.iimusica.ui.theme.LocalAppColors
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.media3.common.util.UnstableApi
+import com.example.iimusica.screens.MusicViewModel
 import com.example.iimusica.ui.theme.QUEUE_PANEL_OFFSET
 
 @OptIn(UnstableApi::class)
 @Composable
 fun QueuePanel(
+    musicViewModel: MusicViewModel,
     playerViewModel: PlayerViewModel,
     isPanelExpanded: Boolean,
     togglePanelState: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
+    val lazylistState = rememberLazyListState()
+    val currentQueue = musicViewModel.filteredFiles.value
+
+    LaunchedEffect(musicViewModel.filteredFiles.value, musicViewModel.selectedSortOption.value) {
+        playerViewModel.queueManager.setQueue(musicViewModel.filteredFiles.value)
+        lazylistState.animateScrollToItem(0)
+    }
 
     val isLandscape =
         LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
     val expandedHeight = if (isLandscape) 180.dp else 400.dp
     val panelHeight by animateDpAsState(targetValue = if (isPanelExpanded) expandedHeight else QUEUE_PANEL_OFFSET)
+
 
     val appColors = LocalAppColors.current
 
@@ -76,13 +87,12 @@ fun QueuePanel(
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .offset(y = (-24).dp) // Overlap the icon slightly
+                .offset(y = (-24).dp)
                 .clip(CircleShape)
                 .background(appColors.backgroundDarker)
                 .clickable { togglePanelState(!isPanelExpanded) }
                 .padding(8.dp)
-                .zIndex(3f)
-        ) {
+                .zIndex(3f)) {
             Icon(
                 imageVector = if (isPanelExpanded) Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowUp,
                 contentDescription = if (isPanelExpanded) "Collapse Panel" else "Expand Panel",
@@ -99,22 +109,22 @@ fun QueuePanel(
                 .height(panelHeight)
                 .background(animatedBackgroundColor)
                 // border
-                .drawBehind {
-                    drawLine(
-                        color = appColors.backgroundDarker,
-                        start = Offset(0f, 0f),
-                        end = Offset(size.width, 0f),
-                        strokeWidth = 30f
-                    )
-                }
+            .drawBehind {
+                drawLine(
+                    color = appColors.backgroundDarker,
+                    start = Offset(0f, 0f),
+                    end = Offset(size.width, 0f),
+                    strokeWidth = 30f
+                )
+            }
                 .align(Alignment.BottomCenter)
-                .zIndex(1f)
-        ) {
+                .zIndex(1f)) {
             if (isPanelExpanded) {
                 MusicList(
-                    musicFiles = playerViewModel.queueManager.getQueue(),
+                    musicFiles = currentQueue,
                     navController = rememberNavController(),
-                    playerViewModel = playerViewModel
+                    playerViewModel = playerViewModel,
+                    listState = lazylistState
                 )
             }
         }

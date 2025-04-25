@@ -1,6 +1,7 @@
 package com.example.iimusica.screens
 
 
+import android.content.res.Configuration
 import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
@@ -28,16 +29,22 @@ import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.types.MusicFile
 import com.example.iimusica.utils.fetchers.albumPainter
 import com.example.iimusica.utils.fetchers.getMusicFileFromPath
+import com.example.iimusica.utils.reloadmlist
 
 
 @OptIn(UnstableApi::class)
 @Composable
-fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: NavController) {
+fun MusicScreen(
+    path: String,
+    musicViewModel: MusicViewModel,
+    playerViewModel: PlayerViewModel,
+    navController: NavController
+) {
     var musicFile by remember { mutableStateOf<MusicFile?>(null) }
     val appColors = LocalAppColors.current
     val context = LocalContext.current
     val isLandscape =
-        LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+        LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     val currentPath = playerViewModel.currentPath.value ?: path
     var isPanelExpanded by remember { mutableStateOf(false) }
@@ -90,7 +97,16 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
             MusicScreenTopBar(
                 isPlaying = playerViewModel.isPlaying,
                 onBackClick = { navController.navigateUp() },
-                onSettingsClick = { })
+                isDescending = musicViewModel.isDescending.value,
+                selectedSortOption = musicViewModel.selectedSortOption.value,
+                onSortOptionSelected = {
+                    musicViewModel.setSortOption(it)
+                },
+                onReshuffle = { playerViewModel.queueManager.regenerateShuffleOrder() },
+                onReloadLocalFiles = {
+                    reloadmlist(playerViewModel, musicViewModel, context)
+                },
+            )
 
             if (musicFile != null) {
 
@@ -106,14 +122,26 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceEvenly,
                     ) {
-                        MusicScreenMainContent(isLandscape = true, playerViewModel, musicFile, painter, appColors)
+                        MusicScreenMainContent(
+                            isLandscape = true,
+                            playerViewModel,
+                            musicFile,
+                            painter,
+                            appColors
+                        )
                     }
                 } else {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = layoutModifier
                     ) {
-                        MusicScreenMainContent(isLandscape = false, playerViewModel, musicFile, painter, appColors)
+                        MusicScreenMainContent(
+                            isLandscape = false,
+                            playerViewModel,
+                            musicFile,
+                            painter,
+                            appColors
+                        )
                     }
                 }
 
@@ -126,6 +154,7 @@ fun MusicScreen(path: String, playerViewModel: PlayerViewModel, navController: N
             }
         }
         QueuePanel(
+            musicViewModel,
             playerViewModel,
             isPanelExpanded,
             togglePanelState,

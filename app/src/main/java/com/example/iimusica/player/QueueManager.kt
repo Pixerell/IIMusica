@@ -6,6 +6,9 @@ import androidx.compose.runtime.MutableState
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.example.iimusica.types.MusicFile
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class QueueManager(
     private val _isShuffleEnabled: MutableState<Boolean>,
@@ -21,12 +24,12 @@ class QueueManager(
 
     fun toggleShuffle() {
         _isShuffleEnabled.value = !_isShuffleEnabled.value
-
         if (_isShuffleEnabled.value) {
             if (shuffleOrder.size != queue.size) {
                 regenerateShuffleOrder()
+            } else {
+                shuffledIndex = getShuffledIndexByPath(_currentPath.value ?: "") ?: 0
             }
-            shuffledIndex = getShuffledIndexByPath(_currentPath.value ?: "") ?: 0
         }
     }
 
@@ -40,9 +43,12 @@ class QueueManager(
         onRepeatModeChanged(_repeatMode.value)
     }
 
-    private fun regenerateShuffleOrder() {
-        shuffleOrder.clear()
-        shuffleOrder.addAll(queue.indices.shuffled())
+    fun regenerateShuffleOrder() {
+        CoroutineScope(Dispatchers.Default).launch {
+            shuffleOrder.clear()
+            shuffleOrder.addAll(queue.indices.shuffled())
+            shuffledIndex = getShuffledIndexByPath(_currentPath.value ?: "") ?: 0
+        }
     }
 
     private fun getShuffledIndexByPath(path: String): Int? {
@@ -62,15 +68,13 @@ class QueueManager(
         } else if (newQueue != queue) {
             clearQueue()
             queue.addAll(newQueue)
-
-            // If playing track exists in new queue - map index to it or set to 0 if it doesnt
+            // If playing track exists in new queue - map index to it or set to 0 if it doesn't
             val currentTrack = _currentPath.value
             currentIndex = if (currentTrack != null) {
-                newQueue.indexOfFirst { it.path == currentTrack }.takeIf { it >= 0 } ?: 0
+                findIndexByPath(currentTrack)
             } else {
                 startIndex
             }
-
             regenerateShuffleOrder()
             return
         }
@@ -110,4 +114,7 @@ class QueueManager(
         }
     }
 
+    fun findIndexByPath(path: String): Int {
+        return queue.indexOfFirst { it.path == path }.takeIf { it >= 0 } ?: -1
+    }
 }

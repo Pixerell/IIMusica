@@ -15,6 +15,10 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -22,14 +26,26 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.iimusica.types.SortOption
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
 
 @Composable
-fun MusicScreenTopBar(isPlaying: Boolean, onBackClick: () -> Unit, onSettingsClick: () -> Unit) {
+fun MusicScreenTopBar(
+    isPlaying: Boolean,
+    onBackClick: () -> Unit,
+    selectedSortOption : SortOption,
+    onSortOptionSelected: (SortOption) -> Unit,
+    isDescending : Boolean,
+    onReshuffle: () -> Unit,
+    onReloadLocalFiles: () -> Unit,
+
+
+    ) {
     val appColors = LocalAppColors.current
     val isLandscape =
         LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+    var settingsExpanded by remember { mutableStateOf(false) }
 
 
     Box(
@@ -87,7 +103,7 @@ fun MusicScreenTopBar(isPlaying: Boolean, onBackClick: () -> Unit, onSettingsCli
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .clickable { onSettingsClick() },
+                    .clickable { settingsExpanded = !settingsExpanded},
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -96,7 +112,23 @@ fun MusicScreenTopBar(isPlaying: Boolean, onBackClick: () -> Unit, onSettingsCli
                     tint = appColors.icon,
                     modifier = Modifier.size(32.dp)
                 )
+                SettingsDropDownMenu(
+                    expanded = settingsExpanded,
+                    onDismissRequest = { settingsExpanded = false },
+                    onSortOptionSelected = onSortOptionSelected,
+                    selectedSortOption = selectedSortOption,
+                    isDescending = isDescending,
+                    onReshuffle = {
+                        onReshuffle()
+                        settingsExpanded = false
+                    },
+                    onReloadLocalFiles = {
+                        onReloadLocalFiles()
+                        settingsExpanded = false
+                    }
+                )
             }
+
         }
     }
 }

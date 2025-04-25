@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.iimusica.R
+import com.example.iimusica.types.MusicTopBarActions
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
 import com.example.iimusica.types.SortOption
@@ -19,13 +20,9 @@ import com.example.iimusica.types.SortOption
 fun MusicTopBar(
     searchQuery: String,
     isSearching: Boolean,
-    onSearchQueryChange: (String) -> Unit,
-    onToggleSearch: () -> Unit,
-    onSortOptionSelected: (SortOption) -> Unit,
     selectedSortOption: SortOption,
     isDescending: Boolean,
-    toggleTheme: () -> Unit
-
+    actions: MusicTopBarActions,
 ) {
     var expanded by remember { mutableStateOf(false) } // Controls the dropdown visibility
     val appColors = LocalAppColors.current
@@ -33,7 +30,7 @@ fun MusicTopBar(
     TopAppBar(
         title = {
             if (isSearching) {
-                SearchBar(searchQuery, onSearchQueryChange)
+                SearchBar(searchQuery, actions.onSearchQueryChange)
             } else {
                 Text(
                     text = "IIMusica",
@@ -43,16 +40,16 @@ fun MusicTopBar(
                         fontFamily = Typography.headlineLarge.fontFamily,
                         fontWeight = Typography.headlineLarge.fontWeight
                     ),
-                    modifier = Modifier.clickable { toggleTheme() }
+                    modifier = Modifier.clickable { actions.toggleTheme() }
                 )
             }
         },
         actions = {
             IconButton(onClick = {
                 if (isSearching && searchQuery.isNotEmpty()) {
-                    onSearchQueryChange("")
+                    actions.onSearchQueryChange("")
                 } else {
-                    onToggleSearch()
+                    actions.onToggleSearch()
                 }
             }) {
                 Icon(
@@ -72,16 +69,21 @@ fun MusicTopBar(
 
                 )
             }
-
-            // sort dropdown
-            SortDropdownMenu(
+            SettingsDropDownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
-                onSortOptionSelected = onSortOptionSelected,
+                onSortOptionSelected = actions.onSortOptionSelected,
                 selectedSortOption = selectedSortOption,
-                isDescending = isDescending
+                isDescending = isDescending,
+                onReshuffle = {
+                    actions.onReshuffle()
+                    expanded = false
+                },
+                onReloadLocalFiles = {
+                    actions.onReloadLocalFiles()
+                    expanded = false
+                }
             )
-
         },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = appColors.background),
         modifier = Modifier
@@ -92,5 +94,4 @@ fun MusicTopBar(
                 spotColor = appColors.font
             )
     )
-
 }

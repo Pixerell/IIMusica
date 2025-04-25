@@ -65,8 +65,8 @@ class MusicViewModel : ViewModel() {
                 withContext(Dispatchers.Main) {
                     _mFiles.value = files.toList()
                     updateFilteredFiles()
-                    _isLoading.value = false
                 }
+                _isLoading.value = false
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     _mFiles.value = lastSuccessfulFiles

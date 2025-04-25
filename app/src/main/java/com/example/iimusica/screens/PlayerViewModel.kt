@@ -83,10 +83,14 @@ class PlayerViewModel(application: Application, val playbackController: Playback
         playbackController.togglePlayPause()
     }
 
+    fun pause() {
+        playbackController.pause()
+    }
+
     fun stopPlay() {
         playbackController.stopPlay()
         _isShuffleEnabled.value = false
-        _currentPath.value = ""
+        _currentPath.value = null
     }
 
     fun toggleShuffle() {
@@ -98,7 +102,7 @@ class PlayerViewModel(application: Application, val playbackController: Playback
     }
 
     fun setCurrentPath(path: String, isReplacing: Boolean) {
-        if (isReplacing) {
+        if (isReplacing || _currentPath.value == null) {
             playbackController.replaceMediaItems(path)
         }
         _currentPath.value = path

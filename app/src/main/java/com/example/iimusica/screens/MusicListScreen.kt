@@ -26,7 +26,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.example.iimusica.components.MiniPlayer
@@ -34,12 +33,10 @@ import com.example.iimusica.components.buttons.ButtonReload
 import com.example.iimusica.components.ux.InfoBox
 import com.example.iimusica.components.ux.Loader
 import com.example.iimusica.components.ux.MessageType
-import com.example.iimusica.types.MusicFile
 import com.example.iimusica.components.mediacomponents.MusicList
 import com.example.iimusica.components.mediacomponents.MusicTopBar
 import com.example.iimusica.player.PlaybackCommandBus
-import com.example.iimusica.types.SortOption
-import com.example.iimusica.utils.sortFiles
+import com.example.iimusica.types.MusicTopBarActions
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.utils.LocalDismissSearch
 import com.example.iimusica.utils.reloadmlist
@@ -52,7 +49,7 @@ fun MusicListScreen(
     navController: NavController,
     context: Context,
     toggleTheme: () -> Unit,
-    viewModel: MusicViewModel = viewModel(),
+    viewModel: MusicViewModel,
     playerViewModel: PlayerViewModel
 ) {
     var isSearching by viewModel.isSearching
@@ -64,6 +61,7 @@ fun MusicListScreen(
     val appColors = LocalAppColors.current
     val state = rememberPullToRefreshState()
     val lazylistState = rememberLazyListState()
+    val filteredFiles by viewModel.filteredFiles
 
 
     val screenHeight =
@@ -77,10 +75,6 @@ fun MusicListScreen(
     )
     var animationComplete by viewModel.animationComplete
     val intOffset = IntOffset(offset.x.toInt(), offset.y.toInt())
-
-    val filteredFiles by viewModel.filteredFiles
-
-
     val fabOffsetY by animateDpAsState(
         targetValue = if (!viewModel.miniPlayerVisible.value) 0.dp else 140.dp,
         animationSpec = tween(durationMillis = 1000),
@@ -120,13 +114,17 @@ fun MusicListScreen(
             topBar = {
                 MusicTopBar(
                     searchQuery = viewModel.searchQuery.value,
-                    onSearchQueryChange = { viewModel.setSearchQuery(it) },
                     isSearching = isSearching,
-                    onToggleSearch = { isSearching = !isSearching },
-                    onSortOptionSelected = { viewModel.setSortOption(it) },
                     selectedSortOption = selectedSortOption,
                     isDescending = isDescending,
-                    toggleTheme = toggleTheme
+                    actions = MusicTopBarActions(
+                        onSearchQueryChange = { viewModel.setSearchQuery(it) },
+                        onToggleSearch = { isSearching = !isSearching },
+                        onSortOptionSelected = { viewModel.setSortOption(it) },
+                        toggleTheme = toggleTheme,
+                        onReloadLocalFiles = {reloadmlist(playerViewModel, viewModel, context)},
+                        onReshuffle = {playerViewModel.queueManager.regenerateShuffleOrder()}
+                    )
 
                 )
             },
@@ -163,7 +161,7 @@ fun MusicListScreen(
                             message = "No files found on your device. Please download them to your storage",
                             type = MessageType.Warning,
                         )
-                    } else if (filteredFiles.isEmpty()) {
+                    } else if (filteredFiles.isEmpty() && viewModel.searchQuery.value.isNotEmpty() ) {
                         InfoBox(
                             message = "All files were sorted and filtered out",
                             type = MessageType.Info,

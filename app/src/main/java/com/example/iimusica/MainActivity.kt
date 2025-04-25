@@ -17,6 +17,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.compose.rememberNavController
 import com.example.iimusica.player.PlaybackController
+import com.example.iimusica.screens.MusicViewModel
 import com.example.iimusica.screens.PlayerViewModel
 import com.example.iimusica.screens.PlayerViewModelFactory
 import com.example.iimusica.ui.theme.IIMusicaTheme
@@ -32,6 +33,7 @@ class MainActivity : ComponentActivity() {
         playbackController = PlaybackController(application)
         val factory = PlayerViewModelFactory(application, playbackController)
         playerViewModel = ViewModelProvider(this, factory)[PlayerViewModel::class.java]
+        val musicViewModel: MusicViewModel = ViewModelProvider(this)[MusicViewModel::class.java]
 
         super.onCreate(savedInstanceState)
         checkAndRequestPermissions(this)
@@ -49,7 +51,7 @@ class MainActivity : ComponentActivity() {
 
             IIMusicaTheme(darkTheme = isDarkTheme) {
                 val navController = rememberNavController()
-                AppNavGraph(navController, this, toggleTheme, playerViewModel)
+                AppNavGraph(navController, this, toggleTheme, musicViewModel, playerViewModel)
             }
         }
     }

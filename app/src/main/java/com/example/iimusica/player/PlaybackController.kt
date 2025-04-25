@@ -142,6 +142,11 @@ class PlaybackController(
         sendAction(action)
     }
 
+    fun pause() {
+        val action = PlaybackService.ACTION_PAUSE
+        sendAction(action)
+    }
+
     fun stopPlay() {
         _isPlaying.value = false
         pathState.value = null

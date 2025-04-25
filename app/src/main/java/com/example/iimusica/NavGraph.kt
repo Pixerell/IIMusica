@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.iimusica.screens.MusicListScreen
 import com.example.iimusica.screens.MusicScreen
+import com.example.iimusica.screens.MusicViewModel
 import com.example.iimusica.screens.PlayerViewModel
 
 @OptIn(UnstableApi::class)
@@ -18,6 +19,7 @@ fun AppNavGraph(
     navController: NavHostController,
     context: Context,
     toggleTheme: () -> Unit,
+    musicViewModel: MusicViewModel,
     playerViewModel: PlayerViewModel
 ) {
     NavHost(navController, startDestination = "music_list") {
@@ -26,6 +28,7 @@ fun AppNavGraph(
                 navController,
                 context,
                 toggleTheme,
+                viewModel = musicViewModel,
                 playerViewModel = playerViewModel
             )
         }
@@ -34,7 +37,7 @@ fun AppNavGraph(
             "music_detail/{path}",
         ) { backStackEntry ->
             val path = Uri.decode(backStackEntry.arguments?.getString("path") ?: "Unknown")
-            MusicScreen(path, playerViewModel, navController)
+            MusicScreen(path, musicViewModel, playerViewModel, navController)
         }
 
     }
