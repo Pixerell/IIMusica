@@ -8,7 +8,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.iimusica.screens.MusicListScreen
+import com.example.iimusica.screens.MusicPagerScreen
 import com.example.iimusica.screens.MusicScreen
 import com.example.iimusica.screens.MusicViewModel
 import com.example.iimusica.screens.PlayerViewModel
@@ -22,14 +22,14 @@ fun AppNavGraph(
     musicViewModel: MusicViewModel,
     playerViewModel: PlayerViewModel
 ) {
-    NavHost(navController, startDestination = "music_list") {
-        composable("music_list") {
-            MusicListScreen(
+    NavHost(navController, startDestination = "music_pager") {
+        composable("music_pager") {
+            MusicPagerScreen(
                 navController,
-                context,
                 toggleTheme,
-                viewModel = musicViewModel,
-                playerViewModel = playerViewModel
+                musicViewModel = musicViewModel,
+                playerViewModel = playerViewModel,
+                context
             )
         }
 

@@ -213,7 +213,6 @@ fun MusicListScreen(
                 .align(Alignment.BottomCenter)
                 .zIndex(1f)
                 .offset { intOffset }
-
         ) {
             MiniPlayer(
                 playerViewModel = playerViewModel,
