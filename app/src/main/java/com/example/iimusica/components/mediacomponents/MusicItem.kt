@@ -140,7 +140,7 @@ fun MusicItem(
                 text = music.artist,
                 style = TextStyle(
                     fontSize = Typography.bodySmall.fontSize,
-                    color = appColors.font,
+                    color = appColors.secondaryFont,
                     fontFamily = Typography.bodySmall.fontFamily
                 ),
                 maxLines = 2,
