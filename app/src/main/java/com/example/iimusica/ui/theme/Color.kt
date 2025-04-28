@@ -15,7 +15,8 @@ data class AppColors(
     val accentStart: Color,
     val accentEnd: Color,
     val accentGradient: Brush,
-    val active :Color,
+    val active : Color,
+    val activeDarker : Color
 )
 
 // Dark Theme Colors
@@ -30,7 +31,8 @@ val DarkAppColors = AppColors(
     accentGradient = Brush.linearGradient(
         colors = listOf(Color(0xFF4B134B), Color(0xFF0B1045))
     ),
-    active = Color(0xFFF05CFF)
+    active = Color(0xFFF05CFF),
+    activeDarker = Color(0xFF55309F)
 )
 
 val LightAppColors = AppColors(
@@ -44,7 +46,8 @@ val LightAppColors = AppColors(
     accentGradient = Brush.linearGradient(
         colors = listOf(Color(0xFF9D73FF), Color(0xFF7EFFEA))
     ),
-    active = Color(0xFF335EC9)
+    active = Color(0xFF335EC9),
+    activeDarker = Color(0xFFA5F6FF)
 
 
 )

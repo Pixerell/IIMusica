@@ -18,6 +18,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,6 +36,7 @@ import com.example.iimusica.components.buttons.ButtonReload
 import com.example.iimusica.components.mediacomponents.MusicTopBar
 import com.example.iimusica.types.MusicTopBarActions
 import com.example.iimusica.utils.reloadmlist
+import kotlinx.coroutines.launch
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -46,6 +48,8 @@ fun MusicPagerScreen(
     context: Context
 ) {
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { 2 })
+    val coroutineScope = rememberCoroutineScope()
+
     var isSearching by musicViewModel.isSearching
     val selectedSortOption by musicViewModel.selectedSortOption
     val isDescending by musicViewModel.isDescending
@@ -97,7 +101,13 @@ fun MusicPagerScreen(
                     toggleTheme = toggleTheme,
                     onReloadLocalFiles = { reloadmlist(playerViewModel, musicViewModel, context) },
                     onReshuffle = { playerViewModel.queueManager.regenerateShuffleOrder() }
-                )
+                ),
+                currentPage = pagerState.currentPage,
+                onPageSelected = { selectedIndex ->
+                    coroutineScope.launch {
+                        pagerState.animateScrollToPage(selectedIndex)
+                    }
+                }
             )
         },
 
