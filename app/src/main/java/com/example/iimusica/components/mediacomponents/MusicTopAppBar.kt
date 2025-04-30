@@ -42,7 +42,8 @@ fun MusicTopBar(
     isDescending: Boolean,
     actions: MusicTopBarActions,
     currentPage: Int,
-    onPageSelected: (Int) -> Unit
+    onPageSelected: (Int) -> Unit,
+    snackbarHostState: SnackbarHostState
 ) {
     var expanded by remember { mutableStateOf(false) } // Controls the dropdown visibility
     val appColors = LocalAppColors.current
@@ -117,7 +118,8 @@ fun MusicTopBar(
                     onReloadLocalFiles = {
                         actions.onReloadLocalFiles()
                         expanded = false
-                    }
+                    },
+                    snackbarHostState = snackbarHostState
                 )
             },
             colors = TopAppBarDefaults.topAppBarColors(containerColor = appColors.background),

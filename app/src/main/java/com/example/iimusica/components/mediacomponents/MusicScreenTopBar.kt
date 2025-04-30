@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,9 +40,8 @@ fun MusicScreenTopBar(
     isDescending : Boolean,
     onReshuffle: () -> Unit,
     onReloadLocalFiles: () -> Unit,
-
-
-    ) {
+    snackbarHostState: SnackbarHostState
+) {
     val appColors = LocalAppColors.current
     val isLandscape =
         LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
@@ -125,7 +125,8 @@ fun MusicScreenTopBar(
                     onReloadLocalFiles = {
                         onReloadLocalFiles()
                         settingsExpanded = false
-                    }
+                    },
+                    snackbarHostState = snackbarHostState
                 )
             }
 

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,7 +46,8 @@ fun MusicPagerScreen(
     toggleTheme: () -> Unit,
     musicViewModel: MusicViewModel,
     playerViewModel: PlayerViewModel,
-    context: Context
+    context: Context,
+    snackbarHostState: SnackbarHostState
 ) {
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { 2 })
     val coroutineScope = rememberCoroutineScope()
@@ -107,7 +109,8 @@ fun MusicPagerScreen(
                     coroutineScope.launch {
                         pagerState.animateScrollToPage(selectedIndex)
                     }
-                }
+                },
+                snackbarHostState = snackbarHostState
             )
         },
 

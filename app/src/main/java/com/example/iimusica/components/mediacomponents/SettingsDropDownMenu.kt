@@ -33,6 +33,7 @@ import com.example.iimusica.player.PlaybackService
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
 import com.example.iimusica.types.SortOption
+import kotlinx.coroutines.launch
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -44,6 +45,7 @@ fun SettingsDropDownMenu(
     isDescending: Boolean,
     onReshuffle: () -> Unit,
     onReloadLocalFiles: () -> Unit,
+    snackbarHostState: SnackbarHostState
 ) {
     val appColors = LocalAppColors.current
     var isSortByExpanded by remember { mutableStateOf(false) }
@@ -56,6 +58,8 @@ fun SettingsDropDownMenu(
         animationSpec = tween(durationMillis = 200),
         label = "SortArrowRotation"
     )
+
+    val scope = rememberCoroutineScope()
 
     DropdownMenu(
         expanded = expanded,
@@ -133,6 +137,12 @@ fun SettingsDropDownMenu(
             },
             onClick = {
                 onReshuffle()
+                scope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = "Queue reshuffled",
+                        withDismissAction = true
+                    )
+                }
             }
         )
 

@@ -6,6 +6,7 @@ import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,7 +39,8 @@ fun MusicScreen(
     path: String,
     musicViewModel: MusicViewModel,
     playerViewModel: PlayerViewModel,
-    navController: NavController
+    navController: NavController,
+    snackbarHostState: SnackbarHostState
 ) {
     var musicFile by remember { mutableStateOf<MusicFile?>(null) }
     val appColors = LocalAppColors.current
@@ -106,6 +108,7 @@ fun MusicScreen(
                 onReloadLocalFiles = {
                     reloadmlist(playerViewModel, musicViewModel, context)
                 },
+                snackbarHostState = snackbarHostState
             )
 
             if (musicFile != null) {
