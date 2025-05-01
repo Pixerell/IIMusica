@@ -32,15 +32,14 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
 
-        playbackController = PlaybackController(application)
+        val musicViewModel: MusicViewModel = ViewModelProvider(this)[MusicViewModel::class.java]
+        playbackController = PlaybackController(application, musicViewModel)
         val factory = PlayerViewModelFactory(application, playbackController)
         playerViewModel = ViewModelProvider(this, factory)[PlayerViewModel::class.java]
-        val musicViewModel: MusicViewModel = ViewModelProvider(this)[MusicViewModel::class.java]
         val albumViewModel: AlbumViewModel = ViewModelProvider(
             this,
             AlbumViewModelFactory(musicViewModel)
         )[AlbumViewModel::class.java]
-
 
         super.onCreate(savedInstanceState)
         checkAndRequestPermissions(this)

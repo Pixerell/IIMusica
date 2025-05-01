@@ -22,6 +22,7 @@ import com.example.iimusica.components.ux.Loader
 import com.example.iimusica.components.ux.MessageType
 import com.example.iimusica.components.mediacomponents.MusicList
 import com.example.iimusica.player.PlaybackCommandBus
+import com.example.iimusica.types.MusicFile
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.utils.reloadmlist
 import kotlinx.coroutines.flow.collectLatest
@@ -33,7 +34,8 @@ fun MusicListScreen(
     navController: NavController,
     context: Context,
     musicViewModel: MusicViewModel,
-    playerViewModel: PlayerViewModel
+    playerViewModel: PlayerViewModel,
+    filteredFiles: List<MusicFile>
 ) {
     val mFiles by musicViewModel.mFiles
     val isLoading by musicViewModel.isLoading
@@ -41,7 +43,6 @@ fun MusicListScreen(
     val appColors = LocalAppColors.current
     val state = rememberPullToRefreshState()
     val lazyListState = rememberLazyListState()
-    val filteredFiles by musicViewModel.filteredFiles
 
     // To launch a coroutine for fetching music files
     LaunchedEffect(Unit) {
@@ -53,8 +54,14 @@ fun MusicListScreen(
     }
 
     LaunchedEffect(filteredFiles) {
-        lazyListState.animateScrollToItem(0)
         playerViewModel.queueManager.setQueue(filteredFiles)
+    }
+
+    LaunchedEffect(musicViewModel.shouldScrollTop.value) {
+        if (musicViewModel.shouldScrollTop.value) {
+            lazyListState.animateScrollToItem(0)
+            musicViewModel.shouldScrollTop.value = false
+        }
     }
 
     Box(

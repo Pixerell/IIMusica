@@ -36,7 +36,6 @@ class MusicViewModel : ViewModel() {
     private val _filteredFiles = mutableStateOf<List<MusicFile>>(emptyList())
     val filteredFiles: MutableState<List<MusicFile>> get() = _filteredFiles
 
-
     private val _animationComplete = mutableStateOf(false)
     val animationComplete: MutableState<Boolean> get() = _animationComplete
 
@@ -45,6 +44,9 @@ class MusicViewModel : ViewModel() {
 
     private val _isDescending = mutableStateOf(false)
     val isDescending: MutableState<Boolean> get() = _isDescending
+
+    private val _shouldScrollTop = mutableStateOf(false)
+    val shouldScrollTop: MutableState<Boolean> get() = _shouldScrollTop
 
     private val _miniPlayerVisible = mutableStateOf(false)
     val miniPlayerVisible: MutableState<Boolean> get() = _miniPlayerVisible
@@ -105,6 +107,7 @@ class MusicViewModel : ViewModel() {
     }
 
     private fun updateFilteredFiles() {
+        shouldScrollTop.value = true
         viewModelScope.launch(Dispatchers.Default) {
             val query = _searchQuery.value
             val filtered = if (query.isEmpty()) {
@@ -114,14 +117,23 @@ class MusicViewModel : ViewModel() {
                     it.name.contains(query, ignoreCase = true)
                 }
             }
-
             val sorted = filtered.sortFiles(_selectedSortOption.value, _isDescending.value)
-
             withContext(Dispatchers.Main) {
                 _filteredFiles.value = sorted
             }
         }
     }
+
+    fun removeMissingFile(path: String) {
+        val updatedList = _mFiles.value.filter { it.path != path }
+        _mFiles.value = updatedList
+        shouldScrollTop.value = false
+        updateFilteredFiles()
+        viewModelScope.launch(Dispatchers.IO) {
+            _filesLoading.emit(FilesLoadingState.Loaded)
+        }
+    }
+
 
     sealed class FilesLoadingState {
         object Loading : FilesLoadingState()

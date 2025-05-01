@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
+import android.widget.Toast
 import androidx.compose.runtime.IntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
@@ -16,13 +17,16 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
+import com.example.iimusica.screens.MusicViewModel
 import com.example.iimusica.types.MusicFile
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import java.io.File
 
 @UnstableApi
 class PlaybackController(
     application: Application,
+    private val musicViewModel: MusicViewModel? = null
 ) {
 
     var pathState: MutableState<String?> = mutableStateOf(null)
@@ -43,6 +47,7 @@ class PlaybackController(
     private var isBound = false
     private val _isPlaying = mutableStateOf(false)
     val isPlaying: MutableState<Boolean> get() = _isPlaying
+    private val shownErrorPaths = mutableSetOf<String>()
 
     fun setPlayer(player: ExoPlayer) {
         exoPlayer = player
@@ -95,8 +100,10 @@ class PlaybackController(
 
     fun playMusic(path: String, shouldPlay: Boolean = true) {
         try {
-            if (path.isEmpty()) {
+            val file = File(path)
+            if (path.isEmpty() || !file.exists()) {
                 Log.e(tag, "playMusic called with an empty path.")
+                handleErrorFile(path)
                 return
             }
             sendAction(PlaybackService.ACTION_PLAY, foreground = true) {
@@ -113,24 +120,41 @@ class PlaybackController(
     }
 
     fun playNext(queue: List<MusicFile>, index: Int) {
-        val nextIndex = navigateToIndex(isNext = true, queue.size, index, repeatModeState.intValue)
-        if (nextIndex != -1) {
-            val path = queue[nextIndex].path
-            playMusic(path)
-        } else {
-            noMoreTracks()
-        }
+        tryPlayValidTrack(queue, index, isNext = true)
     }
 
     fun playPrevious(queue: List<MusicFile>, index: Int) {
-        val prevIndex = navigateToIndex(isNext = false, queue.size, index, repeatModeState.intValue)
-        if (prevIndex != -1) {
-            val path = queue[prevIndex].path
-            playMusic(path)
-        } else {
-            noMoreTracks()
-        }
+        tryPlayValidTrack(queue, index, isNext = false)
     }
+
+    // This is for handling corrupted/missing files. We skip them and remove from mFiles if they are not found
+    private fun tryPlayValidTrack(
+        queue: List<MusicFile>,
+        startIndex: Int,
+        isNext: Boolean
+    ) {
+        var index = startIndex
+        var attempts = 0
+
+        while (attempts < queue.size) {
+            index = navigateToIndex(isNext, queue.size, index, repeatModeState.intValue)
+            if (index == -1) break
+
+            val path = queue[index].path
+            val file = File(path)
+
+            if (file.exists()) {
+                playMusic(path)
+                return
+            } else {
+                handleErrorFile(path)
+                attempts++
+            }
+        }
+
+        noMoreTracks()
+    }
+
 
     fun togglePlayPause() {
         val action = if (isPlaying.value) {
@@ -187,12 +211,22 @@ class PlaybackController(
         }
     }
 
+    fun handleErrorFile(path : String) {
+        Log.e(tag, "File not found: $path")
+        if (!shownErrorPaths.contains(path)) {
+            Toast.makeText(appContext, "File not found:\n${path}. Removing it from the list ;)", Toast.LENGTH_SHORT).show()
+            shownErrorPaths.add(path)
+        }
+        musicViewModel?.removeMissingFile(path)
+    }
+
     fun onDestroy() {
         if (isBound) {
             appContext.unbindService(connection)
             isBound = false
             Log.i(tag, "Service unbound.")
         }
+        shownErrorPaths.clear()
     }
 
 }

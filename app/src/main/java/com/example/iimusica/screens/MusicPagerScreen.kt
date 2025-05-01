@@ -56,6 +56,8 @@ fun MusicPagerScreen(
     var isSearching by musicViewModel.isSearching
     val selectedSortOption by musicViewModel.selectedSortOption
     val isDescending by musicViewModel.isDescending
+    val filteredFiles by musicViewModel.filteredFiles
+
 
     val screenHeight =
         with(LocalDensity.current) { LocalConfiguration.current.screenHeightDp.dp.toPx() }
@@ -145,6 +147,7 @@ fun MusicPagerScreen(
                         context = context,
                         musicViewModel = musicViewModel,
                         playerViewModel = playerViewModel,
+                        filteredFiles
                     )
 
                     1 -> AlbumsScreen(

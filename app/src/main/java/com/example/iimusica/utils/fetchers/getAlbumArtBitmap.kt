@@ -6,10 +6,17 @@ import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.util.Log
 import androidx.core.net.toUri
+import java.io.File
 
 const val SKIP_CHECK_CODE = -1337L
 
 fun getAlbumArtBitmap(context: Context, albumId: Long, path: String): Bitmap? {
+
+    val file = File(path)
+    if (!file.exists()) {
+        Log.e("MusicFiles", "Album art fetch aborted: file does not exist -> $path")
+        return null
+    }
 
     // If the albumId is invalid (0), we won't try to fetch the album art URI
     if (albumId <= 0 && albumId != -1337L) {
