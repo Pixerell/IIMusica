@@ -7,7 +7,7 @@ data class MusicFile(
     val duration: String,
     val path: String,
     val artist: String,
-    val albumArtUri: Bitmap?,
+    val albumArtBitmap: Bitmap?,
     val album: String,
     val albumId: Long,
     val size: Long,

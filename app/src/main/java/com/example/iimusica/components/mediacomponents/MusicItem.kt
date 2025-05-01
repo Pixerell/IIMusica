@@ -11,7 +11,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import coil.compose.rememberAsyncImagePainter
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.Alignment
@@ -22,12 +21,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.media3.common.util.UnstableApi
 import com.example.iimusica.types.MusicFile
-import com.example.iimusica.R
 import com.example.iimusica.components.ux.AudioVisualizerView
 import com.example.iimusica.screens.PlayerViewModel
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
 import com.example.iimusica.utils.LocalDismissSearch
+import com.example.iimusica.utils.fetchers.albumPainter
 
 
 @OptIn(UnstableApi::class)
@@ -89,16 +88,14 @@ fun MusicItem(
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        val painter = rememberAsyncImagePainter(
-            model = music.albumArtUri ?: R.drawable.default_image
-        )
+        val painter = albumPainter(music)
 
         BoxWithConstraints(
             modifier = Modifier
                 .size(80.dp) // This still defines a fixed max constraint
                 .wrapContentSize(Alignment.Center)
         ) {
-            val imageModifier = if (music.albumArtUri == null) {
+            val imageModifier = if (music.albumArtBitmap == null) {
                 Modifier.size(this.maxWidth * 0.75f) // Smaller for default image
             } else {
                 Modifier.size(this.maxWidth) // Full size for other images

@@ -49,7 +49,7 @@ fun getAllMusicFiles(context: Context): List<MusicFile> {
             val musicFile = extractMusicFileFromCursor(it)
             musicFile?.let {
                 val albumArt = getAlbumArtBitmap(context, musicFile.albumId, musicFile.path)
-                musicFiles.add(it.copy(albumArtUri = albumArt))
+                musicFiles.add(it.copy(albumArtBitmap = albumArt))
             }
         }
     }

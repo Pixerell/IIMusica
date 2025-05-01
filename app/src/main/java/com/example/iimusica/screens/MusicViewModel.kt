@@ -12,6 +12,8 @@ import com.example.iimusica.types.SortOption
 import com.example.iimusica.utils.fetchers.getAllMusicFiles
 import com.example.iimusica.utils.sortFiles
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -47,6 +49,9 @@ class MusicViewModel : ViewModel() {
     private val _miniPlayerVisible = mutableStateOf(false)
     val miniPlayerVisible: MutableState<Boolean> get() = _miniPlayerVisible
 
+    // Observer for albums/playlists
+    private val _filesLoading = MutableSharedFlow<FilesLoadingState>(replay = 0) // New shared flow
+    val filesLoading = _filesLoading.asSharedFlow() // Exposed as a read-only SharedFlow
 
     fun toggleMiniPlayerVisibility() {
         _miniPlayerVisible.value = !_miniPlayerVisible.value
@@ -58,6 +63,10 @@ class MusicViewModel : ViewModel() {
     fun loadMusicFiles(context: Context) {
         _isLoading.value = true
         _errorMessage.value = null
+        viewModelScope.launch {
+            _filesLoading.emit(FilesLoadingState.Loading) // Signal that files are being reset and loaded
+        }
+
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val files = getAllMusicFiles(context)
@@ -65,6 +74,7 @@ class MusicViewModel : ViewModel() {
                 withContext(Dispatchers.Main) {
                     _mFiles.value = files.toList()
                     updateFilteredFiles()
+                    _filesLoading.emit(FilesLoadingState.Loaded) // Signal that files have been successfully loaded
                 }
                 _isLoading.value = false
             } catch (e: Exception) {
@@ -72,6 +82,7 @@ class MusicViewModel : ViewModel() {
                     _mFiles.value = lastSuccessfulFiles
                     _errorMessage.value = "Error fetching music files: ${e.message}"
                     _isLoading.value = false
+                    _filesLoading.emit(FilesLoadingState.Error(e.message ?: "Unknown error"))
                 }
             }
         }
@@ -110,5 +121,11 @@ class MusicViewModel : ViewModel() {
                 _filteredFiles.value = sorted
             }
         }
+    }
+
+    sealed class FilesLoadingState {
+        object Loading : FilesLoadingState()
+        object Loaded : FilesLoadingState()
+        data class Error(val message: String) : FilesLoadingState()
     }
 }

@@ -28,7 +28,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.media3.common.util.UnstableApi
@@ -52,7 +51,6 @@ fun MiniPlayer(
     musicViewModel: MusicViewModel,
     navController: NavController
 ) {
-    val context = LocalContext.current
     val appColors = LocalAppColors.current
     val currentPath = playerViewModel.currentPath.value
     val currentMusic = playerViewModel.queueManager.getQueue().find { it.path == currentPath }
@@ -66,7 +64,7 @@ fun MiniPlayer(
     )
 
     if (currentMusic == null) return
-    val painter = albumPainter(currentMusic, context)
+    val painter = albumPainter(currentMusic)
 
     val buttonOffsetY by animateDpAsState(
         targetValue = if (visible) (-24).dp else (-32).dp,

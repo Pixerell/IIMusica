@@ -47,7 +47,7 @@ fun MusicTopBar(
 ) {
     var expanded by remember { mutableStateOf(false) } // Controls the dropdown visibility
     val appColors = LocalAppColors.current
-    val pageTitles = listOf("Songs", "Playlists")
+    val pageTitles = listOf("Songs", "Albums")
 
     val density = LocalDensity.current
     val screenWidthPx = with(density) { LocalConfiguration.current.screenWidthDp.dp.toPx() }

@@ -1,8 +1,8 @@
 package com.example.iimusica.utils.fetchers
 
-import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import com.example.iimusica.R
@@ -11,7 +11,8 @@ import com.example.iimusica.types.MusicFile
 
 
 @Composable
-fun albumPainter(musicFile: MusicFile?, context: Context): AsyncImagePainter {
+fun albumPainter(musicFile: MusicFile?): AsyncImagePainter {
+    val context = LocalContext.current
     val cachedAlbumArt = AlbumCache.getCachedAlbumArt(musicFile?.path ?: "")
     val cachedTimestamp = AlbumCache.getCachedTimestamp(musicFile?.path ?: "")
     val currentTime = System.currentTimeMillis()

@@ -76,7 +76,7 @@ fun MusicScreen(
     }
 
 
-    val painter = albumPainter(musicFile, context)
+    val painter = albumPainter(musicFile)
 
     Box(
         modifier = Modifier

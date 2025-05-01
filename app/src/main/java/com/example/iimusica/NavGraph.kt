@@ -17,6 +17,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.iimusica.components.ux.CustomSnackBar
+import com.example.iimusica.screens.AlbumViewModel
 import com.example.iimusica.screens.MusicPagerScreen
 import com.example.iimusica.screens.MusicScreen
 import com.example.iimusica.screens.MusicViewModel
@@ -30,7 +31,8 @@ fun AppNavGraph(
     context: Context,
     toggleTheme: () -> Unit,
     musicViewModel: MusicViewModel,
-    playerViewModel: PlayerViewModel
+    playerViewModel: PlayerViewModel,
+    albumViewModel : AlbumViewModel
 ) {
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -47,6 +49,7 @@ fun AppNavGraph(
                     toggleTheme,
                     musicViewModel = musicViewModel,
                     playerViewModel = playerViewModel,
+                    albumViewModel = albumViewModel,
                     context,
                     snackbarHostState = snackbarHostState
                 )
