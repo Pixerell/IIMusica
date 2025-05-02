@@ -50,8 +50,8 @@ fun LazyColumnScrollBar(
     val horizontalOffset = 40f
     val gesturePadding = 10.dp
 
-    val avgItemHeightPx = with(density) {avgItemHeight.dp.toPx() }
-    val bottomPaddingPx = with(density) {bottomPadding.dp.toPx() }
+    val avgItemHeightPx = with(density) { avgItemHeight.dp.toPx() }
+    val bottomPaddingPx = with(density) { bottomPadding.dp.toPx() }
 
     val totalItemCount by remember(lazyListState) {
         derivedStateOf { lazyListState.layoutInfo.totalItemsCount.takeIf { it > 0 } ?: 1 }
@@ -120,7 +120,7 @@ fun LazyColumnScrollBar(
     ) {
         Canvas(
             modifier = Modifier
-                .width(gesturePadding+width.dp)
+                .width(gesturePadding + width.dp)
                 .fillMaxHeight()
                 .pointerInput(Unit) {
                     detectDragGestures { change, dragAmount ->

@@ -20,6 +20,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.media3.common.util.UnstableApi
+import com.example.iimusica.components.innerShadow
 import com.example.iimusica.types.MusicFile
 import com.example.iimusica.components.ux.AudioVisualizerView
 import com.example.iimusica.screens.PlayerViewModel
@@ -53,6 +54,14 @@ fun MusicItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .innerShadow(
+                shape = RectangleShape,
+                color = appColors.font.copy(alpha = 0.25f),
+                blur = 8.dp,
+                offsetY = 6.dp,
+                offsetX = 0.dp,
+                spread = 0.dp
+            )
             .pointerInput(Unit) {
                 detectTapGestures(
                     onTap = {

@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.example.iimusica.R
+import com.example.iimusica.components.innerShadow
 import com.example.iimusica.types.MusicTopBarActions
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
@@ -63,6 +64,14 @@ fun MusicTopBar(
                 shape = RectangleShape,
                 ambientColor = appColors.font,
                 spotColor = appColors.font
+            )
+            .innerShadow(
+                shape = RectangleShape,
+                color = appColors.font.copy(alpha = 0.4f),
+                blur = 8.dp,
+                offsetY = 6.dp,
+                offsetX = 0.dp,
+                spread = 0.dp
             )
     ) {
         TopAppBar(
@@ -134,7 +143,7 @@ fun MusicTopBar(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .clickable{onPageSelected(index)}
+                            .clickable { onPageSelected(index) }
                             .padding(bottom = 12.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -151,7 +160,10 @@ fun MusicTopBar(
             }
             // For lines underneath
             Column(
-                modifier = Modifier.height(3.dp).clip(RectangleShape).background(appColors.background)
+                modifier = Modifier
+                    .height(3.dp)
+                    .clip(RectangleShape)
+                    .background(appColors.background)
             ) {
                 Row(
                     modifier = Modifier
@@ -171,7 +183,7 @@ fun MusicTopBar(
                 Box(
                     modifier = Modifier
                         .width(with(density) { (screenWidthPx / pageTitles.size).toDp() }) // width of one tab
-                        .offset {IntOffset(animatedOffsetPx.toInt(), 0) } // x animation
+                        .offset { IntOffset(animatedOffsetPx.toInt(), 0) } // x animation
                         .offset(y = (-2).dp)
                         .height(3.dp)
                         .background(appColors.active)

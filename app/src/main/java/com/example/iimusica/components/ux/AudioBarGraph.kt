@@ -11,18 +11,17 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.iimusica.ui.theme.LocalAppColors
 
 
 @Composable
-fun AudioBarGraph(audioAmplitude: List<Float>) {
-    val barWidth = 1.dp
-    val maxHeight = 90f
+fun AudioBarGraph(audioAmplitude: List<Float>, barWidth: Dp, maxHeight : Float, barOpacity : Float) {
     val appColors = LocalAppColors.current
-
     Row(
         modifier = Modifier
             .height(maxHeight.dp)
@@ -32,15 +31,15 @@ fun AudioBarGraph(audioAmplitude: List<Float>) {
             .padding(16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-
         // Loop through the audioAmplitude data and create bars
         audioAmplitude.forEach { amplitude ->
             Box(
-
                 modifier = Modifier
                     .width(barWidth)
+                    .alpha(barOpacity)
+                    .clip(RoundedCornerShape(2.dp))
                     .fillMaxHeight(fraction = amplitude)
-                    .background(appColors.active)
+                    .background(appColors.activeGradient)
             )
         }
     }

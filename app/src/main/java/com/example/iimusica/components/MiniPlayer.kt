@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -80,8 +81,16 @@ fun MiniPlayer(
             .fillMaxWidth()
             .height(80.dp)
             .offset(y = offsetY)
-            .zIndex(111f)
             .background(appColors.backgroundDarker)
+            .innerShadow(
+                shape = RectangleShape,
+                color = appColors.font.copy(alpha = 0.4f),
+                blur = 4.dp,
+                offsetY = (-6).dp,
+                offsetX = 0.dp,
+                spread = 4.dp
+            )
+            .zIndex(111f)
             .clickable {
                 navController.navigate("music_detail/${Uri.encode(currentPath)}") {
                     launchSingleTop = true
@@ -118,14 +127,14 @@ fun MiniPlayer(
                         )
                         .clip(RoundedCornerShape(16.dp))
                         .background(appColors.backgroundDarker)
-                        .zIndex(20f)
+                        .zIndex(112f)
 
                 ) {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowUp,
                         tint = appColors.icon,
                         contentDescription = "Options",
-                        modifier = Modifier.rotate(rotation)
+                        modifier = Modifier.rotate(rotation).zIndex(112f)
                     )
                 }
             }
@@ -136,6 +145,7 @@ fun MiniPlayer(
         Row(
             modifier = Modifier
                 .fillMaxSize()
+
                 .padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {

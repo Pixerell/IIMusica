@@ -5,6 +5,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -23,8 +25,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -32,8 +32,10 @@ import androidx.navigation.compose.rememberNavController
 import com.example.iimusica.screens.PlayerViewModel
 import com.example.iimusica.ui.theme.LocalAppColors
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.media3.common.util.UnstableApi
+import com.example.iimusica.components.innerShadow
 import com.example.iimusica.screens.MusicViewModel
 import com.example.iimusica.ui.theme.QUEUE_PANEL_OFFSET
 
@@ -76,6 +78,24 @@ fun QueuePanel(
         colors = listOf(animatedAccentStart, animatedAccentEnd)
     )
 
+    val animatedActiveStart by animateColorAsState(
+        targetValue = if (isPanelExpanded) appColors.activeStart else appColors.backgroundDarker,
+        animationSpec = tween(durationMillis = 500)
+    )
+
+    val animatedActiveEnd by animateColorAsState(
+        targetValue = if (isPanelExpanded) appColors.activeEnd else appColors.backgroundDarker,
+        animationSpec = tween(durationMillis = 1500)
+    )
+
+    val animatedBackgroundGradient = Brush.linearGradient(
+        colors = listOf(animatedActiveStart, animatedActiveEnd)
+    )
+
+    val borderWidth by animateDpAsState(
+        targetValue = if (isPanelExpanded) 2.dp else 0.dp
+    )
+
 
     Box(
         modifier = modifier
@@ -83,13 +103,30 @@ fun QueuePanel(
             .height(panelHeight)
             .background(appColors.backgroundDarker)
             .zIndex(2f)
+            .innerShadow(
+                shape = RectangleShape,
+                color = appColors.font.copy(alpha = 0.4f),
+                blur = 8.dp,
+                offsetY = (-6).dp,
+                offsetX = 0.dp,
+                spread = 0.dp
+            )
     ) {
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .offset(y = (-24).dp)
                 .clip(CircleShape)
+                .border(borderWidth, animatedBackgroundColor, CircleShape)
                 .background(appColors.backgroundDarker)
+                .innerShadow(
+                    shape = RoundedCornerShape(16.dp),
+                    color = appColors.font.copy(alpha = 0.25f),
+                    blur = 8.dp,
+                    offsetY = 6.dp,
+                    offsetX = 0.dp,
+                    spread = 0.dp
+                )
                 .clickable { togglePanelState(!isPanelExpanded) }
                 .padding(8.dp)
                 .zIndex(3f)) {
@@ -102,23 +139,30 @@ fun QueuePanel(
                 tint = appColors.font
             )
         }
-
+        // border in a box for innershadows
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(panelHeight)
                 .background(animatedBackgroundColor)
-                // border
-            .drawBehind {
-                drawLine(
-                    color = appColors.backgroundDarker,
-                    start = Offset(0f, 0f),
-                    end = Offset(size.width, 0f),
-                    strokeWidth = 30f
+                .innerShadow(
+                    shape = RectangleShape,
+                    color = appColors.font.copy(alpha = 0.25f),
+                    blur = 4.dp,
+                    offsetY = 2.dp,
+                    offsetX = 0.dp,
+                    spread = 0.dp
                 )
-            }
                 .align(Alignment.BottomCenter)
                 .zIndex(1f)) {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(2.dp)
+                    .background(animatedBackgroundGradient)
+                    .zIndex(111f)
+            )
+
             if (isPanelExpanded) {
                 MusicList(
                     musicFiles = currentQueue,

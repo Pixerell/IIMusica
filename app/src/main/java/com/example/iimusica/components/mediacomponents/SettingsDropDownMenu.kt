@@ -24,11 +24,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import com.example.iimusica.R
+import com.example.iimusica.components.innerShadow
 import com.example.iimusica.player.PlaybackService
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
@@ -64,7 +66,16 @@ fun SettingsDropDownMenu(
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
-        modifier = Modifier.padding(8.dp),
+        modifier = Modifier
+            .innerShadow(
+                shape = RectangleShape,
+                color = appColors.font.copy(alpha = 0.4f),
+                blur = 8.dp,
+                offsetY = 6.dp,
+                offsetX = 0.dp,
+                spread = 0.dp
+            )
+            .padding(8.dp),
         containerColor = appColors.backgroundDarker,
     ) {
         DropdownMenuItem(
@@ -73,7 +84,9 @@ fun SettingsDropDownMenu(
                     Icon(
                         Icons.Default.PlayArrow,
                         contentDescription = "Sort expander",
-                        modifier = Modifier.padding(end = 8.dp).rotate(rotation),
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .rotate(rotation),
                         tint = appColors.icon
                     )
                     Text(
@@ -117,14 +130,22 @@ fun SettingsDropDownMenu(
                 }
             }
         }
-        HorizontalDivider(modifier = Modifier.alpha(0.4f).fillMaxWidth(), color = appColors.font, thickness = 0.6.dp)
+        HorizontalDivider(
+            modifier = Modifier
+                .alpha(0.4f)
+                .fillMaxWidth(),
+            color = appColors.font,
+            thickness = 0.6.dp
+        )
         DropdownMenuItem(
             text = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         painter = painterResource(R.drawable.shuffleico),
                         contentDescription = "Reshuffling",
-                        modifier = Modifier.padding(end = 8.dp).size(20.dp),
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .size(20.dp),
                         tint = appColors.icon
                     )
                     Text(
