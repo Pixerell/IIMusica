@@ -151,7 +151,7 @@ fun MusicTopBar(
                             text = title,
                             style = Typography.bodySmall.copy(
                                 color = if (index == currentPage) appColors.active else appColors.activeDarker,
-                                fontWeight = if (index == currentPage) Typography.headlineMedium.fontWeight else Typography.bodyLarge.fontWeight,
+                                fontWeight = if (index == currentPage) Typography.headlineLarge.fontWeight else Typography.bodyLarge.fontWeight,
                                 textAlign = TextAlign.Center
                             )
                         )

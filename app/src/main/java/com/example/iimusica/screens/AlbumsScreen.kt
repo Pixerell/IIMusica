@@ -15,6 +15,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
@@ -57,7 +59,7 @@ fun AlbumsScreen(
                 columns = GridCells.Fixed(2), // 2 columns
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
+                    .padding(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -66,7 +68,13 @@ fun AlbumsScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .aspectRatio(1f) // Makes it square-ish
+                            .shadow(
+                                elevation = 4.dp,
+                                shape = RectangleShape,
+                                ambientColor = appColors.font,
+                                spotColor = appColors.font
+                            )
+                            .aspectRatio(0.78f) // this adjusts height
                             .background(appColors.background),
                         contentAlignment = Alignment.Center
                     ) {

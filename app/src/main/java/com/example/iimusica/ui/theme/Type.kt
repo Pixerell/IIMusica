@@ -29,7 +29,7 @@ val Typography = Typography(
     ),
     headlineMedium = TextStyle(
         fontFamily = Tektur,
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.W600,
         fontSize = 28.sp
     ),
     bodyMedium = TextStyle(
@@ -41,5 +41,10 @@ val Typography = Typography(
         fontFamily = Tektur,
         fontWeight = FontWeight.Normal,
         fontSize = 18.sp
+    ),
+    labelSmall = TextStyle(
+        fontFamily = Tektur,
+        fontWeight = FontWeight.Normal,
+        fontSize = 16.sp
     ),
 )
