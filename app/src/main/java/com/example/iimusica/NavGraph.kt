@@ -17,6 +17,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.iimusica.components.ux.CustomSnackBar
+import com.example.iimusica.screens.AlbumDetailedScreen
 import com.example.iimusica.screens.AlbumViewModel
 import com.example.iimusica.screens.MusicPagerScreen
 import com.example.iimusica.screens.MusicScreen
@@ -62,6 +63,14 @@ fun AppNavGraph(
                     playerViewModel,
                     navController,
                     snackbarHostState = snackbarHostState
+                )
+            }
+            composable("album_detail/{albumId}") { backStackEntry ->
+                val albumId = backStackEntry.arguments?.getString("albumId") ?: ""
+                AlbumDetailedScreen(
+                    albumId = albumId,
+                    navController = navController,
+                    albumViewModel = albumViewModel
                 )
             }
         }

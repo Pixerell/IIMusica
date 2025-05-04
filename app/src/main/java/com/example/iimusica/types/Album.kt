@@ -11,8 +11,9 @@ data class AlbumSummary(
 
 
 data class Album(
+    val albumId : Long,
     val name: String,
-    val artist: String?,
+    val artist: String,
     val songs: List<MusicFile>,
     val albumArtBitmap: Bitmap? = null
 )

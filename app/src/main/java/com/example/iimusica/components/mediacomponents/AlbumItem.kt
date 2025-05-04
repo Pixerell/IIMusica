@@ -1,6 +1,7 @@
 package com.example.iimusica.components.mediacomponents
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -9,9 +10,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.iimusica.components.innerShadow
 import com.example.iimusica.types.AlbumSummary
 import com.example.iimusica.ui.theme.LocalAppColors
@@ -19,7 +22,7 @@ import com.example.iimusica.ui.theme.Typography
 import com.example.iimusica.utils.fetchers.albumPainter
 
 @Composable
-fun AlbumItem(summary: AlbumSummary) {
+fun AlbumItem(summary: AlbumSummary, navController: NavController) {
     val appColors = LocalAppColors.current
     val painter = albumPainter(summary.representativeSong)
 
@@ -34,6 +37,17 @@ fun AlbumItem(summary: AlbumSummary) {
                 offsetX = 0.dp,
                 spread = 0.dp
             )
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = {
+                        if (summary.representativeSong != null) {
+                            navController.navigate("album_detail/${summary.representativeSong.albumId}") {
+                                launchSingleTop = true
+                            }
+                        }
+                    },
+                )
+            }
 
     ) {
         Image(

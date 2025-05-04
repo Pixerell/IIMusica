@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.State
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.iimusica.types.Album
 import com.example.iimusica.types.AlbumSummary
 import com.example.iimusica.types.MusicFile
 import kotlinx.coroutines.launch
@@ -31,7 +32,7 @@ class AlbumViewModel(
                     }
 
                     is MusicViewModel.FilesLoadingState.Loaded -> {
-                        updateAlbums(musicViewModel.mFiles.value)
+                        updateAlbumSummaries(musicViewModel.mFiles.value)
                         _isLoading.value = false
                     }
 
@@ -44,13 +45,7 @@ class AlbumViewModel(
         }
     }
 
-    fun getSongsForAlbum(name: String, artist: String): List<MusicFile> {
-        return musicViewModel.mFiles.value.filter {
-            it.album == name && it.artist == artist
-        }
-    }
-
-    private fun updateAlbums(files: List<MusicFile>) {
+    private fun updateAlbumSummaries(files: List<MusicFile>) {
         _albums.value = groupIntoAlbumSummaries(files)
     }
 
@@ -67,6 +62,23 @@ class AlbumViewModel(
                 )
             }
             .sortedBy { it.name } // Sort albums by name
+    }
+
+    fun getAlbumById(albumId: Long): Album? {
+        val songs = getSongsForAlbum(albumId)
+        if (songs.isEmpty()) return null
+        val representativeSong = songs.firstOrNull { it.albumArtBitmap != null } ?: songs.first()
+        return Album(
+            albumId = albumId,
+            name = representativeSong.album,
+            artist = representativeSong.artist,
+            songs = songs,
+            albumArtBitmap = representativeSong.albumArtBitmap
+        )
+    }
+
+    fun getSongsForAlbum(albumId: Long): List<MusicFile> {
+        return musicViewModel.mFiles.value.filter { it.albumId == albumId }
     }
 
 }

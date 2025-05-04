@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -20,6 +21,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
+import androidx.navigation.NavController
 import com.example.iimusica.components.mediacomponents.AlbumItem
 import com.example.iimusica.components.ux.InfoBox
 import com.example.iimusica.components.ux.Loader
@@ -30,11 +32,14 @@ import com.example.iimusica.ui.theme.LocalAppColors
 @Composable
 fun AlbumsScreen(
     albumViewModel: AlbumViewModel,
+    navController: NavController
 ) {
     val appColors = LocalAppColors.current
     val albums = albumViewModel.albums.value
     val isLoading by albumViewModel.isLoading
     val errorMessage = albumViewModel.errorMessage
+    val gridState = rememberLazyGridState()
+
 
     Box(
         modifier = Modifier.fillMaxSize().background(appColors.accentGradient)
@@ -56,6 +61,7 @@ fun AlbumsScreen(
         }
         else {
             LazyVerticalGrid(
+                state = gridState,
                 columns = GridCells.Fixed(2), // 2 columns
                 modifier = Modifier
                     .fillMaxSize()
@@ -78,7 +84,7 @@ fun AlbumsScreen(
                             .background(appColors.background),
                         contentAlignment = Alignment.Center
                     ) {
-                        AlbumItem(album)
+                        AlbumItem(album, navController)
                     }
                 }
             }

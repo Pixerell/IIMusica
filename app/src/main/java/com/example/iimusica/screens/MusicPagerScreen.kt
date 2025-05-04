@@ -46,7 +46,7 @@ fun MusicPagerScreen(
     toggleTheme: () -> Unit,
     musicViewModel: MusicViewModel,
     playerViewModel: PlayerViewModel,
-    albumViewModel : AlbumViewModel,
+    albumViewModel: AlbumViewModel,
     context: Context,
     snackbarHostState: SnackbarHostState
 ) {
@@ -151,7 +151,8 @@ fun MusicPagerScreen(
                     )
 
                     1 -> AlbumsScreen(
-                        albumViewModel = albumViewModel
+                        albumViewModel = albumViewModel,
+                        navController = navController
                     )
                 }
             }

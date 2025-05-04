@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -34,15 +33,15 @@ import com.example.iimusica.ui.theme.LocalAppColors
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.lazy.LazyListState
+
 
 @OptIn(UnstableApi::class)
 @Composable
 fun LazyColumnScrollBar(
-    lazyListState: LazyListState,
-    width: Int = 10,
-    avgItemHeight: Int = 85,
-    bottomPadding: Int = 124
+    lazyListState: LazyListState, width: Int = 10, avgItemHeight: Int = 85, bottomPadding: Int = 124
 ) {
+
     val appColors = LocalAppColors.current
     val density = LocalDensity.current
 
@@ -63,8 +62,7 @@ fun LazyColumnScrollBar(
         totalItemCount * avgItemHeightPx + bottomPaddingPx
     }
     val thumbHeightPx = remember(contentHeightPx, scrollHeight) {
-        ((scrollHeight / contentHeightPx) * scrollHeight)
-            .coerceIn(0f, scrollHeight * 0.4f)
+        ((scrollHeight / contentHeightPx) * scrollHeight).coerceIn(0f, scrollHeight * 0.4f)
     }
     val maxScrollPx by remember(contentHeightPx, scrollHeight) {
         derivedStateOf {
@@ -85,12 +83,10 @@ fun LazyColumnScrollBar(
     val topOffsetPx = rawThumbOffset.coerceIn(0f, scrollHeight - thumbHeightPx)
 
     val animatedThumbHeight by animateFloatAsState(
-        targetValue = thumbHeightPx,
-        animationSpec = spring(stiffness = Spring.StiffnessLow)
+        targetValue = thumbHeightPx, animationSpec = spring(stiffness = Spring.StiffnessLow)
     )
     val animatedTopOffset by animateFloatAsState(
-        targetValue = topOffsetPx,
-        animationSpec = spring(stiffness = Spring.StiffnessLow)
+        targetValue = topOffsetPx, animationSpec = spring(stiffness = Spring.StiffnessLow)
     )
 
     // Animation for fadeins/outs of when you are scrolling
@@ -115,8 +111,7 @@ fun LazyColumnScrollBar(
     }
 
     Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.TopEnd
+        modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopEnd
     ) {
         Canvas(
             modifier = Modifier
@@ -146,14 +141,12 @@ fun LazyColumnScrollBar(
                             lazyListState.scrollToItem(targetIndex)
                         }
                     }
-                },
-            onDraw = {
-                drawRect(
-                    color = appColors.activeDarker.copy(alpha = thumbAlpha),
-                    topLeft = Offset(horizontalOffset, animatedTopOffset),
-                    size = Size(width.toFloat(), animatedThumbHeight)
-                )
-            }
-        )
+                }, onDraw = {
+            drawRect(
+                color = appColors.activeDarker.copy(alpha = thumbAlpha),
+                topLeft = Offset(horizontalOffset, animatedTopOffset),
+                size = Size(width.toFloat(), animatedThumbHeight)
+            )
+        })
     }
 }
