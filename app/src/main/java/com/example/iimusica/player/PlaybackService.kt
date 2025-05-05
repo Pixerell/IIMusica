@@ -7,7 +7,9 @@ import android.content.Intent
 import android.os.Binder
 import android.os.Bundle
 import android.os.IBinder
+import android.widget.Toast
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
@@ -32,6 +34,7 @@ import com.example.iimusica.player.notifications.getIconResIdForAction
 import com.example.iimusica.player.notifications.orderedCustomActions
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import java.io.File
 
 
 @UnstableApi
@@ -102,6 +105,17 @@ class PlaybackService : MediaLibraryService() {
             override fun onRepeatModeChanged(repeatMode: Int) {
                 updateCustomLayout()
             }
+
+            override fun onPlayerError(error: PlaybackException) {
+                super.onPlayerError(error)
+                Toast.makeText(
+                    application.applicationContext,
+                    "Playback error: ${error.message}",
+                    Toast.LENGTH_SHORT
+                )
+                    .show()
+            }
+
         })
     }
 

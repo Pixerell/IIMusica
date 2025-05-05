@@ -15,6 +15,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.example.iimusica.components.ux.LazyColumnScrollBar
 import com.example.iimusica.screens.PlayerViewModel
+import com.example.iimusica.types.BOTTOM_LIST_PADDING
 import com.example.iimusica.types.MusicFile
 
 
@@ -27,7 +28,7 @@ fun MusicList(
     listState: LazyListState = rememberLazyListState()
 ) {
     val lastIndex = musicFiles.lastIndex
-    val bottomPadding = PaddingValues(bottom = 124.dp)
+    val bottomPadding = PaddingValues(bottom = BOTTOM_LIST_PADDING.dp)
     val currentPath = playerViewModel.currentPath.value
 
     Box(modifier = Modifier.fillMaxSize()) {

@@ -23,6 +23,7 @@ import com.example.iimusica.screens.MusicPagerScreen
 import com.example.iimusica.screens.MusicScreen
 import com.example.iimusica.screens.MusicViewModel
 import com.example.iimusica.screens.PlayerViewModel
+import com.example.iimusica.screens.PlaylistViewModel
 
 
 @OptIn(UnstableApi::class)
@@ -33,7 +34,8 @@ fun AppNavGraph(
     toggleTheme: () -> Unit,
     musicViewModel: MusicViewModel,
     playerViewModel: PlayerViewModel,
-    albumViewModel : AlbumViewModel
+    albumViewModel : AlbumViewModel,
+    playlistViewModel : PlaylistViewModel
 ) {
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -51,6 +53,7 @@ fun AppNavGraph(
                     musicViewModel = musicViewModel,
                     playerViewModel = playerViewModel,
                     albumViewModel = albumViewModel,
+                    playlistViewModel = playlistViewModel,
                     context,
                     snackbarHostState = snackbarHostState
                 )

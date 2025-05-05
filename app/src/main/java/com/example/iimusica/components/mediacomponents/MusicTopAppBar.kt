@@ -30,6 +30,7 @@ import androidx.compose.ui.zIndex
 import com.example.iimusica.R
 import com.example.iimusica.components.innerShadow
 import com.example.iimusica.types.MusicTopBarActions
+import com.example.iimusica.types.PAGE_TITLES
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
 import com.example.iimusica.types.SortOption
@@ -48,7 +49,7 @@ fun MusicTopBar(
 ) {
     var expanded by remember { mutableStateOf(false) } // Controls the dropdown visibility
     val appColors = LocalAppColors.current
-    val pageTitles = listOf("Songs", "Albums")
+    val pageTitles = PAGE_TITLES
 
     val density = LocalDensity.current
     val screenWidthPx = with(density) { LocalConfiguration.current.screenWidthDp.dp.toPx() }

@@ -34,12 +34,15 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.lazy.LazyListState
+import com.example.iimusica.types.AVERAGE_MUSICITEM_HEIGHT
+import com.example.iimusica.types.BOTTOM_LIST_PADDING
+import com.example.iimusica.types.SCROLLBAR_WIDTH
 
 
 @OptIn(UnstableApi::class)
 @Composable
 fun LazyColumnScrollBar(
-    lazyListState: LazyListState, width: Int = 10, avgItemHeight: Int = 85, bottomPadding: Int = 124
+    lazyListState: LazyListState, width: Int = SCROLLBAR_WIDTH, avgItemHeight: Int = AVERAGE_MUSICITEM_HEIGHT, bottomPadding: Int = BOTTOM_LIST_PADDING
 ) {
 
     val appColors = LocalAppColors.current

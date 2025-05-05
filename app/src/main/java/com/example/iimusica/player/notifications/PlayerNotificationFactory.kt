@@ -9,7 +9,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaStyleNotificationHelper.MediaStyle
 import com.example.iimusica.R
-import com.example.iimusica.utils.fetchers.SKIP_CHECK_CODE
+import com.example.iimusica.types.SKIP_CHECK_CODE
 import com.example.iimusica.utils.fetchers.getAlbumArtBitmap
 
 

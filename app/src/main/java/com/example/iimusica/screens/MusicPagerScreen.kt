@@ -36,8 +36,10 @@ import com.example.iimusica.components.MiniPlayer
 import com.example.iimusica.components.buttons.ButtonReload
 import com.example.iimusica.components.mediacomponents.MusicTopBar
 import com.example.iimusica.types.MusicTopBarActions
+import com.example.iimusica.types.PAGE_TITLES
 import com.example.iimusica.utils.reloadmlist
 import kotlinx.coroutines.launch
+
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -47,10 +49,12 @@ fun MusicPagerScreen(
     musicViewModel: MusicViewModel,
     playerViewModel: PlayerViewModel,
     albumViewModel: AlbumViewModel,
+    playlistViewModel : PlaylistViewModel,
     context: Context,
     snackbarHostState: SnackbarHostState
 ) {
-    val pagerState = rememberPagerState(initialPage = 0, pageCount = { 2 })
+
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { PAGE_TITLES.size })
     val coroutineScope = rememberCoroutineScope()
 
     var isSearching by musicViewModel.isSearching
@@ -152,6 +156,10 @@ fun MusicPagerScreen(
 
                     1 -> AlbumsScreen(
                         albumViewModel = albumViewModel,
+                        navController = navController
+                    )
+                    2 -> PlaylistsScreen(
+                        playlistViewModel = playlistViewModel,
                         navController = navController
                     )
                 }

@@ -6,9 +6,9 @@ import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.util.Log
 import androidx.core.net.toUri
+import com.example.iimusica.types.SKIP_CHECK_CODE
 import java.io.File
 
-const val SKIP_CHECK_CODE = -1337L
 
 fun getAlbumArtBitmap(context: Context, albumId: Long, path: String): Bitmap? {
 
@@ -19,7 +19,7 @@ fun getAlbumArtBitmap(context: Context, albumId: Long, path: String): Bitmap? {
     }
 
     // If the albumId is invalid (0), we won't try to fetch the album art URI
-    if (albumId <= 0 && albumId != -1337L) {
+    if (albumId <= 0 && albumId != SKIP_CHECK_CODE) {
         Log.d("MusicFiles", "Invalid albumId, skipping content URI fetch.")
         return null
     }
