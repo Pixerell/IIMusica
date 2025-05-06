@@ -42,7 +42,9 @@ fun AlbumsScreen(
 
 
     Box(
-        modifier = Modifier.fillMaxSize().background(appColors.accentGradient)
+        modifier = Modifier
+            .fillMaxSize()
+            .background(appColors.accentGradient)
     )
     {
         if (isLoading) {
@@ -52,14 +54,13 @@ fun AlbumsScreen(
                 message = "There was an error $errorMessage",
                 type = MessageType.Error,
             )
-        }
-        else if (albums.isEmpty()) {
+        } else if (albums.isEmpty()) {
             InfoBox(
-                message = "No suitable Albums found, perhaps check the metadata?",
+                message = "No suitable Albums found, perhaps check the track's metadata? " +
+                        "They need to contain AlbumID's",
                 type = MessageType.Warning,
             )
-        }
-        else {
+        } else {
             LazyVerticalGrid(
                 state = gridState,
                 columns = GridCells.Fixed(2), // 2 columns
@@ -70,7 +71,10 @@ fun AlbumsScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(albums) { album ->
-                    Log.d("albumz", "albums - ${album.name} and artist ${album.artist} its song? ${album.representativeSong}")
+                    Log.d(
+                        "albumz",
+                        "albums - ${album.name} and artist ${album.artist} its song? ${album.representativeSong}"
+                    )
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()

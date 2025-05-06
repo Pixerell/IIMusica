@@ -19,6 +19,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.example.iimusica.components.mediacomponents.MusicScreenMainContent
@@ -39,6 +40,7 @@ fun MusicScreen(
     path: String,
     musicViewModel: MusicViewModel,
     playerViewModel: PlayerViewModel,
+    sharedSearchViewModel: SharedSearchViewModel,
     navController: NavController,
     snackbarHostState: SnackbarHostState
 ) {
@@ -53,6 +55,9 @@ fun MusicScreen(
     val togglePanelState: (Boolean) -> Unit = { expanded ->
         isPanelExpanded = !isPanelExpanded
     }
+
+    val screenKey = pageToScreenKey(0)
+    val state = sharedSearchViewModel.getState(screenKey)
 
     LaunchedEffect(currentPath) {
         val currentMediaItem =
@@ -75,6 +80,7 @@ fun MusicScreen(
         musicFile = getMusicFileFromPath(context, currentPath.toString())
     }
 
+    Log.d("statezbar", "Did it get updated in music screen? ${state.query}, issearching? ${state.isSearching}, ${state.sortOption}")
 
     val painter = albumPainter(musicFile)
 
@@ -99,15 +105,16 @@ fun MusicScreen(
             MusicScreenTopBar(
                 isPlaying = playerViewModel.isPlaying,
                 onBackClick = { navController.navigateUp() },
-                isDescending = musicViewModel.isDescending.value,
-                selectedSortOption = musicViewModel.selectedSortOption.value,
+                isDescending = state.isDescending,
+                selectedSortOption = state.sortOption,
                 onSortOptionSelected = {
-                    musicViewModel.setSortOption(it)
+                    sharedSearchViewModel.updateSort(screenKey, it)
                 },
                 onReshuffle = { playerViewModel.queueManager.regenerateShuffleOrder() },
                 onReloadLocalFiles = {
                     reloadmlist(playerViewModel, musicViewModel, context)
                 },
+                onToggleDescending = {sharedSearchViewModel.toggleDescending(screenKey)},
                 snackbarHostState = snackbarHostState
             )
 

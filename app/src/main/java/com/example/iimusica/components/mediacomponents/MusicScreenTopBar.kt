@@ -44,6 +44,7 @@ fun MusicScreenTopBar(
     isDescending: Boolean,
     onReshuffle: () -> Unit,
     onReloadLocalFiles: () -> Unit,
+    onToggleDescending: () -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
     val appColors = LocalAppColors.current
@@ -159,6 +160,7 @@ fun MusicScreenTopBar(
                         onReloadLocalFiles()
                         settingsExpanded = false
                     },
+                    onToggleDescending = onToggleDescending,
                     snackbarHostState = snackbarHostState
                 )
             }

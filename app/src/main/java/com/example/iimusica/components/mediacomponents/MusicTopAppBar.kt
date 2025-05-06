@@ -45,8 +45,13 @@ fun MusicTopBar(
     actions: MusicTopBarActions,
     currentPage: Int,
     onPageSelected: (Int) -> Unit,
+    onToggleDescending: () -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
+
+
+
+
     var expanded by remember { mutableStateOf(false) } // Controls the dropdown visibility
     val appColors = LocalAppColors.current
     val pageTitles = PAGE_TITLES
@@ -129,6 +134,7 @@ fun MusicTopBar(
                         actions.onReloadLocalFiles()
                         expanded = false
                     },
+                    onToggleDescending = onToggleDescending,
                     snackbarHostState = snackbarHostState
                 )
             },

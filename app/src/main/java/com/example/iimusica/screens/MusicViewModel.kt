@@ -17,7 +17,11 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class MusicViewModel : ViewModel() {
+class MusicViewModel(
+    private val sharedSearchViewModel: SharedSearchViewModel
+) : ViewModel(
+) {
+
     private val _mFiles = mutableStateOf(emptyList<MusicFile>())
     val mFiles: MutableState<List<MusicFile>> get() = _mFiles
 
@@ -90,26 +94,11 @@ class MusicViewModel : ViewModel() {
         }
     }
 
-    fun setSearchQuery(query: String) {
-        _searchQuery.value = query
-        updateFilteredFiles()
-    }
-
-
-    fun setSortOption(option: SortOption) {
-        if (_selectedSortOption.value == option) {
-            _isDescending.value = !_isDescending.value
-        } else {
-            _selectedSortOption.value = option
-            _isDescending.value = false
-        }
-        updateFilteredFiles()
-    }
-
-    private fun updateFilteredFiles() {
-        shouldScrollTop.value = true
+    fun updateFilteredFiles() {
         viewModelScope.launch(Dispatchers.Default) {
-            val query = _searchQuery.value
+            val state =
+                sharedSearchViewModel.getState(pageToScreenKey(0))
+            val query = state.query
             val filtered = if (query.isEmpty()) {
                 _mFiles.value
             } else {
@@ -117,10 +106,11 @@ class MusicViewModel : ViewModel() {
                     it.name.contains(query, ignoreCase = true)
                 }
             }
-            val sorted = filtered.sortFiles(_selectedSortOption.value, _isDescending.value)
+            val sorted = filtered.sortFiles(state.sortOption, state.isDescending)
             withContext(Dispatchers.Main) {
                 _filteredFiles.value = sorted
             }
+            shouldScrollTop.value = true
         }
     }
 

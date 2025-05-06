@@ -5,6 +5,7 @@ package com.example.iimusica.screens
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -35,6 +36,7 @@ fun MusicListScreen(
     context: Context,
     musicViewModel: MusicViewModel,
     playerViewModel: PlayerViewModel,
+    lazyListState: LazyListState,
     filteredFiles: List<MusicFile>
 ) {
     val mFiles by musicViewModel.mFiles
@@ -42,7 +44,6 @@ fun MusicListScreen(
     val errorMessage = musicViewModel.errorMessage
     val appColors = LocalAppColors.current
     val state = rememberPullToRefreshState()
-    val lazyListState = rememberLazyListState()
 
     // To launch a coroutine for fetching music files
     LaunchedEffect(Unit) {
@@ -57,12 +58,6 @@ fun MusicListScreen(
         playerViewModel.queueManager.setQueue(filteredFiles)
     }
 
-    LaunchedEffect(musicViewModel.shouldScrollTop.value) {
-        if (musicViewModel.shouldScrollTop.value) {
-            lazyListState.animateScrollToItem(0)
-            musicViewModel.shouldScrollTop.value = false
-        }
-    }
 
     Box(
         modifier = Modifier.fillMaxSize()

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Scaffold
@@ -30,6 +31,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.example.iimusica.components.MiniPlayer
@@ -50,18 +53,26 @@ fun MusicPagerScreen(
     playerViewModel: PlayerViewModel,
     albumViewModel: AlbumViewModel,
     playlistViewModel : PlaylistViewModel,
+    sharedSearchViewModel: SharedSearchViewModel,
     context: Context,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
 ) {
 
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { PAGE_TITLES.size })
     val coroutineScope = rememberCoroutineScope()
+    val musicListState = rememberLazyListState()
 
+    /*
     var isSearching by musicViewModel.isSearching
     val selectedSortOption by musicViewModel.selectedSortOption
     val isDescending by musicViewModel.isDescending
     val filteredFiles by musicViewModel.filteredFiles
+    */
 
+    val screenKey = pageToScreenKey(pagerState.currentPage)
+    val state = sharedSearchViewModel.getState(screenKey)
+
+    val filteredFiles by musicViewModel.filteredFiles
 
     val screenHeight =
         with(LocalDensity.current) { LocalConfiguration.current.screenHeightDp.dp.toPx() }
@@ -94,19 +105,33 @@ fun MusicPagerScreen(
         }
     }
 
+    LaunchedEffect(state.query, state.sortOption, state.isDescending) {
+        musicViewModel.updateFilteredFiles()
+    }
+
+    LaunchedEffect(musicViewModel.shouldScrollTop.value) {
+        if (musicViewModel.shouldScrollTop.value) {
+            musicListState.scrollToItem(0)
+            musicViewModel.shouldScrollTop.value = false
+        }
+    }
+
+    Log.d("statezbar", "Issearching query? ${state.query.isEmpty()}, issearching? ${state.isSearching}")
+    Log.d("statezbar", "The sort state? ${state.sortOption} its descent? ${state.isDescending}")
+
     Scaffold(
         // This line makes the scaffold not respect the navbar at the bottom
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             MusicTopBar(
-                searchQuery = musicViewModel.searchQuery.value,
-                isSearching = isSearching,
-                selectedSortOption = selectedSortOption,
-                isDescending = isDescending,
+                searchQuery = state.query,
+                isSearching = state.isSearching,
+                selectedSortOption = state.sortOption,
+                isDescending = state.isDescending,
                 actions = MusicTopBarActions(
-                    onSearchQueryChange = { musicViewModel.setSearchQuery(it) },
-                    onToggleSearch = { isSearching = !isSearching },
-                    onSortOptionSelected = { musicViewModel.setSortOption(it) },
+                    onSearchQueryChange = { sharedSearchViewModel.updateQuery(screenKey, it) },
+                    onToggleSearch = { sharedSearchViewModel.toggleSearch(screenKey) },
+                    onSortOptionSelected = { sharedSearchViewModel.updateSort(screenKey, it) },
                     toggleTheme = toggleTheme,
                     onReloadLocalFiles = { reloadmlist(playerViewModel, musicViewModel, context) },
                     onReshuffle = { playerViewModel.queueManager.regenerateShuffleOrder() }
@@ -116,6 +141,9 @@ fun MusicPagerScreen(
                     coroutineScope.launch {
                         pagerState.animateScrollToPage(selectedIndex)
                     }
+                },
+                onToggleDescending = {
+                    sharedSearchViewModel.toggleDescending(screenKey)
                 },
                 snackbarHostState = snackbarHostState
             )
@@ -140,7 +168,7 @@ fun MusicPagerScreen(
                     .fillMaxSize()
                     .pointerInput(Unit) {
                         detectTapGestures(onTap = {
-                            isSearching = false
+                            sharedSearchViewModel.disableSearch(screenKey)
                         })
                     }
 
@@ -151,6 +179,7 @@ fun MusicPagerScreen(
                         context = context,
                         musicViewModel = musicViewModel,
                         playerViewModel = playerViewModel,
+                        musicListState,
                         filteredFiles
                     )
 

@@ -47,6 +47,7 @@ fun SettingsDropDownMenu(
     isDescending: Boolean,
     onReshuffle: () -> Unit,
     onReloadLocalFiles: () -> Unit,
+    onToggleDescending: () -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
     val appColors = LocalAppColors.current
@@ -125,6 +126,7 @@ fun SettingsDropDownMenu(
                         onClick = {
                             onSortOptionSelected(option)
                             onDismissRequest()
+                            onToggleDescending()
                         }
                     )
                 }
