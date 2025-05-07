@@ -40,7 +40,7 @@ fun MusicScreen(
     path: String,
     musicViewModel: MusicViewModel,
     playerViewModel: PlayerViewModel,
-    sharedSearchViewModel: SharedSearchViewModel,
+    sharedViewModel: SharedViewModel,
     navController: NavController,
     snackbarHostState: SnackbarHostState
 ) {
@@ -57,7 +57,7 @@ fun MusicScreen(
     }
 
     val screenKey = pageToScreenKey(0)
-    val state = sharedSearchViewModel.getState(screenKey)
+    val state = sharedViewModel.getState(screenKey)
 
     LaunchedEffect(currentPath) {
         val currentMediaItem =
@@ -108,13 +108,13 @@ fun MusicScreen(
                 isDescending = state.isDescending,
                 selectedSortOption = state.sortOption,
                 onSortOptionSelected = {
-                    sharedSearchViewModel.updateSort(screenKey, it)
+                    sharedViewModel.updateSort(screenKey, it)
                 },
                 onReshuffle = { playerViewModel.queueManager.regenerateShuffleOrder() },
                 onReloadLocalFiles = {
-                    reloadmlist(playerViewModel, musicViewModel, context)
+                    reloadmlist(playerViewModel, musicViewModel, sharedViewModel, context)
                 },
-                onToggleDescending = {sharedSearchViewModel.toggleDescending(screenKey)},
+                onToggleDescending = {sharedViewModel.toggleDescending(screenKey)},
                 snackbarHostState = snackbarHostState
             )
 
@@ -166,8 +166,10 @@ fun MusicScreen(
         QueuePanel(
             musicViewModel,
             playerViewModel,
+            state,
             isPanelExpanded,
             togglePanelState,
+            navController = navController,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
     }

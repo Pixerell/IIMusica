@@ -1,36 +1,26 @@
 package com.example.iimusica.utils
 
-import com.example.iimusica.types.MusicFile
 import com.example.iimusica.types.SortOption
 
-fun List<MusicFile>.sortFiles(
-    selectedSortOption: SortOption,
-    isDescending: Boolean
-): List<MusicFile> {
-    return when (selectedSortOption) {
-        SortOption.NAME -> this.sortedWith(
-            if (isDescending) compareByDescending { it.name.lowercase() }
-            else compareBy { it.name.lowercase() }
-        )
+fun <T> List<T>.sortByOption(
+    sortOption: SortOption,
+    isDescending: Boolean,
+    selector: (T) -> String?,
+    numericSelector: (T) -> Long?
+): List<T> {
+    return when (sortOption) {
+        SortOption.NAME, SortOption.ARTIST -> {
+            if (isDescending)
+                this.sortedWith(compareByDescending { selector(it)?.lowercase() ?: "" })
+            else
+                this.sortedWith(compareBy { selector(it)?.lowercase() ?: "" })
+        }
 
-        SortOption.ARTIST -> this.sortedWith(
-            if (isDescending) compareByDescending { it.artist.lowercase() }
-            else compareBy { it.artist.lowercase() }
-        )
-
-        SortOption.SIZE -> this.sortedWith(
-            if (isDescending) compareBy { it.size }
-            else compareByDescending { it.size }
-        )
-
-        SortOption.DURATION -> this.sortedWith(
-            if (isDescending) compareBy { it.duration }
-            else compareByDescending { it.duration }
-        )
-
-        SortOption.DATE -> this.sortedWith(
-            if (isDescending) compareBy { it.dateAdded }
-            else compareByDescending { it.dateAdded }
-        )
+        SortOption.SIZE, SortOption.DURATION, SortOption.DATE -> {
+            if (isDescending)
+                this.sortedWith(compareBy { numericSelector(it) ?: 0L })
+            else
+                this.sortedWith(compareByDescending { numericSelector(it) ?: 0L })
+        }
     }
 }

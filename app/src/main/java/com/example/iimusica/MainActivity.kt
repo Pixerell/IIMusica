@@ -23,8 +23,8 @@ import com.example.iimusica.screens.MusicViewModel
 import com.example.iimusica.screens.PlayerViewModel
 import com.example.iimusica.screens.PlayerViewModelFactory
 import com.example.iimusica.screens.PlaylistViewModel
-import com.example.iimusica.screens.SharedSearchViewModel
-import com.example.iimusica.screens.SharedSearchViewModelFactory
+import com.example.iimusica.screens.SharedViewModel
+import com.example.iimusica.screens.SharedViewModelFactory
 import com.example.iimusica.ui.theme.IIMusicaTheme
 
 @UnstableApi
@@ -35,10 +35,10 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
 
-        val sharedSearchViewModel: SharedSearchViewModel =
-            ViewModelProvider(this)[SharedSearchViewModel::class.java]
+        val sharedViewModel: SharedViewModel =
+            ViewModelProvider(this)[SharedViewModel::class.java]
 
-        val musicViewModelFactory = SharedSearchViewModelFactory(sharedSearchViewModel)
+        val musicViewModelFactory = SharedViewModelFactory(sharedViewModel)
         val musicViewModel: MusicViewModel =
             ViewModelProvider(this, musicViewModelFactory)[MusicViewModel::class.java]
         playbackController = PlaybackController(application, musicViewModel)
@@ -74,7 +74,7 @@ class MainActivity : ComponentActivity() {
                     navController,
                     this,
                     toggleTheme,
-                    sharedSearchViewModel,
+                    sharedViewModel,
                     musicViewModel,
                     playerViewModel,
                     albumViewModel,

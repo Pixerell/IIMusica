@@ -38,8 +38,8 @@ import com.example.iimusica.components.buttons.ButtonPlayPause
 import com.example.iimusica.components.buttons.ButtonPrevious
 import com.example.iimusica.components.mediacomponents.DurationBar
 import com.example.iimusica.components.ux.MarqueeText
-import com.example.iimusica.screens.MusicViewModel
 import com.example.iimusica.screens.PlayerViewModel
+import com.example.iimusica.screens.SharedViewModel
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
 import com.example.iimusica.utils.fetchers.albumPainter
@@ -49,7 +49,7 @@ import com.example.iimusica.utils.parseDuration
 @Composable
 fun MiniPlayer(
     playerViewModel: PlayerViewModel,
-    musicViewModel: MusicViewModel,
+    sharedViewModel: SharedViewModel,
     navController: NavController
 ) {
     val appColors = LocalAppColors.current
@@ -58,7 +58,7 @@ fun MiniPlayer(
 
     val isLandscape = LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
 
-    val visible = musicViewModel.miniPlayerVisible.value
+    val visible = sharedViewModel.miniPlayerVisible.value
     val rotation by animateFloatAsState(
         targetValue = if (visible) 180f else 0f,
         label = "ArrowRotation"
@@ -114,7 +114,7 @@ fun MiniPlayer(
                 contentAlignment = Alignment.TopCenter
             ) {
                 IconButton(
-                    onClick = { musicViewModel.toggleMiniPlayerVisibility() },
+                    onClick = { sharedViewModel.toggleMiniPlayerVisibility() },
                     modifier = Modifier
                         .offset(y = buttonOffsetY)
                         .innerShadow(

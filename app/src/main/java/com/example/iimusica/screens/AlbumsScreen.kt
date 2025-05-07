@@ -4,6 +4,7 @@ import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,13 +20,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.example.iimusica.components.mediacomponents.AlbumItem
 import com.example.iimusica.components.ux.InfoBox
 import com.example.iimusica.components.ux.Loader
 import com.example.iimusica.components.ux.MessageType
+import com.example.iimusica.types.BOTTOM_LIST_PADDING
 import com.example.iimusica.ui.theme.LocalAppColors
 
 @OptIn(UnstableApi::class)
@@ -39,13 +40,15 @@ fun AlbumsScreen(
     val isLoading by albumViewModel.isLoading
     val errorMessage = albumViewModel.errorMessage
     val gridState = rememberLazyGridState()
+    val bottomPadding = PaddingValues(bottom = BOTTOM_LIST_PADDING.dp)
+    val filteredAlbums by albumViewModel.filteredAlbums
 
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(appColors.accentGradient)
-    )
+        )
     {
         if (isLoading) {
             Loader(modifier = Modifier.align(Alignment.Center))
@@ -60,7 +63,14 @@ fun AlbumsScreen(
                         "They need to contain AlbumID's",
                 type = MessageType.Warning,
             )
-        } else {
+        }
+        else if (filteredAlbums.isEmpty()) {
+            InfoBox(
+                message = "All albums were filtered and sorted out",
+                type = MessageType.Info,
+            )
+        }
+        else {
             LazyVerticalGrid(
                 state = gridState,
                 columns = GridCells.Fixed(2), // 2 columns
@@ -68,13 +78,10 @@ fun AlbumsScreen(
                     .fillMaxSize()
                     .padding(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = bottomPadding
             ) {
-                items(albums) { album ->
-                    Log.d(
-                        "albumz",
-                        "albums - ${album.name} and artist ${album.artist} its song? ${album.representativeSong}"
-                    )
+                items(filteredAlbums) { album ->
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()

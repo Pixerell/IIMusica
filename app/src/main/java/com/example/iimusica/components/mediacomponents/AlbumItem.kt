@@ -40,11 +40,9 @@ fun AlbumItem(summary: AlbumSummary, navController: NavController) {
             .pointerInput(Unit) {
                 detectTapGestures(
                     onTap = {
-                        if (summary.representativeSong != null) {
                             navController.navigate("album_detail/${summary.representativeSong.albumId}") {
                                 launchSingleTop = true
                             }
-                        }
                     },
                 )
             }
@@ -52,7 +50,7 @@ fun AlbumItem(summary: AlbumSummary, navController: NavController) {
     ) {
         Image(
             painter = painter,
-            contentDescription = summary.representativeSong?.albumId.toString(),
+            contentDescription = summary.representativeSong.albumId.toString(),
             modifier = Modifier
                 .weight(1f)
                 .padding(12.dp)
@@ -73,7 +71,7 @@ fun AlbumItem(summary: AlbumSummary, navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = summary.name,
+                text = summary.name ?: "Unknown Album",
                 fontStyle = Typography.bodyMedium.fontStyle,
                 fontSize = Typography.bodyMedium.fontSize,
                 fontWeight = Typography.headlineMedium.fontWeight,

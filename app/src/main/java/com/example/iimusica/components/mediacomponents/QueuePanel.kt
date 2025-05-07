@@ -28,15 +28,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import androidx.navigation.compose.rememberNavController
 import com.example.iimusica.screens.PlayerViewModel
 import com.example.iimusica.ui.theme.LocalAppColors
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.media3.common.util.UnstableApi
+import androidx.navigation.NavController
 import com.example.iimusica.components.innerShadow
 import com.example.iimusica.screens.MusicViewModel
+import com.example.iimusica.screens.SearchSortState
 import com.example.iimusica.ui.theme.QUEUE_PANEL_OFFSET
 
 @OptIn(UnstableApi::class)
@@ -44,16 +45,25 @@ import com.example.iimusica.ui.theme.QUEUE_PANEL_OFFSET
 fun QueuePanel(
     musicViewModel: MusicViewModel,
     playerViewModel: PlayerViewModel,
+    state : SearchSortState,
     isPanelExpanded: Boolean,
     togglePanelState: (Boolean) -> Unit,
+    navController: NavController,
     modifier: Modifier = Modifier,
 ) {
     val lazylistState = rememberLazyListState()
-    val currentQueue = musicViewModel.filteredFiles.value
+    val currentQueue by musicViewModel.filteredFiles
 
-    LaunchedEffect(musicViewModel.filteredFiles.value, musicViewModel.selectedSortOption.value) {
+    LaunchedEffect(state.isDescending, state.sortOption) {
+        musicViewModel.updateFilteredFiles(state)
         playerViewModel.queueManager.setQueue(musicViewModel.filteredFiles.value)
-        lazylistState.animateScrollToItem(0)
+    }
+
+    LaunchedEffect(musicViewModel.shouldScrollTop.value) {
+        if (musicViewModel.shouldScrollTop.value) {
+            lazylistState.scrollToItem(0)
+            musicViewModel.shouldScrollTop.value = false
+        }
     }
 
     val isLandscape =
@@ -166,7 +176,7 @@ fun QueuePanel(
             if (isPanelExpanded) {
                 MusicList(
                     musicFiles = currentQueue,
-                    navController = rememberNavController(),
+                    navController = navController,
                     playerViewModel = playerViewModel,
                     listState = lazylistState
                 )

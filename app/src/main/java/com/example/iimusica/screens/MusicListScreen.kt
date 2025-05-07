@@ -5,7 +5,6 @@ package com.example.iimusica.screens
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -23,7 +22,6 @@ import com.example.iimusica.components.ux.Loader
 import com.example.iimusica.components.ux.MessageType
 import com.example.iimusica.components.mediacomponents.MusicList
 import com.example.iimusica.player.PlaybackCommandBus
-import com.example.iimusica.types.MusicFile
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.utils.reloadmlist
 import kotlinx.coroutines.flow.collectLatest
@@ -36,14 +34,15 @@ fun MusicListScreen(
     context: Context,
     musicViewModel: MusicViewModel,
     playerViewModel: PlayerViewModel,
-    lazyListState: LazyListState,
-    filteredFiles: List<MusicFile>
+    sharedViewModel : SharedViewModel
 ) {
+    val filteredFiles by musicViewModel.filteredFiles
     val mFiles by musicViewModel.mFiles
     val isLoading by musicViewModel.isLoading
     val errorMessage = musicViewModel.errorMessage
     val appColors = LocalAppColors.current
     val state = rememberPullToRefreshState()
+    val musicListState = rememberLazyListState()
 
     // To launch a coroutine for fetching music files
     LaunchedEffect(Unit) {
@@ -56,6 +55,10 @@ fun MusicListScreen(
 
     LaunchedEffect(filteredFiles) {
         playerViewModel.queueManager.setQueue(filteredFiles)
+        if (musicViewModel.shouldScrollTop.value) {
+            musicListState.scrollToItem(0)
+            musicViewModel.shouldScrollTop.value = false
+        }
     }
 
 
@@ -82,7 +85,7 @@ fun MusicListScreen(
                         message = "No files found on your device. Please download them to your storage",
                         type = MessageType.Warning,
                     )
-                } else if (filteredFiles.isEmpty() && musicViewModel.searchQuery.value.isNotEmpty()) {
+                } else if (filteredFiles.isEmpty()) {
                     InfoBox(
                         message = "All files were sorted and filtered out",
                         type = MessageType.Info,
@@ -108,14 +111,14 @@ fun MusicListScreen(
                             )
                         },
                         onRefresh = {
-                            reloadmlist(playerViewModel, musicViewModel, context)
+                            reloadmlist(playerViewModel, musicViewModel, sharedViewModel, context)
                         }
                     ) {
                         MusicList(
                             musicFiles = filteredFiles,
                             navController = navController,
                             playerViewModel = playerViewModel,
-                            listState = lazyListState
+                            listState = musicListState
                         )
                     }
                 }

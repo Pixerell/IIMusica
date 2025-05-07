@@ -2,15 +2,13 @@ package com.example.iimusica.screens
 
 import android.content.Context
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.iimusica.types.MusicFile
 import com.example.iimusica.types.SortOption
 import com.example.iimusica.utils.fetchers.getAllMusicFiles
-import com.example.iimusica.utils.sortFiles
+import com.example.iimusica.utils.sortByOption
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -18,7 +16,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MusicViewModel(
-    private val sharedSearchViewModel: SharedSearchViewModel
+    private val sharedViewModel: SharedViewModel
 ) : ViewModel(
 ) {
 
@@ -31,40 +29,16 @@ class MusicViewModel(
     private val _errorMessage = mutableStateOf<String?>(null)
     val errorMessage: String get() = _errorMessage.value ?: ""
 
-    private val _searchQuery = mutableStateOf("")
-    val searchQuery: MutableState<String> get() = _searchQuery
-
-    private val _isSearching = mutableStateOf(false)
-    val isSearching: MutableState<Boolean> get() = _isSearching
-
     private val _filteredFiles = mutableStateOf<List<MusicFile>>(emptyList())
     val filteredFiles: MutableState<List<MusicFile>> get() = _filteredFiles
-
-    private val _animationComplete = mutableStateOf(false)
-    val animationComplete: MutableState<Boolean> get() = _animationComplete
-
-    private val _selectedSortOption = mutableStateOf(SortOption.NAME)
-    val selectedSortOption: MutableState<SortOption> get() = _selectedSortOption
-
-    private val _isDescending = mutableStateOf(false)
-    val isDescending: MutableState<Boolean> get() = _isDescending
 
     private val _shouldScrollTop = mutableStateOf(false)
     val shouldScrollTop: MutableState<Boolean> get() = _shouldScrollTop
 
-    private val _miniPlayerVisible = mutableStateOf(false)
-    val miniPlayerVisible: MutableState<Boolean> get() = _miniPlayerVisible
-
     // Observer for albums/playlists
-    private val _filesLoading = MutableSharedFlow<FilesLoadingState>(replay = 0) // New shared flow
-    val filesLoading = _filesLoading.asSharedFlow() // Exposed as a read-only SharedFlow
-
-    fun toggleMiniPlayerVisibility() {
-        _miniPlayerVisible.value = !_miniPlayerVisible.value
-    }
-
+    private val _filesLoading = MutableSharedFlow<FilesLoadingState>(replay = 0)
+    val filesLoading = _filesLoading.asSharedFlow()
     private var lastSuccessfulFiles: List<MusicFile> = emptyList()
-    var isFirstTimeEnteredMusic by mutableStateOf(true)
 
     fun loadMusicFiles(context: Context) {
         _isLoading.value = true
@@ -79,10 +53,9 @@ class MusicViewModel(
                 lastSuccessfulFiles = files
                 withContext(Dispatchers.Main) {
                     _mFiles.value = files.toList()
-                    updateFilteredFiles()
+                    updateFilteredFiles(sharedViewModel.getState(ScreenKey.Songs))
                     _filesLoading.emit(FilesLoadingState.Loaded) // Signal that files have been successfully loaded
                 }
-                _isLoading.value = false
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     _mFiles.value = lastSuccessfulFiles
@@ -94,10 +67,12 @@ class MusicViewModel(
         }
     }
 
-    fun updateFilteredFiles() {
+    fun updateFilteredFiles(state: SearchSortState) {
+        //prevents premature filtering due to multithreadding
+        if (_mFiles.value.isEmpty()) {
+            return
+        }
         viewModelScope.launch(Dispatchers.Default) {
-            val state =
-                sharedSearchViewModel.getState(pageToScreenKey(0))
             val query = state.query
             val filtered = if (query.isEmpty()) {
                 _mFiles.value
@@ -106,11 +81,32 @@ class MusicViewModel(
                     it.name.contains(query, ignoreCase = true)
                 }
             }
-            val sorted = filtered.sortFiles(state.sortOption, state.isDescending)
+
+            val sorted = filtered.sortByOption(
+                state.sortOption,
+                state.isDescending,
+                selector = {
+                    when (state.sortOption) {
+                        SortOption.NAME -> it.name
+                        SortOption.ARTIST -> it.artist
+                        else -> null
+                    }
+                },
+                numericSelector = {
+                    when (state.sortOption) {
+                        SortOption.SIZE -> it.size.toLong()
+                        SortOption.DURATION -> it.duration.toLong()
+                        SortOption.DATE -> it.dateAdded
+                        else -> null
+                    }
+                }
+            )
+
             withContext(Dispatchers.Main) {
                 _filteredFiles.value = sorted
+                shouldScrollTop.value = true
+                _isLoading.value = false
             }
-            shouldScrollTop.value = true
         }
     }
 
@@ -118,12 +114,11 @@ class MusicViewModel(
         val updatedList = _mFiles.value.filter { it.path != path }
         _mFiles.value = updatedList
         shouldScrollTop.value = false
-        updateFilteredFiles()
+        updateFilteredFiles(sharedViewModel.getState(ScreenKey.Songs))
         viewModelScope.launch(Dispatchers.IO) {
             _filesLoading.emit(FilesLoadingState.Loaded)
         }
     }
-
 
     sealed class FilesLoadingState {
         object Loading : FilesLoadingState()

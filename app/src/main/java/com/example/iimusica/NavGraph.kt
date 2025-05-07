@@ -24,7 +24,7 @@ import com.example.iimusica.screens.MusicScreen
 import com.example.iimusica.screens.MusicViewModel
 import com.example.iimusica.screens.PlayerViewModel
 import com.example.iimusica.screens.PlaylistViewModel
-import com.example.iimusica.screens.SharedSearchViewModel
+import com.example.iimusica.screens.SharedViewModel
 
 
 @OptIn(UnstableApi::class)
@@ -33,7 +33,7 @@ fun AppNavGraph(
     navController: NavHostController,
     context: Context,
     toggleTheme: () -> Unit,
-    sharedSearchViewModel : SharedSearchViewModel,
+    sharedViewModel : SharedViewModel,
     musicViewModel: MusicViewModel,
     playerViewModel: PlayerViewModel,
     albumViewModel : AlbumViewModel,
@@ -56,7 +56,7 @@ fun AppNavGraph(
                     playerViewModel = playerViewModel,
                     albumViewModel = albumViewModel,
                     playlistViewModel = playlistViewModel,
-                    sharedSearchViewModel = sharedSearchViewModel,
+                    sharedViewModel = sharedViewModel,
                     context,
                     snackbarHostState = snackbarHostState
                 )
@@ -67,7 +67,7 @@ fun AppNavGraph(
                     path,
                     musicViewModel,
                     playerViewModel,
-                    sharedSearchViewModel,
+                    sharedViewModel,
                     navController,
                     snackbarHostState = snackbarHostState
                 )

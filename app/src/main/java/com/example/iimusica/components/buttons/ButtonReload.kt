@@ -18,12 +18,13 @@ import androidx.media3.common.util.UnstableApi
 import com.example.iimusica.components.innerShadow
 import com.example.iimusica.screens.MusicViewModel
 import com.example.iimusica.screens.PlayerViewModel
+import com.example.iimusica.screens.SharedViewModel
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.utils.reloadmlist
 
 @UnstableApi
 @Composable
-fun ButtonReload(playerViewModel: PlayerViewModel, viewModel: MusicViewModel, context: Context) {
+fun ButtonReload(playerViewModel: PlayerViewModel, viewModel: MusicViewModel, sharedViewModel: SharedViewModel, context: Context) {
     val appColors = LocalAppColors.current
 
     Box(
@@ -32,7 +33,7 @@ fun ButtonReload(playerViewModel: PlayerViewModel, viewModel: MusicViewModel, co
     ) {
         FloatingActionButton(
             onClick = {
-                reloadmlist(playerViewModel, viewModel, context)
+                reloadmlist(playerViewModel, viewModel, sharedViewModel, context)
             },
             modifier = Modifier
                 .padding(16.dp)

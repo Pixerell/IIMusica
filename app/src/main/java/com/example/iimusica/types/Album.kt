@@ -2,13 +2,11 @@ package com.example.iimusica.types
 
 import android.graphics.Bitmap
 
-
 data class AlbumSummary(
-    val name: String,
+    val name: String?,
     val artist: String?,
-    val representativeSong: MusicFile? = null
+    val representativeSong: MusicFile
 )
-
 
 data class Album(
     val albumId : Long,

@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Scaffold
@@ -22,6 +21,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -31,8 +31,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.example.iimusica.components.MiniPlayer
@@ -52,32 +50,21 @@ fun MusicPagerScreen(
     musicViewModel: MusicViewModel,
     playerViewModel: PlayerViewModel,
     albumViewModel: AlbumViewModel,
-    playlistViewModel : PlaylistViewModel,
-    sharedSearchViewModel: SharedSearchViewModel,
+    playlistViewModel: PlaylistViewModel,
+    sharedViewModel: SharedViewModel,
     context: Context,
     snackbarHostState: SnackbarHostState,
 ) {
 
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { PAGE_TITLES.size })
     val coroutineScope = rememberCoroutineScope()
-    val musicListState = rememberLazyListState()
-
-    /*
-    var isSearching by musicViewModel.isSearching
-    val selectedSortOption by musicViewModel.selectedSortOption
-    val isDescending by musicViewModel.isDescending
-    val filteredFiles by musicViewModel.filteredFiles
-    */
-
     val screenKey = pageToScreenKey(pagerState.currentPage)
-    val state = sharedSearchViewModel.getState(screenKey)
-
-    val filteredFiles by musicViewModel.filteredFiles
+    val state = sharedViewModel.getState(screenKey)
 
     val screenHeight =
         with(LocalDensity.current) { LocalConfiguration.current.screenHeightDp.dp.toPx() }
     val targetOffset =
-        if (!musicViewModel.isFirstTimeEnteredMusic) Offset(0f, 0f) else Offset(0f, screenHeight)
+        if (!sharedViewModel.isFirstTimeEnteredMusic) Offset(0f, 0f) else Offset(0f, screenHeight)
     val offset by animateOffsetAsState(
         targetValue = targetOffset,
         animationSpec = tween(durationMillis = 1000, delayMillis = 0),
@@ -85,39 +72,38 @@ fun MusicPagerScreen(
     )
     val intOffset = IntOffset(offset.x.toInt(), offset.y.toInt())
 
-    var animationComplete by musicViewModel.animationComplete
+    var animationComplete by sharedViewModel.animationComplete
     val fabOffsetY by animateDpAsState(
-        targetValue = if (!musicViewModel.miniPlayerVisible.value) 0.dp else 140.dp,
+        targetValue = if (!sharedViewModel.miniPlayerVisible.value) 0.dp else 140.dp,
         animationSpec = tween(durationMillis = 1000),
         label = "FABOffset"
     )
 
     LaunchedEffect(offset, playerViewModel.isPlaying) {
-        if (offset == targetOffset && musicViewModel.isFirstTimeEnteredMusic && playerViewModel.isPlaying) {
+        if (offset == targetOffset && sharedViewModel.isFirstTimeEnteredMusic && playerViewModel.isPlaying) {
             animationComplete = true
         }
     }
     // Reset the flag after animation is complete
     LaunchedEffect(animationComplete) {
-        if (animationComplete && musicViewModel.isFirstTimeEnteredMusic) {
-            musicViewModel.isFirstTimeEnteredMusic = false
-            musicViewModel.miniPlayerVisible.value = true
+        if (animationComplete && sharedViewModel.isFirstTimeEnteredMusic) {
+            sharedViewModel.isFirstTimeEnteredMusic = false
+            sharedViewModel.miniPlayerVisible.value = true
         }
     }
 
     LaunchedEffect(state.query, state.sortOption, state.isDescending) {
-        musicViewModel.updateFilteredFiles()
+        snapshotFlow { pagerState.currentPage }
+            .collect { page ->
+                val state = sharedViewModel.getState(pageToScreenKey(page))
+                when (page) {
+                    0 -> musicViewModel.updateFilteredFiles(state)
+                    1 -> albumViewModel.updateFilteredAlbums(state)
+                    2 -> playlistViewModel.updateFilteredPlaylists(state)
+                }
+            }
     }
 
-    LaunchedEffect(musicViewModel.shouldScrollTop.value) {
-        if (musicViewModel.shouldScrollTop.value) {
-            musicListState.scrollToItem(0)
-            musicViewModel.shouldScrollTop.value = false
-        }
-    }
-
-    Log.d("statezbar", "Issearching query? ${state.query.isEmpty()}, issearching? ${state.isSearching}")
-    Log.d("statezbar", "The sort state? ${state.sortOption} its descent? ${state.isDescending}")
 
     Scaffold(
         // This line makes the scaffold not respect the navbar at the bottom
@@ -129,11 +115,13 @@ fun MusicPagerScreen(
                 selectedSortOption = state.sortOption,
                 isDescending = state.isDescending,
                 actions = MusicTopBarActions(
-                    onSearchQueryChange = { sharedSearchViewModel.updateQuery(screenKey, it) },
-                    onToggleSearch = { sharedSearchViewModel.toggleSearch(screenKey) },
-                    onSortOptionSelected = { sharedSearchViewModel.updateSort(screenKey, it) },
+                    onSearchQueryChange = { sharedViewModel.updateQuery(screenKey, it) },
+                    onToggleSearch = { sharedViewModel.toggleSearch(screenKey) },
+                    onSortOptionSelected = { sharedViewModel.updateSort(screenKey, it) },
                     toggleTheme = toggleTheme,
-                    onReloadLocalFiles = { reloadmlist(playerViewModel, musicViewModel, context) },
+                    onReloadLocalFiles = {
+                        reloadmlist(playerViewModel, musicViewModel, sharedViewModel, context)
+                    },
                     onReshuffle = { playerViewModel.queueManager.regenerateShuffleOrder() }
                 ),
                 currentPage = pagerState.currentPage,
@@ -143,7 +131,7 @@ fun MusicPagerScreen(
                     }
                 },
                 onToggleDescending = {
-                    sharedSearchViewModel.toggleDescending(screenKey)
+                    sharedViewModel.toggleDescending(screenKey)
                 },
                 snackbarHostState = snackbarHostState
             )
@@ -151,7 +139,7 @@ fun MusicPagerScreen(
 
         floatingActionButton = {
             Box(modifier = Modifier.offset(y = fabOffsetY)) {
-                ButtonReload(playerViewModel, musicViewModel, context)
+                ButtonReload(playerViewModel, musicViewModel, sharedViewModel,context)
             }
         },
     ) { padding ->
@@ -168,7 +156,7 @@ fun MusicPagerScreen(
                     .fillMaxSize()
                     .pointerInput(Unit) {
                         detectTapGestures(onTap = {
-                            sharedSearchViewModel.disableSearch(screenKey)
+                            sharedViewModel.disableSearch(screenKey)
                         })
                     }
 
@@ -179,14 +167,14 @@ fun MusicPagerScreen(
                         context = context,
                         musicViewModel = musicViewModel,
                         playerViewModel = playerViewModel,
-                        musicListState,
-                        filteredFiles
+                        sharedViewModel = sharedViewModel
                     )
 
                     1 -> AlbumsScreen(
                         albumViewModel = albumViewModel,
                         navController = navController
                     )
+
                     2 -> PlaylistsScreen(
                         playlistViewModel = playlistViewModel,
                         navController = navController
@@ -202,7 +190,7 @@ fun MusicPagerScreen(
             ) {
                 MiniPlayer(
                     playerViewModel = playerViewModel,
-                    musicViewModel = musicViewModel,
+                    sharedViewModel = sharedViewModel,
                     navController = navController
                 )
             }
