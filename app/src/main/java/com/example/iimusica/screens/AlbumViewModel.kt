@@ -71,16 +71,17 @@ class AlbumViewModel(
     }
 
 
-    fun getAlbumById(albumId: Long): Album? {
+    suspend fun getAlbumById(albumId: Long): Album? {
         val songs = getSongsForAlbum(albumId)
         if (songs.isEmpty()) return null
         val rawRepresentative = songs.firstOrNull { it.albumArtBitmap != null } ?: songs.first()
         val representativeSong = getCachedExtendedMetadata(rawRepresentative)
+        val sortedSongs = fetchMetadataForAllAlbumTracks(albumId)
         return Album(
             albumId = albumId,
             name = representativeSong.album,
             artist = representativeSong.artist,
-            songs = songs,
+            songs = sortedSongs,
             albumArtBitmap = representativeSong.albumArtBitmap,
             representativeSong = representativeSong,
         )
@@ -154,6 +155,16 @@ class AlbumViewModel(
             }
         }
     }
+
+    private suspend fun fetchMetadataForAllAlbumTracks(albumId: Long): List<MusicFile> {
+        val albumTracks = getSongsForAlbum(albumId)
+        return withContext(Dispatchers.IO) {
+            albumTracks.map { song ->
+                getCachedExtendedMetadata(song)
+            }.sortedBy { it.trackNumber ?: Int.MAX_VALUE } // fallback to the end if track number is missing
+        }
+    }
+
 
     private fun handleFilesLoadingState(state: MusicViewModel.FilesLoadingState) {
         when (state) {

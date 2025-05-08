@@ -10,12 +10,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
@@ -24,10 +26,13 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.example.iimusica.components.innerShadow
 import com.example.iimusica.components.mediacomponents.MusicList
+import com.example.iimusica.components.ux.Loader
+import com.example.iimusica.types.Album
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.QUEUE_PANEL_OFFSET
 import com.example.iimusica.ui.theme.Typography
@@ -43,11 +48,37 @@ fun AlbumDetailedScreen(
     playerViewModel: PlayerViewModel,
     ) {
     val albumIdLong = albumId.toLongOrNull() ?: return
-    val album = albumViewModel.getAlbumById(albumIdLong) ?: return
+    val albumState = produceState<Album?>(initialValue = null, albumIdLong) {
+        value = albumViewModel.getAlbumById(albumIdLong)
+    }
+    val album = albumState.value
 
     val appColors = LocalAppColors.current
     val isLandscape =
         LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+
+    if (album == null) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column (
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Loader(modifier = Modifier.padding(bottom = 16.dp))
+                Text(
+                    text = "Loading...",
+                    fontStyle = Typography.bodyLarge.fontStyle,
+                    fontSize = Typography.bodyLarge.fontSize,
+                    fontWeight = Typography.bodyLarge.fontWeight,
+                    color = appColors.secondaryFont,
+                )
+            }
+        }
+        return
+    }
 
     Column(
         modifier = Modifier
