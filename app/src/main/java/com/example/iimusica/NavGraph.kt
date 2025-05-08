@@ -2,7 +2,9 @@ package com.example.iimusica
 
 import android.content.Context
 import android.net.Uri
+import android.os.Build
 import androidx.annotation.OptIn
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.SnackbarHost
@@ -27,6 +29,7 @@ import com.example.iimusica.screens.PlaylistViewModel
 import com.example.iimusica.screens.SharedViewModel
 
 
+@RequiresApi(Build.VERSION_CODES.R)
 @OptIn(UnstableApi::class)
 @Composable
 fun AppNavGraph(
@@ -77,7 +80,8 @@ fun AppNavGraph(
                 AlbumDetailedScreen(
                     albumId = albumId,
                     navController = navController,
-                    albumViewModel = albumViewModel
+                    albumViewModel = albumViewModel,
+                    playerViewModel = playerViewModel
                 )
             }
         }

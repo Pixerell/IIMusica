@@ -46,11 +46,11 @@ class MainActivity : ComponentActivity() {
         playerViewModel = ViewModelProvider(this, factory)[PlayerViewModel::class.java]
         val albumViewModel: AlbumViewModel = ViewModelProvider(
             this,
-            MusicViewModelFactory(musicViewModel)
+            MusicViewModelFactory(application, musicViewModel)
         )[AlbumViewModel::class.java]
         val playlistViewModel: PlaylistViewModel = ViewModelProvider(
             this,
-            MusicViewModelFactory(musicViewModel)
+            MusicViewModelFactory(application, musicViewModel)
         )[PlaylistViewModel::class.java]
 
 

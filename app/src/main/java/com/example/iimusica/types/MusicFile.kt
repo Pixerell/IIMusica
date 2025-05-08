@@ -11,5 +11,11 @@ data class MusicFile(
     val album: String,
     val albumId: Long,
     val size: Long,
-    val dateAdded: Long
+    val dateAdded: Long,
+
+    // Extended Metadata
+    val genre: String? = null,
+    val year: Int? = null,
+    val bitrate: Int? = null,
+    val trackNumber: Int? = null,
 )
