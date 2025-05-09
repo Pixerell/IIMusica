@@ -22,7 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import com.example.iimusica.screens.PlayerViewModel
+import com.example.iimusica.core.viewmodels.PlayerViewModel
 import kotlinx.coroutines.delay
 
 

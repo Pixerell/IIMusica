@@ -38,8 +38,8 @@ import com.example.iimusica.components.buttons.ButtonPlayPause
 import com.example.iimusica.components.buttons.ButtonPrevious
 import com.example.iimusica.components.mediacomponents.DurationBar
 import com.example.iimusica.components.ux.MarqueeText
-import com.example.iimusica.screens.PlayerViewModel
-import com.example.iimusica.screens.SharedViewModel
+import com.example.iimusica.core.viewmodels.PlayerViewModel
+import com.example.iimusica.core.viewmodels.SharedViewModel
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
 import com.example.iimusica.utils.fetchers.albumPainter

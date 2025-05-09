@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.media3.common.util.UnstableApi
 import com.example.iimusica.R
-import com.example.iimusica.screens.PlayerViewModel
+import com.example.iimusica.core.viewmodels.PlayerViewModel
 import com.example.iimusica.ui.theme.LocalAppColors
 
 

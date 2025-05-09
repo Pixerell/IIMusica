@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.example.iimusica.components.ux.getRepeatPainter
-import com.example.iimusica.screens.PlayerViewModel
+import com.example.iimusica.core.viewmodels.PlayerViewModel
 import com.example.iimusica.ui.theme.LocalAppColors
 
 

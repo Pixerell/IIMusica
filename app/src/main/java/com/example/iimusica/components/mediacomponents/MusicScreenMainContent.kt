@@ -26,7 +26,7 @@ import com.example.iimusica.components.buttons.ButtonPrevious
 import com.example.iimusica.components.buttons.ButtonRepeat
 import com.example.iimusica.components.buttons.ButtonShuffle
 import com.example.iimusica.components.ux.MarqueeText
-import com.example.iimusica.screens.PlayerViewModel
+import com.example.iimusica.core.viewmodels.PlayerViewModel
 import com.example.iimusica.types.MusicFile
 import com.example.iimusica.ui.theme.AppColors
 import com.example.iimusica.ui.theme.QUEUE_PANEL_OFFSET

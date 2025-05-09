@@ -3,9 +3,10 @@ package com.example.iimusica.utils
 import android.content.Context
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
-import com.example.iimusica.screens.MusicViewModel
-import com.example.iimusica.screens.PlayerViewModel
-import com.example.iimusica.screens.SharedViewModel
+import com.example.iimusica.core.viewmodels.MusicViewModel
+import com.example.iimusica.core.viewmodels.PlayerViewModel
+import com.example.iimusica.core.viewmodels.SharedViewModel
+
 
 @OptIn(UnstableApi::class)
 fun reloadmlist(

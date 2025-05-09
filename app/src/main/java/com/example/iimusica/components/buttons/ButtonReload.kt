@@ -16,9 +16,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import com.example.iimusica.components.innerShadow
-import com.example.iimusica.screens.MusicViewModel
-import com.example.iimusica.screens.PlayerViewModel
-import com.example.iimusica.screens.SharedViewModel
+import com.example.iimusica.core.viewmodels.MusicViewModel
+import com.example.iimusica.core.viewmodels.PlayerViewModel
+import com.example.iimusica.core.viewmodels.SharedViewModel
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.utils.reloadmlist
 

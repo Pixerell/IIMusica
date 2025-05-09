@@ -19,14 +19,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.iimusica.components.ux.CustomSnackBar
-import com.example.iimusica.screens.AlbumDetailedScreen
-import com.example.iimusica.screens.AlbumViewModel
-import com.example.iimusica.screens.MusicPagerScreen
-import com.example.iimusica.screens.MusicScreen
-import com.example.iimusica.screens.MusicViewModel
-import com.example.iimusica.screens.PlayerViewModel
-import com.example.iimusica.screens.PlaylistViewModel
-import com.example.iimusica.screens.SharedViewModel
+import com.example.iimusica.core.screens.AlbumDetailedScreen
+import com.example.iimusica.core.screens.MusicPagerScreen
+import com.example.iimusica.core.screens.MusicScreen
+import com.example.iimusica.core.viewmodels.AlbumViewModel
+import com.example.iimusica.core.viewmodels.MusicViewModel
+import com.example.iimusica.core.viewmodels.PlayerViewModel
+import com.example.iimusica.core.viewmodels.PlaylistViewModel
+import com.example.iimusica.core.viewmodels.SharedViewModel
 
 
 @RequiresApi(Build.VERSION_CODES.R)
@@ -43,7 +43,7 @@ fun AppNavGraph(
     playlistViewModel : PlaylistViewModel
 ) {
 
-    val snackbarHostState = remember { SnackbarHostState() }
+    val snackBarHostState = remember { SnackbarHostState() }
 
     Box(
     ) {
@@ -61,7 +61,7 @@ fun AppNavGraph(
                     playlistViewModel = playlistViewModel,
                     sharedViewModel = sharedViewModel,
                     context,
-                    snackbarHostState = snackbarHostState
+                    snackbarHostState = snackBarHostState
                 )
             }
             composable("music_detail/{path}") { backStackEntry ->
@@ -72,7 +72,7 @@ fun AppNavGraph(
                     playerViewModel,
                     sharedViewModel,
                     navController,
-                    snackbarHostState = snackbarHostState
+                    snackbarHostState = snackBarHostState
                 )
             }
             composable("album_detail/{albumId}") { backStackEntry ->
@@ -81,12 +81,13 @@ fun AppNavGraph(
                     albumId = albumId,
                     navController = navController,
                     albumViewModel = albumViewModel,
-                    playerViewModel = playerViewModel
+                    playerViewModel = playerViewModel,
+                    snackbarHostState = snackBarHostState
                 )
             }
         }
         SnackbarHost(
-            hostState = snackbarHostState,
+            hostState = snackBarHostState,
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .padding(top = 156.dp)

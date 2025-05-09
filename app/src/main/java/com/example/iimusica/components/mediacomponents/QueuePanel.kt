@@ -28,7 +28,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import com.example.iimusica.screens.PlayerViewModel
 import com.example.iimusica.ui.theme.LocalAppColors
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.RectangleShape
@@ -36,8 +35,9 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.example.iimusica.components.innerShadow
-import com.example.iimusica.screens.MusicViewModel
-import com.example.iimusica.screens.SearchSortState
+import com.example.iimusica.core.viewmodels.MusicViewModel
+import com.example.iimusica.core.viewmodels.PlayerViewModel
+import com.example.iimusica.core.viewmodels.SearchSortState
 import com.example.iimusica.ui.theme.QUEUE_PANEL_OFFSET
 
 @OptIn(UnstableApi::class)

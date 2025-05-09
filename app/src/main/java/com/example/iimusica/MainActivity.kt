@@ -16,15 +16,15 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.compose.rememberNavController
-import com.example.iimusica.player.PlaybackController
-import com.example.iimusica.screens.AlbumViewModel
-import com.example.iimusica.screens.MusicViewModelFactory
-import com.example.iimusica.screens.MusicViewModel
-import com.example.iimusica.screens.PlayerViewModel
-import com.example.iimusica.screens.PlayerViewModelFactory
-import com.example.iimusica.screens.PlaylistViewModel
-import com.example.iimusica.screens.SharedViewModel
-import com.example.iimusica.screens.SharedViewModelFactory
+import com.example.iimusica.core.player.PlaybackController
+import com.example.iimusica.core.viewmodels.AlbumViewModel
+import com.example.iimusica.core.viewmodels.MusicViewModel
+import com.example.iimusica.core.viewmodels.MusicViewModelFactory
+import com.example.iimusica.core.viewmodels.PlayerViewModel
+import com.example.iimusica.core.viewmodels.PlayerViewModelFactory
+import com.example.iimusica.core.viewmodels.PlaylistViewModel
+import com.example.iimusica.core.viewmodels.SharedViewModel
+import com.example.iimusica.core.viewmodels.SharedViewModelFactory
 import com.example.iimusica.ui.theme.IIMusicaTheme
 
 @UnstableApi
