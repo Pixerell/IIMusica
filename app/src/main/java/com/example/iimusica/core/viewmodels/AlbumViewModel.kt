@@ -18,6 +18,7 @@ import com.example.iimusica.utils.fetchers.fetchExtendedMetadataForMusicFile
 import com.example.iimusica.utils.parseDuration
 import com.example.iimusica.utils.sortByOption
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -44,7 +45,7 @@ class AlbumViewModel(
 
     init {
         viewModelScope.launch {
-            musicViewModel.filesLoading.collect { state ->
+            musicViewModel.filesLoading.collectLatest{ state ->
                 handleFilesLoadingState(state)
             }
         }
@@ -68,7 +69,7 @@ class AlbumViewModel(
                 artist = representativeSongWithMetadata.artist,
                 representativeSong = representativeSongWithMetadata
             )
-        }.sortedBy { it.name }
+        }.sortedBy { it.name ?: "Unknown Album" }
     }
 
 
