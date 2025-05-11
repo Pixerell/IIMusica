@@ -3,6 +3,7 @@ package com.example.iimusica.core.player
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.example.iimusica.types.MusicFile
@@ -21,6 +22,8 @@ class QueueManager(
     private var currentIndex = 0
     private val shuffleOrder = mutableListOf<Int>()
     private var shuffledIndex = 0
+
+    val queueName: MutableState<String> = mutableStateOf("NoQueue")// This changes when playing albums/playlists etc.
 
     fun toggleShuffle() {
         _isShuffleEnabled.value = !_isShuffleEnabled.value
@@ -61,13 +64,16 @@ class QueueManager(
     }
 
     @OptIn(UnstableApi::class)
-    fun setQueue(newQueue: List<MusicFile>, startIndex: Int = 0) {
+    fun setQueue(newQueue: List<MusicFile>, newQueueName : String = "", startIndex: Int = 0) {
         if (newQueue.isEmpty()) {
             Log.d("queuemanager", "Empty queue brother")
             return
         } else if (newQueue != queue) {
             clearQueue()
             queue.addAll(newQueue)
+            if (newQueueName.isNotEmpty()) {
+                updateQueueName(newQueueName)
+            }
             // If playing track exists in new queue - map index to it or set to 0 if it doesn't
             val currentTrack = _currentPath.value
             currentIndex = if (currentTrack != null) {
@@ -79,6 +85,10 @@ class QueueManager(
             return
         }
         Log.d("queuemanager", "Queue already filled with the same items")
+    }
+
+    fun updateQueueName(newQueueName: String) {
+        queueName.value = newQueueName
     }
 
     fun updateIndex(path: String, queue: List<MusicFile>, currentIndex: Int): Int {

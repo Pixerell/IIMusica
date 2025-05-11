@@ -25,6 +25,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -71,155 +73,181 @@ fun AlbumDetailsMainContent(
         }
     }
 
-    Column {
-        Column(
-            modifier = Modifier
-                .weight(albumDetailsHeightPercentage)
-                .draggable(
-                    orientation = Orientation.Vertical,
-                    state = rememberDraggableState { delta ->
-                        dragOffsetState.floatValue =
-                            (dragOffsetState.floatValue + delta).coerceIn(-maxDragPx, 0f)
-                    }
 
-                )
-        ) {
-            BoxWithConstraints(
+    Box {
+        Column {
+            Column(
                 modifier = Modifier
-                    .padding(top = 32.dp)
-                    .padding(bottom = 16.dp)
-            ) {
-                // weird aah shrinking behaviour
-                val baseImageSize = if (isLandscape) this.maxWidth * 0.25f else this.maxWidth * 0.85f
-                var shrinkingThreshhold = if (musicListHeightPercentage <= 0.45f) 0.2f else 1f
-                val shrinkProgress = (-dragOffset / maxDragPx*shrinkingThreshhold).coerceIn(0f, 1f)
-                val animatedImageSize by animateFloatAsState(
-                    targetValue = baseImageSize.value * (2.5f - (shrinkProgress * 7f)),
-                    label = "ImageSizeAnim"
-                )
-
-                album.albumArtBitmap?.let { bitmap ->
-                    if (imageVisible) {
-                        Image(
-                            bitmap = bitmap.asImageBitmap(),
-                            contentDescription = "Album Art",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .size(with(density) { animatedImageSize.toDp() })
-                                .align(Alignment.Center)
-                        )
-                    }
-                }
-            }
-
-
-            Row(
-                modifier = Modifier
-                    .padding(bottom = 16.dp)
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-
-            ) {
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = 32.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            ExpandableText(
-                                text = "${album.representativeSong.bitrate?.div(1000)} kbps",
-                                color = appColors.secondaryFont,
-                                style = Typography.bodyMedium
-                            )
-                            ExpandableText(
-                                text = album.representativeSong.genre.orEmpty(),
-                                color = appColors.secondaryFont,
-                                style = Typography.bodyMedium
-                            )
-                        }
-
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            ExpandableText(
-                                text = "${album.songs.size} ${if (album.songs.size == 1) "song" else "songs"}",
-                                color = appColors.font,
-                                style = Typography.bodyMedium
-                            )
-                            ExpandableText(
-                                text = (album.representativeSong.year ?: "").toString(),
-                                color = appColors.secondaryFont,
-                                style = Typography.bodyMedium
-                            )
-                        }
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            ExpandableText(
-                                text = albumViewModel.getAlbumStorageSize(album.songs),
-                                color = appColors.secondaryFont,
-                                style = Typography.bodyMedium
-                            )
-                            ExpandableText(
-                                text = formatDuration(albumViewModel.getTotalDuration(album.albumId)),
-                                color = appColors.secondaryFont,
-                                style = Typography.bodyMedium
-                            )
-                        }
-                    }
-
-                }
-            }
-        }
-
-        Column(
-            modifier = Modifier
-                .weight(musicListHeightPercentage)
-        ) {
-            // Draggable handle (border line) placed directly below the album details
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(10.dp)
-                    .background(appColors.activeGradient)
+                    .weight(albumDetailsHeightPercentage)
                     .draggable(
                         orientation = Orientation.Vertical,
                         state = rememberDraggableState { delta ->
                             dragOffsetState.floatValue =
-                                (dragOffsetState.floatValue + delta).coerceIn(-1000f, 0f)
+                                (dragOffsetState.floatValue + delta).coerceIn(-maxDragPx, 0f)
                         }
-                    )
-            )
 
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .innerShadow(
-                        shape = RectangleShape,
-                        color = appColors.font.copy(alpha = 0.4f),
-                        blur = 8.dp,
-                        offsetY = 6.dp,
-                        offsetX = 0.dp,
-                        spread = 0.dp
                     )
             ) {
-                MusicList(
-                    musicFiles = album.songs,
-                    navController = navController,
-                    playerViewModel = playerViewModel
+                BoxWithConstraints(
+                    modifier = Modifier
+                        .padding(top = 32.dp)
+                        .padding(bottom = 16.dp)
+                ) {
+                    // weird aah shrinking behaviour
+                    val baseImageSize = if (isLandscape) this.maxWidth * 0.25f else this.maxWidth * 0.85f
+                    var shrinkingThreshhold = if (musicListHeightPercentage <= 0.45f) 0.2f else 1f
+                    val shrinkProgress = (-dragOffset / maxDragPx*shrinkingThreshhold).coerceIn(0f, 1f)
+                    val animatedImageSize by animateFloatAsState(
+                        targetValue = baseImageSize.value * (2.5f - (shrinkProgress * 7f)),
+                        label = "ImageSizeAnim"
+                    )
+
+                    val animatedVisibility by animateFloatAsState(
+                        targetValue = if (imageVisible) 1f else 0f,
+                        label = "ImageVisibilityAnim"
+                    )
+
+
+                    album.albumArtBitmap?.let { bitmap ->
+                        val finalImageSize = with(density) { animatedImageSize.toDp() * animatedVisibility }
+
+                        if (animatedVisibility > 0.3f) {
+                            Image(
+                                bitmap = bitmap.asImageBitmap(),
+                                contentDescription = "Album Art",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .size(finalImageSize)
+                                    .align(Alignment.Center)
+                            )
+                        }
+                    }
+                }
+
+
+                Row(
+                    modifier = Modifier
+                        .padding(bottom = 16.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .padding(horizontal = 32.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                ExpandableText(
+                                    text = "${album.representativeSong.bitrate?.div(1000)} kbps",
+                                    color = appColors.secondaryFont,
+                                    style = Typography.bodyMedium
+                                )
+                                ExpandableText(
+                                    text = album.representativeSong.genre.orEmpty(),
+                                    color = appColors.secondaryFont,
+                                    style = Typography.bodyMedium
+                                )
+                            }
+
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                ExpandableText(
+                                    text = "${album.songs.size} ${if (album.songs.size == 1) "song" else "songs"}",
+                                    color = appColors.font,
+                                    style = Typography.bodyMedium
+                                )
+                                ExpandableText(
+                                    text = (album.representativeSong.year ?: "").toString(),
+                                    color = appColors.secondaryFont,
+                                    style = Typography.bodyMedium
+                                )
+                            }
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                ExpandableText(
+                                    text = albumViewModel.getAlbumStorageSize(album.songs),
+                                    color = appColors.secondaryFont,
+                                    style = Typography.bodyMedium
+                                )
+                                ExpandableText(
+                                    text = formatDuration(albumViewModel.getTotalDuration(album.albumId)),
+                                    color = appColors.secondaryFont,
+                                    style = Typography.bodyMedium
+                                )
+                            }
+                        }
+
+                    }
+                }
+                Button(
+                    onClick = {
+                        playerViewModel.playCollection(album.songs, album.name)
+                    },
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth(),
+                ) {
+                    Text(
+                        text = "Play the Album",
+                        color = appColors.font,
+                        style = Typography.bodyMedium
+                    )
+                }
+            }
+
+            Column(
+                modifier = Modifier
+                    .weight(musicListHeightPercentage)
+            ) {
+                // Draggable handle (border line) placed directly below the album details
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(10.dp)
+                        .background(appColors.activeGradient)
+                        .draggable(
+                            orientation = Orientation.Vertical,
+                            state = rememberDraggableState { delta ->
+                                dragOffsetState.floatValue =
+                                    (dragOffsetState.floatValue + delta).coerceIn(-1000f, 0f)
+                            }
+                        )
                 )
+
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .innerShadow(
+                            shape = RectangleShape,
+                            color = appColors.font.copy(alpha = 0.4f),
+                            blur = 8.dp,
+                            offsetY = 6.dp,
+                            offsetX = 0.dp,
+                            spread = 0.dp
+                        )
+                ) {
+                    MusicList(
+                        musicFiles = album.songs,
+                        navController = navController,
+                        playerViewModel = playerViewModel
+                    )
+                }
             }
         }
+
     }
 }

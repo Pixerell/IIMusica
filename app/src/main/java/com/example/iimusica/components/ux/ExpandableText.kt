@@ -19,7 +19,8 @@ import androidx.compose.ui.text.TextStyle
 fun ExpandableText(
     text: String,
     color: Color,
-    style: TextStyle
+    style: TextStyle,
+    modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -29,7 +30,7 @@ fun ExpandableText(
         style = style,
         maxLines = if (expanded) Int.MAX_VALUE else 1,
         overflow = if (expanded) TextOverflow.Clip else TextOverflow.Ellipsis,
-        modifier = Modifier
+        modifier = modifier
             .clickable { expanded = !expanded }
             .animateContentSize(
                 animationSpec = tween(durationMillis = 300)

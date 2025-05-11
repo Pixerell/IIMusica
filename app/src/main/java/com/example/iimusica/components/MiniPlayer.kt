@@ -38,6 +38,7 @@ import com.example.iimusica.components.buttons.ButtonPlayPause
 import com.example.iimusica.components.buttons.ButtonPrevious
 import com.example.iimusica.components.mediacomponents.DurationBar
 import com.example.iimusica.components.ux.MarqueeText
+import com.example.iimusica.core.viewmodels.MusicViewModel
 import com.example.iimusica.core.viewmodels.PlayerViewModel
 import com.example.iimusica.core.viewmodels.SharedViewModel
 import com.example.iimusica.ui.theme.LocalAppColors
@@ -50,11 +51,12 @@ import com.example.iimusica.utils.parseDuration
 fun MiniPlayer(
     playerViewModel: PlayerViewModel,
     sharedViewModel: SharedViewModel,
+    musicViewModel : MusicViewModel,
     navController: NavController
 ) {
     val appColors = LocalAppColors.current
     val currentPath = playerViewModel.currentPath.value
-    val currentMusic = playerViewModel.queueManager.getQueue().find { it.path == currentPath }
+    val currentMusic = musicViewModel.getMusicFileByPath(currentPath.toString())
 
     val isLandscape = LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
 

@@ -26,7 +26,7 @@ fun reloadmlist(
 
     // Only reset queue if necessary
     if (playerViewModel.queueManager.getQueue() != musicViewModel.mFiles.value) {
-        playerViewModel.queueManager.setQueue(musicViewModel.mFiles.value)
+        playerViewModel.queueManager.setQueue(musicViewModel.mFiles.value, "Default Queue")
     }
 
     if (wasPlaying && activePath != null) {

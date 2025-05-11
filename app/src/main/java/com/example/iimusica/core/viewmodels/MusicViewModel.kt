@@ -120,6 +120,10 @@ class MusicViewModel(
         }
     }
 
+    fun getMusicFileByPath(path: String): MusicFile? {
+        return _mFiles.value.find { it.path == path }
+    }
+
     sealed class FilesLoadingState {
         object Loading : FilesLoadingState()
         object Loaded : FilesLoadingState()

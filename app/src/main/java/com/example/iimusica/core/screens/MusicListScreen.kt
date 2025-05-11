@@ -57,7 +57,11 @@ fun MusicListScreen(
     }
 
     LaunchedEffect(filteredFiles) {
-        playerViewModel.queueManager.setQueue(filteredFiles)
+        if (!playerViewModel.isCollectionPlaying.value) {
+            var newQueueName = "Sorted Default"
+            playerViewModel.queueManager.setQueue(filteredFiles, newQueueName)
+        }
+
         if (musicViewModel.shouldScrollTop.value) {
             musicListState.scrollToItem(0)
             musicViewModel.shouldScrollTop.value = false
@@ -95,7 +99,7 @@ fun MusicListScreen(
                     )
                 } else {
                     if (playerViewModel.queueManager.getQueue().isEmpty()) {
-                        playerViewModel.queueManager.setQueue(filteredFiles)  // Initialize the queue with sorted files only if it's empty
+                        playerViewModel.queueManager.setQueue(filteredFiles, "Default Queue")  // Initialize the queue with sorted files only if it's empty
                     }
                     PullToRefreshBox(
                         state = state,

@@ -200,6 +200,7 @@ fun MusicPagerScreen(
                 MiniPlayer(
                     playerViewModel = playerViewModel,
                     sharedViewModel = sharedViewModel,
+                    musicViewModel = musicViewModel,
                     navController = navController
                 )
             }

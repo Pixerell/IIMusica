@@ -40,7 +40,6 @@ class AlbumViewModel(
 
     private val metadataCache = mutableMapOf<String, MusicFile>()
 
-
     private val context: Context get() = app.applicationContext
 
     init {
