@@ -14,10 +14,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -83,10 +79,11 @@ fun SettingsDropDownMenu(
             text = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        Icons.Default.PlayArrow,
+                        painter = painterResource(id = R.drawable.expanderico),
                         contentDescription = "Sort expander",
                         modifier = Modifier
                             .padding(end = 8.dp)
+                            .size(20.dp)
                             .rotate(rotation),
                         tint = appColors.icon
                     )
@@ -125,7 +122,6 @@ fun SettingsDropDownMenu(
                         descending = isDescending,
                         onClick = {
                             onSortOptionSelected(option)
-                            onDismissRequest()
                             onToggleDescending()
                         }
                     )
@@ -173,9 +169,9 @@ fun SettingsDropDownMenu(
             text = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        Icons.Default.Refresh,
+                        painter = painterResource(id = R.drawable.refreshico),
                         contentDescription = "Reload mfiles",
-                        modifier = Modifier.padding(end = 8.dp),
+                        modifier = Modifier.padding(end = 8.dp).size(20.dp),
                         tint = appColors.icon
                     )
                     Text(
@@ -195,9 +191,9 @@ fun SettingsDropDownMenu(
             text = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        Icons.Default.Close,
+                        painter = painterResource(id = R.drawable.cancelico),
                         contentDescription = "Close button",
-                        modifier = Modifier.padding(end = 8.dp),
+                        modifier = Modifier.padding(end = 8.dp).size(20.dp),
                         tint = appColors.icon
                     )
                     Text(

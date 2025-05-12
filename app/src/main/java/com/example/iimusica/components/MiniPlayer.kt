@@ -38,9 +38,9 @@ import com.example.iimusica.components.buttons.ButtonPlayPause
 import com.example.iimusica.components.buttons.ButtonPrevious
 import com.example.iimusica.components.mediacomponents.DurationBar
 import com.example.iimusica.components.ux.MarqueeText
-import com.example.iimusica.core.viewmodels.MusicViewModel
 import com.example.iimusica.core.viewmodels.PlayerViewModel
 import com.example.iimusica.core.viewmodels.SharedViewModel
+import com.example.iimusica.types.MusicFile
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
 import com.example.iimusica.utils.fetchers.albumPainter
@@ -51,12 +51,15 @@ import com.example.iimusica.utils.parseDuration
 fun MiniPlayer(
     playerViewModel: PlayerViewModel,
     sharedViewModel: SharedViewModel,
-    musicViewModel : MusicViewModel,
+    currentMusic: MusicFile?,
     navController: NavController
 ) {
+    if (currentMusic == null) {
+        return
+    }
+
     val appColors = LocalAppColors.current
     val currentPath = playerViewModel.currentPath.value
-    val currentMusic = musicViewModel.getMusicFileByPath(currentPath.toString())
 
     val isLandscape = LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
 
@@ -66,9 +69,7 @@ fun MiniPlayer(
         label = "ArrowRotation"
     )
 
-    if (currentMusic == null) return
     val painter = albumPainter(currentMusic)
-
     val buttonOffsetY by animateDpAsState(
         targetValue = if (visible) (-24).dp else (-32).dp,
         label = "MiniPlayerButtonOffset"
@@ -78,6 +79,7 @@ fun MiniPlayer(
         targetValue = if (visible) 0.dp else 78.dp,
         label = "MiniPlayerSlide"
     )
+
     Box(
         modifier = Modifier
             .fillMaxWidth()

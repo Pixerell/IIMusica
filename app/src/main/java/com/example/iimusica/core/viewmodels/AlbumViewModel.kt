@@ -96,6 +96,7 @@ class AlbumViewModel(
         if (_albums.value.isEmpty()) {
             return
         }
+        _isLoading.value = false
         viewModelScope.launch(Dispatchers.Default) {
             val query = state.query
             val filtered = if (query.isEmpty()) {
@@ -106,6 +107,8 @@ class AlbumViewModel(
                     albumName.contains(query, ignoreCase = true)
                 }
             }
+            // preindexing
+            val songsByAlbum = musicViewModel.mFiles.value.groupBy { it.albumId }
             val sorted = filtered.sortByOption(
                 sortOption = state.sortOption,
                 isDescending = state.isDescending,
@@ -117,9 +120,12 @@ class AlbumViewModel(
                     }
                 },
                 numericSelector = {
+                    val albumId = it.representativeSong.albumId
+                    val songs = songsByAlbum[albumId] ?: emptyList()
                     when (state.sortOption) {
-                        SortOption.SIZE -> getTotalSize(it.representativeSong.albumId)
-                        SortOption.DURATION -> getTotalDuration(it.representativeSong.albumId)
+                        SortOption.SIZE -> songs.sumOf { it.size }
+                        SortOption.DURATION -> songs.sumOf { parseDuration(it.duration) }
+                        SortOption.DATE -> it.representativeSong.dateAdded
                         else -> null
                     }
                 })
@@ -131,14 +137,9 @@ class AlbumViewModel(
         }
     }
 
-    fun getTotalSize(albumId: Long): Long {
-        return getSongsForAlbum(albumId).sumOf { it.size }
-    }
-
     fun getTotalDuration(albumId: Long): Long {
         return getSongsForAlbum(albumId).sumOf { parseDuration(it.duration) }
     }
-
 
     fun getAlbumStorageSize(songs: List<MusicFile>): String {
         val totalBytes = songs.sumOf { it.size }

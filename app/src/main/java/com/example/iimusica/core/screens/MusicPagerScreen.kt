@@ -200,7 +200,7 @@ fun MusicPagerScreen(
                 MiniPlayer(
                     playerViewModel = playerViewModel,
                     sharedViewModel = sharedViewModel,
-                    musicViewModel = musicViewModel,
+                    currentMusic = musicViewModel.getMusicFileByPath(playerViewModel.currentPath.value.toString()),
                     navController = navController
                 )
             }

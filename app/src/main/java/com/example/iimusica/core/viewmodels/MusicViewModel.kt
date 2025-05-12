@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.iimusica.types.MusicFile
 import com.example.iimusica.types.SortOption
 import com.example.iimusica.utils.fetchers.getAllMusicFiles
+import com.example.iimusica.utils.parseDuration
 import com.example.iimusica.utils.sortByOption
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -72,6 +73,7 @@ class MusicViewModel(
         if (_mFiles.value.isEmpty()) {
             return
         }
+        _isLoading.value = false
         viewModelScope.launch(Dispatchers.Default) {
             val query = state.query
             val filtered = if (query.isEmpty()) {
@@ -95,7 +97,7 @@ class MusicViewModel(
                 numericSelector = {
                     when (state.sortOption) {
                         SortOption.SIZE -> it.size.toLong()
-                        SortOption.DURATION -> it.duration.toLong()
+                        SortOption.DURATION -> parseDuration(it.duration)
                         SortOption.DATE -> it.dateAdded
                         else -> null
                     }

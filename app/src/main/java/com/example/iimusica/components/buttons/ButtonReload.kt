@@ -5,16 +5,17 @@ import android.content.Context
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
+import com.example.iimusica.R
 import com.example.iimusica.components.innerShadow
 import com.example.iimusica.core.viewmodels.MusicViewModel
 import com.example.iimusica.core.viewmodels.PlayerViewModel
@@ -24,7 +25,12 @@ import com.example.iimusica.utils.reloadmlist
 
 @UnstableApi
 @Composable
-fun ButtonReload(playerViewModel: PlayerViewModel, viewModel: MusicViewModel, sharedViewModel: SharedViewModel, context: Context) {
+fun ButtonReload(
+    playerViewModel: PlayerViewModel,
+    viewModel: MusicViewModel,
+    sharedViewModel: SharedViewModel,
+    context: Context
+) {
     val appColors = LocalAppColors.current
 
     Box(
@@ -49,7 +55,11 @@ fun ButtonReload(playerViewModel: PlayerViewModel, viewModel: MusicViewModel, sh
             contentColor = appColors.icon,
             containerColor = appColors.backgroundDarker,
         ) {
-            Icon(Icons.Default.Refresh, contentDescription = "Refresh Music Files")
+            Icon(
+                painter = painterResource(id = R.drawable.refreshico),
+                modifier = Modifier.size(20.dp),
+                contentDescription = "Refresh Music Files"
+            )
         }
     }
 }
