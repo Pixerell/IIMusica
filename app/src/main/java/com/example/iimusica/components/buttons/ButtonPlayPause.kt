@@ -25,7 +25,12 @@ import com.example.iimusica.ui.theme.LocalAppColors
 
 @OptIn(UnstableApi::class)
 @Composable
-fun ButtonPlayPause(playerViewModel: PlayerViewModel, isSmallMode: Boolean = false) {
+fun ButtonPlayPause(
+    playerViewModel: PlayerViewModel,
+    isSmallMode: Boolean = false,
+    onPlayTap: (() -> Unit)? = null,
+    isSameAlbum: Boolean = true,
+) {
     val appColors = LocalAppColors.current
 
     Row(
@@ -34,7 +39,14 @@ fun ButtonPlayPause(playerViewModel: PlayerViewModel, isSmallMode: Boolean = fal
         horizontalArrangement = Arrangement.Center
     ) {
         FloatingActionButton(
-            onClick = { playerViewModel.togglePlayPause() },
+            onClick = {
+                if (!isSameAlbum) {
+                    onPlayTap?.invoke()
+                }
+                else {
+                    playerViewModel.togglePlayPause()
+                }
+            },
             modifier = Modifier
                 .clip(CircleShape)
                 .size(if (isSmallMode) 40.dp else 80.dp),
@@ -45,7 +57,7 @@ fun ButtonPlayPause(playerViewModel: PlayerViewModel, isSmallMode: Boolean = fal
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    painter = painterResource(if (playerViewModel.isPlaying) R.drawable.pauseico else R.drawable.playico),
+                    painter = painterResource(if (playerViewModel.isPlaying && isSameAlbum) R.drawable.pauseico else R.drawable.playico),
                     contentDescription = if (playerViewModel.isPlaying) "Pause" else "Play",
                     tint = appColors.active,
                     modifier = Modifier

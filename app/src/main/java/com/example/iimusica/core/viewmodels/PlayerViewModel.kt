@@ -13,6 +13,9 @@ import com.example.iimusica.core.player.PlaybackCommandBus
 import com.example.iimusica.core.player.PlaybackController
 import com.example.iimusica.core.player.QueueManager
 import com.example.iimusica.types.MusicFile
+import com.example.iimusica.types.SKIP_CHECK_CODE
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -25,13 +28,13 @@ class PlayerViewModel(application: Application, val playbackController: Playback
 
     private val _currentPath = mutableStateOf<String?>(null)
     private val _repeatMode = mutableIntStateOf(ExoPlayer.REPEAT_MODE_OFF)
-    private val _isCollectionPlaying = mutableStateOf(false)
 
     val isPlaying: Boolean get() = playbackController.isPlaying.value
-    val isCollectionPlaying: State<Boolean> get() = _isCollectionPlaying
-
     val currentPath: State<String?> get() = _currentPath
     val repeatMode: State<Int> get() = _repeatMode
+
+    private val _currentCollectionID = MutableStateFlow(SKIP_CHECK_CODE)
+    val currentCollectionID: StateFlow<Long> get() = _currentCollectionID
 
     init {
         playbackController.pathState = _currentPath
@@ -111,8 +114,8 @@ class PlayerViewModel(application: Application, val playbackController: Playback
         _currentPath.value = path
     }
 
-    fun playCollection(collection: List<MusicFile>, collectionName: String) {
-        _isCollectionPlaying.value = true
+    fun playCollection(collection: List<MusicFile>, collectionName: String, collectionId: Long) {
+        _currentCollectionID.value = collectionId
         queueManager.setQueue(collection, collectionName)
         collection.firstOrNull()?.let {
             playMusic(it.path)

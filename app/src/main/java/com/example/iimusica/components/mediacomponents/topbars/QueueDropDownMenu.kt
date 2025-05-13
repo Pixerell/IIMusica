@@ -4,6 +4,13 @@ package com.example.iimusica.components.mediacomponents.topbars
 import android.app.Activity
 import android.content.Intent
 import androidx.annotation.OptIn
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,9 +19,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -23,9 +32,11 @@ import androidx.media3.common.util.UnstableApi
 import com.example.iimusica.R
 import com.example.iimusica.components.innerShadow
 import com.example.iimusica.core.player.PlaybackService
+import com.example.iimusica.types.QueueOption
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
 import kotlinx.coroutines.launch
+
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -37,8 +48,15 @@ fun QueueDropDownMenu(
 ) {
     val appColors = LocalAppColors.current
     val context = LocalContext.current
-
     val scope = rememberCoroutineScope()
+    var queueOptionsExpanded by remember { mutableStateOf(false) }
+
+    val rotation by animateFloatAsState(
+        targetValue = if (queueOptionsExpanded) 90f else 0f,
+        animationSpec = tween(durationMillis = 500),
+        label = "queueiconrotation"
+    )
+
 
     DropdownMenu(
         expanded = expanded,
@@ -55,6 +73,73 @@ fun QueueDropDownMenu(
             .padding(8.dp),
         containerColor = appColors.backgroundDarker,
     ) {
+
+        DropdownMenuItem(
+            text = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = painterResource(R.drawable.albumico),
+                        contentDescription = "Play Album",
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .size(20.dp),
+                        tint = appColors.icon
+                    )
+                    Text(
+                        text = "Play Album",
+                        color = appColors.font,
+                        fontSize = Typography.bodyMedium.fontSize,
+                        fontFamily = Typography.bodyMedium.fontFamily
+                    )
+                }
+            },
+            onClick = {
+                // play album and set as the queue.
+            }
+        )
+        DropdownMenuItem(
+            text = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = painterResource(R.drawable.queueico),
+                        contentDescription = "Queue options",
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .rotate(rotation)
+                            .size(20.dp),
+                        tint = appColors.icon
+                    )
+                    Text(
+                        text = "Queue Options",
+                        color = appColors.font,
+                        fontSize = Typography.bodyMedium.fontSize,
+                        fontFamily = Typography.bodyMedium.fontFamily
+                    )
+                }
+            },
+            onClick = {
+                queueOptionsExpanded = !queueOptionsExpanded
+            }
+        )
+        AnimatedContent(
+            targetState = queueOptionsExpanded,
+            transitionSpec = {
+                fadeIn(tween(180)).togetherWith(fadeOut(tween(180)))
+            },
+            label = "QueueDropdownTransition"
+        ) { expanded ->
+            if (expanded) {
+                Column(
+                    modifier = Modifier.padding(start = 16.dp)
+                ) {
+                    QueueOption.entries.forEach { option ->
+                        QueueOptionItem(option = option, onClick = { })
+                    }
+                }
+            }
+        }
+
+
         HorizontalDivider(
             modifier = Modifier
                 .alpha(0.4f)

@@ -25,9 +25,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -38,6 +37,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import com.example.iimusica.components.buttons.ButtonPlayPause
 import com.example.iimusica.components.ux.ExpandableText
 import com.example.iimusica.core.viewmodels.PlayerViewModel
 import com.example.iimusica.ui.theme.LocalAppColors
@@ -61,6 +61,9 @@ fun AlbumDetailsMainContent(
     val maxDragPx = with(density) { 1000.dp.toPx() }
     val hideImageThreshold = with(density) { -300.dp.toPx() }
     val imageVisible = dragOffset >= hideImageThreshold
+
+    val currentCollectionId by playerViewModel.currentCollectionID.collectAsState()
+    val isSameAlbum = currentCollectionId == album.albumId
 
     val albumDetailsHeightPercentage by remember {
         derivedStateOf {
@@ -192,20 +195,15 @@ fun AlbumDetailsMainContent(
 
                     }
                 }
-                Button(
-                    onClick = {
-                        playerViewModel.playCollection(album.songs, album.name)
+                ButtonPlayPause(
+                    playerViewModel = playerViewModel,
+                    onPlayTap = {
+                        if (!isSameAlbum) {
+                            playerViewModel.playCollection(album.songs, album.name, album.albumId)
+                        }
                     },
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth(),
-                ) {
-                    Text(
-                        text = "Play the Album",
-                        color = appColors.font,
-                        style = Typography.bodyMedium
-                    )
-                }
+                    isSameAlbum = isSameAlbum
+                )
             }
 
             Column(

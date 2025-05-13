@@ -41,6 +41,7 @@ import com.example.iimusica.components.ux.ExpandableText
 import com.example.iimusica.core.viewmodels.MusicViewModel
 import com.example.iimusica.core.viewmodels.PlayerViewModel
 import com.example.iimusica.core.viewmodels.SearchSortState
+import com.example.iimusica.types.SKIP_CHECK_CODE
 import com.example.iimusica.ui.theme.QUEUE_PANEL_OFFSET
 import com.example.iimusica.ui.theme.Typography
 
@@ -101,7 +102,7 @@ fun QueuePanel(
 
     LaunchedEffect(state.isDescending, state.sortOption) {
         musicViewModel.updateFilteredFiles(state)
-        if (!playerViewModel.isCollectionPlaying.value) {
+        if (playerViewModel.currentCollectionID.value == SKIP_CHECK_CODE) {
             playerViewModel.queueManager.setQueue(musicViewModel.filteredFiles.value)
         }
     }

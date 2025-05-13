@@ -8,8 +8,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.iimusica.types.MusicFile
 import com.example.iimusica.types.SortOption
 import com.example.iimusica.utils.fetchers.getAllMusicFiles
+import com.example.iimusica.utils.filterAndSortList
 import com.example.iimusica.utils.parseDuration
-import com.example.iimusica.utils.sortByOption
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -32,6 +32,8 @@ class MusicViewModel(
 
     private val _filteredFiles = mutableStateOf<List<MusicFile>>(emptyList())
     val filteredFiles: MutableState<List<MusicFile>> get() = _filteredFiles
+
+    private var lastSongFilterState: SearchSortState? = null
 
     private val _shouldScrollTop = mutableStateOf(false)
     val shouldScrollTop: MutableState<Boolean> get() = _shouldScrollTop
@@ -68,26 +70,19 @@ class MusicViewModel(
         }
     }
 
-    fun updateFilteredFiles(state: SearchSortState) {
-        //prevents premature filtering due to multithreadding
-        if (_mFiles.value.isEmpty()) {
-            return
-        }
-        _isLoading.value = false
-        viewModelScope.launch(Dispatchers.Default) {
-            val query = state.query
-            val filtered = if (query.isEmpty()) {
-                _mFiles.value
-            } else {
-                _mFiles.value.filter {
-                    it.name.contains(query, ignoreCase = true)
-                }
-            }
 
-            val sorted = filtered.sortByOption(
-                state.sortOption,
-                state.isDescending,
-                selector = {
+    fun updateFilteredFiles(state: SearchSortState) {
+        // Prevents premature filtering due to multithreading and cached states
+        if (_mFiles.value.isEmpty()) return
+        if (state == lastSongFilterState) return
+
+        _isLoading.value = true
+        viewModelScope.launch(Dispatchers.Default) {
+            val sorted = filterAndSortList(
+                originalList = _mFiles.value,
+                state = state,
+                querySelector = { it.name },
+                stringSelector = {
                     when (state.sortOption) {
                         SortOption.NAME -> it.name
                         SortOption.ARTIST -> it.artist
@@ -106,6 +101,7 @@ class MusicViewModel(
 
             withContext(Dispatchers.Main) {
                 _filteredFiles.value = sorted
+                lastSongFilterState = state.copy()
                 shouldScrollTop.value = true
                 _isLoading.value = false
             }

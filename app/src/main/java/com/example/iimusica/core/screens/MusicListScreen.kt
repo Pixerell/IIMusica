@@ -25,6 +25,9 @@ import com.example.iimusica.core.player.PlaybackCommandBus
 import com.example.iimusica.core.viewmodels.MusicViewModel
 import com.example.iimusica.core.viewmodels.PlayerViewModel
 import com.example.iimusica.core.viewmodels.SharedViewModel
+import com.example.iimusica.types.DEFAULT_QUEUE_NAME
+import com.example.iimusica.types.DEFAULT_SORTED_QUEUE_NAME
+import com.example.iimusica.types.SKIP_CHECK_CODE
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.utils.reloadmlist
 import kotlinx.coroutines.flow.collectLatest
@@ -57,8 +60,8 @@ fun MusicListScreen(
     }
 
     LaunchedEffect(filteredFiles) {
-        if (!playerViewModel.isCollectionPlaying.value) {
-            var newQueueName = "Sorted Default"
+        if (playerViewModel.currentCollectionID.value == SKIP_CHECK_CODE) {
+            var newQueueName = DEFAULT_SORTED_QUEUE_NAME
             playerViewModel.queueManager.setQueue(filteredFiles, newQueueName)
         }
 
@@ -99,7 +102,7 @@ fun MusicListScreen(
                     )
                 } else {
                     if (playerViewModel.queueManager.getQueue().isEmpty()) {
-                        playerViewModel.queueManager.setQueue(filteredFiles, "Default Queue")  // Initialize the queue with sorted files only if it's empty
+                        playerViewModel.queueManager.setQueue(filteredFiles, DEFAULT_QUEUE_NAME)  // Initialize the queue with sorted files only if it's empty
                     }
                     PullToRefreshBox(
                         state = state,

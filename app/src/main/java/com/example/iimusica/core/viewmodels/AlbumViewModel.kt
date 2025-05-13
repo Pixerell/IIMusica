@@ -15,8 +15,8 @@ import com.example.iimusica.types.AlbumSummary
 import com.example.iimusica.types.MusicFile
 import com.example.iimusica.types.SortOption
 import com.example.iimusica.utils.fetchers.fetchExtendedMetadataForMusicFile
+import com.example.iimusica.utils.filterAndSortList
 import com.example.iimusica.utils.parseDuration
-import com.example.iimusica.utils.sortByOption
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -37,6 +37,7 @@ class AlbumViewModel(
     val isLoading: State<Boolean> = _isLoading
     private val _errorMessage = mutableStateOf<String?>(null)
     val errorMessage: String get() = _errorMessage.value ?: ""
+    private var lastAlbumFilterState: SearchSortState? = null
 
     private val metadataCache = mutableMapOf<String, MusicFile>()
 
@@ -96,42 +97,39 @@ class AlbumViewModel(
         if (_albums.value.isEmpty()) {
             return
         }
-        _isLoading.value = false
+        if (state == lastAlbumFilterState) {
+            return
+        }
+        _isLoading.value = true
         viewModelScope.launch(Dispatchers.Default) {
-            val query = state.query
-            val filtered = if (query.isEmpty()) {
-                _albums.value
-            } else {
-                _albums.value.filter {
-                    val albumName = it.name ?: "Unknown Album"
-                    albumName.contains(query, ignoreCase = true)
-                }
-            }
             // preindexing
             val songsByAlbum = musicViewModel.mFiles.value.groupBy { it.albumId }
-            val sorted = filtered.sortByOption(
-                sortOption = state.sortOption,
-                isDescending = state.isDescending,
-                selector = {
+
+            val sorted = filterAndSortList(
+                originalList = _albums.value,
+                state = state,
+                querySelector = { it.name ?: "Unknown Album" },
+                stringSelector = {
                     when (state.sortOption) {
-                        SortOption.NAME -> it.name ?: "Unknown Album"
-                        SortOption.ARTIST -> it.artist ?: "Unknown Artist"
-                        else -> it.name ?: "Unknown Album"
+                        SortOption.NAME -> it.name
+                        SortOption.ARTIST -> it.artist
+                        else -> null
                     }
                 },
                 numericSelector = {
                     val albumId = it.representativeSong.albumId
                     val songs = songsByAlbum[albumId] ?: emptyList()
                     when (state.sortOption) {
-                        SortOption.SIZE -> songs.sumOf { it.size }
+                        SortOption.SIZE -> songs.sumOf { it.size }.toLong()
                         SortOption.DURATION -> songs.sumOf { parseDuration(it.duration) }
                         SortOption.DATE -> it.representativeSong.dateAdded
                         else -> null
                     }
-                })
-
+                }
+            )
             withContext(Dispatchers.Main) {
                 _filteredAlbums.value = sorted
+                lastAlbumFilterState = state.copy()
                 _isLoading.value = false
             }
         }
