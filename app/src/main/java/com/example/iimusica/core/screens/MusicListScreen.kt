@@ -50,7 +50,6 @@ fun MusicListScreen(
     val state = rememberPullToRefreshState()
     val musicListState = rememberLazyListState()
 
-    // To launch a coroutine for fetching music files
     LaunchedEffect(Unit) {
         if (mFiles.isEmpty()) {
             musicViewModel.loadMusicFiles(context)

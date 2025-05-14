@@ -4,8 +4,11 @@ import android.app.Application
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.util.Log
@@ -39,13 +42,19 @@ class AlbumViewModel(
     val errorMessage: String get() = _errorMessage.value ?: ""
     private var lastAlbumFilterState: SearchSortState? = null
 
+    private val _miniPlayerVisible = mutableStateOf(false)
+    val miniPlayerVisible: MutableState<Boolean> get() = _miniPlayerVisible
+    private val _animationComplete = mutableStateOf(false)
+    val animationComplete: MutableState<Boolean> get() = _animationComplete
+    var isFirstTimeEnteredAlbum by mutableStateOf(true)
+
     private val metadataCache = mutableMapOf<String, MusicFile>()
 
     private val context: Context get() = app.applicationContext
 
     init {
         viewModelScope.launch {
-            musicViewModel.filesLoading.collectLatest{ state ->
+            musicViewModel.filesLoading.collectLatest { state ->
                 handleFilesLoadingState(state)
             }
         }
@@ -60,7 +69,6 @@ class AlbumViewModel(
             if (songs.isEmpty()) return@mapNotNull null
             val representativeSong =
                 songs.firstOrNull { it.albumArtBitmap != null } ?: songs.first()
-
             // Fetch extended metadata for the representative song
             val representativeSongWithMetadata = getCachedExtendedMetadata(representativeSong)
 
@@ -98,6 +106,7 @@ class AlbumViewModel(
             return
         }
         if (state == lastAlbumFilterState) {
+            _isLoading.value = false
             return
         }
         _isLoading.value = true
@@ -125,8 +134,7 @@ class AlbumViewModel(
                         SortOption.DATE -> it.representativeSong.dateAdded
                         else -> null
                     }
-                }
-            )
+                })
             withContext(Dispatchers.Main) {
                 _filteredAlbums.value = sorted
                 lastAlbumFilterState = state.copy()
@@ -161,7 +169,9 @@ class AlbumViewModel(
         return withContext(Dispatchers.IO) {
             albumTracks.map { song ->
                 getCachedExtendedMetadata(song)
-            }.sortedBy { it.trackNumber ?: Int.MAX_VALUE } // fallback to the end if track number is missing
+            }.sortedBy {
+                it.trackNumber ?: Int.MAX_VALUE
+            } // fallback to the end if track number is missing
         }
     }
 
@@ -175,6 +185,7 @@ class AlbumViewModel(
 
             is MusicViewModel.FilesLoadingState.Loaded -> {
                 updateAlbumSummaries(musicViewModel.mFiles.value)
+                _isLoading.value = false
             }
 
             is MusicViewModel.FilesLoadingState.Error -> {
@@ -184,4 +195,7 @@ class AlbumViewModel(
         }
     }
 
+    fun toggleMiniPlayerVisibility() {
+        miniPlayerVisible.value = !miniPlayerVisible.value
+    }
 }

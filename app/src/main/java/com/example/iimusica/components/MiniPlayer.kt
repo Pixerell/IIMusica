@@ -39,7 +39,6 @@ import com.example.iimusica.components.buttons.ButtonPrevious
 import com.example.iimusica.components.mediacomponents.DurationBar
 import com.example.iimusica.components.ux.MarqueeText
 import com.example.iimusica.core.viewmodels.PlayerViewModel
-import com.example.iimusica.core.viewmodels.SharedViewModel
 import com.example.iimusica.types.MusicFile
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
@@ -50,7 +49,8 @@ import com.example.iimusica.utils.parseDuration
 @Composable
 fun MiniPlayer(
     playerViewModel: PlayerViewModel,
-    sharedViewModel: SharedViewModel,
+    isMiniPlayerVisible: Boolean,
+    onToggleMiniPlayerVisibility: () -> Unit,
     currentMusic: MusicFile?,
     navController: NavController
 ) {
@@ -60,23 +60,22 @@ fun MiniPlayer(
 
     val appColors = LocalAppColors.current
     val currentPath = playerViewModel.currentPath.value
+    val isLandscape =
+        LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
 
-    val isLandscape = LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
-
-    val visible = sharedViewModel.miniPlayerVisible.value
     val rotation by animateFloatAsState(
-        targetValue = if (visible) 180f else 0f,
+        targetValue = if (isMiniPlayerVisible) 180f else 0f,
         label = "ArrowRotation"
     )
 
     val painter = albumPainter(currentMusic)
     val buttonOffsetY by animateDpAsState(
-        targetValue = if (visible) (-24).dp else (-32).dp,
+        targetValue = if (isMiniPlayerVisible) (-24).dp else (-32).dp,
         label = "MiniPlayerButtonOffset"
     )
 
     val offsetY by animateDpAsState(
-        targetValue = if (visible) 0.dp else 78.dp,
+        targetValue = if (isMiniPlayerVisible) 0.dp else 78.dp,
         label = "MiniPlayerSlide"
     )
 
@@ -118,7 +117,7 @@ fun MiniPlayer(
                 contentAlignment = Alignment.TopCenter
             ) {
                 IconButton(
-                    onClick = { sharedViewModel.toggleMiniPlayerVisibility() },
+                    onClick = { onToggleMiniPlayerVisibility() },
                     modifier = Modifier
                         .offset(y = buttonOffsetY)
                         .innerShadow(
@@ -138,7 +137,9 @@ fun MiniPlayer(
                         imageVector = Icons.Default.KeyboardArrowUp,
                         tint = appColors.icon,
                         contentDescription = "Options",
-                        modifier = Modifier.rotate(rotation).zIndex(112f)
+                        modifier = Modifier
+                            .rotate(rotation)
+                            .zIndex(112f)
                     )
                 }
             }

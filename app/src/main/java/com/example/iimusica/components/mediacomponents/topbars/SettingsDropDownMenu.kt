@@ -139,6 +139,31 @@ fun SettingsDropDownMenu(
             text = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
+                        painter = painterResource(R.drawable.queueico),
+                        contentDescription = "Navigate To Queue Screen",
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .size(20.dp),
+                        tint = appColors.icon
+                    )
+                    Text(
+                        text = "View Queue",
+                        color = appColors.font,
+                        fontSize = Typography.bodyMedium.fontSize,
+                        fontFamily = Typography.bodyMedium.fontFamily
+                    )
+                }
+            },
+            onClick = {
+                onReshuffle()
+            }
+        )
+
+
+        DropdownMenuItem(
+            text = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
                         painter = painterResource(R.drawable.shuffleico),
                         contentDescription = "Reshuffling",
                         modifier = Modifier
@@ -184,6 +209,12 @@ fun SettingsDropDownMenu(
             },
             onClick = {
                 onReloadLocalFiles()
+                scope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = "Reloading Files",
+                        withDismissAction = true
+                    )
+                }
             }
         )
 

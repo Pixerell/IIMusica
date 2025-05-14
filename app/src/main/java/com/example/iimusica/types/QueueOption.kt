@@ -6,5 +6,6 @@ enum class QueueOption(val displayName: String) {
     REMOVE("Remove From Queue"),
     CLEAR("Clear Queue"),
     RESET("Reset To Default"),
-    SAVE("Save As A Playlist")
+    SAVE("Save As A Playlist"),
+    GO("View Queue")
 }

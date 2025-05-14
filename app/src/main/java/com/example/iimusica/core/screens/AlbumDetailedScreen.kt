@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -16,17 +17,23 @@ import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import com.example.iimusica.components.MiniPlayer
 import com.example.iimusica.components.mediacomponents.AlbumDetailsMainContent
 import com.example.iimusica.components.mediacomponents.topbars.AlbumDetailsTopBar
 import com.example.iimusica.components.ux.Loader
+import com.example.iimusica.components.ux.rememberMiniPlayerAnimation
 import com.example.iimusica.core.viewmodels.AlbumViewModel
 import com.example.iimusica.core.viewmodels.PlayerViewModel
 import com.example.iimusica.types.Album
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
+import com.example.iimusica.utils.fetchers.getMusicFileFromPath
 
 
 @RequiresApi(Build.VERSION_CODES.R)
@@ -39,17 +46,26 @@ fun AlbumDetailedScreen(
     playerViewModel: PlayerViewModel,
     snackbarHostState: SnackbarHostState
 ) {
+    val context = LocalContext.current
     val albumIdLong = albumId.toLongOrNull() ?: return
     val albumState = produceState<Album?>(initialValue = null, albumIdLong) {
         value = albumViewModel.getAlbumById(albumIdLong)
     }
     val album = albumState.value
-
-
     val appColors = LocalAppColors.current
     val isLandscape =
         LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
 
+    val animationState = rememberMiniPlayerAnimation(
+        isFirstTimeEntered = albumViewModel.isFirstTimeEnteredAlbum,
+        isPlaying = playerViewModel.isPlaying,
+        animationComplete = albumViewModel.animationComplete,
+        miniPlayerVisible = albumViewModel.miniPlayerVisible
+    )
+
+    if (animationState.offset == IntOffset.Zero && albumViewModel.isFirstTimeEnteredAlbum) {
+        albumViewModel.isFirstTimeEnteredAlbum = false
+    }
 
     if (album == null) {
         Box(
@@ -72,18 +88,46 @@ fun AlbumDetailedScreen(
         }
         return
     }
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-
-    ) {
-        AlbumDetailsTopBar(
-            album = album,
-            onReshuffle = { playerViewModel.queueManager.regenerateShuffleOrder() },
-            onBackClick = { navController.navigateUp() },
-            snackbarHostState = snackbarHostState
+        ) {
+            AlbumDetailsTopBar(
+                album = album,
+                onReshuffle = { playerViewModel.queueManager.regenerateShuffleOrder() },
+                onBackClick = { navController.navigateUp() },
+                snackbarHostState = snackbarHostState
+            )
+            AlbumDetailsMainContent(
+                isLandscape,
+                playerViewModel,
+                albumViewModel,
+                album,
+                navController
+            )
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .zIndex(111f)
+                .offset { animationState.offset }
         )
-        AlbumDetailsMainContent(isLandscape, playerViewModel,albumViewModel, album, navController)
+        {
+            MiniPlayer(
+                playerViewModel = playerViewModel,
+                isMiniPlayerVisible = albumViewModel.miniPlayerVisible.value,
+                onToggleMiniPlayerVisibility = {
+                    albumViewModel.toggleMiniPlayerVisibility()
+                },
+                currentMusic = getMusicFileFromPath(
+                    context,
+                    playerViewModel.currentPath.value.toString()
+                ),
+                navController = navController
+            )
+        }
     }
 }

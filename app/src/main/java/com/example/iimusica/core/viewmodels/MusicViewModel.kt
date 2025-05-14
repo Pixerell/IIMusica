@@ -74,7 +74,10 @@ class MusicViewModel(
     fun updateFilteredFiles(state: SearchSortState) {
         // Prevents premature filtering due to multithreading and cached states
         if (_mFiles.value.isEmpty()) return
-        if (state == lastSongFilterState) return
+        if (state == lastSongFilterState) {
+            _isLoading.value = false
+            return
+        }
 
         _isLoading.value = true
         viewModelScope.launch(Dispatchers.Default) {
