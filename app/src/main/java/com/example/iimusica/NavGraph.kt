@@ -22,6 +22,7 @@ import com.example.iimusica.components.ux.CustomSnackBar
 import com.example.iimusica.core.screens.AlbumDetailedScreen
 import com.example.iimusica.core.screens.MusicPagerScreen
 import com.example.iimusica.core.screens.MusicScreen
+import com.example.iimusica.core.screens.QueueScreen
 import com.example.iimusica.core.viewmodels.AlbumViewModel
 import com.example.iimusica.core.viewmodels.MusicViewModel
 import com.example.iimusica.core.viewmodels.PlayerViewModel
@@ -85,6 +86,14 @@ fun AppNavGraph(
                     snackbarHostState = snackBarHostState
                 )
             }
+            composable("queue") {
+                QueueScreen(
+                    navController = navController,
+                    playerViewModel = playerViewModel,
+                    snackbarHostState = snackBarHostState
+                )
+            }
+
         }
         SnackbarHost(
             hostState = snackBarHostState,

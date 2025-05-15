@@ -1,50 +1,36 @@
 package com.example.iimusica.components.mediacomponents.topbars
 
 import android.content.res.Configuration
-import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.util.UnstableApi
 import com.example.iimusica.R
 import com.example.iimusica.components.buttons.ButtonBack
 import com.example.iimusica.components.innerShadow
 import com.example.iimusica.components.ux.MarqueeText
 import com.example.iimusica.components.ux.ShadowBox
-import com.example.iimusica.types.Album
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
 
-@OptIn(UnstableApi::class)
 @Composable
-fun AlbumDetailsTopBar(
-    album: Album,
+fun QueueTopBar(
     onBackClick: () -> Unit,
     onReshuffle: () -> Unit,
+    queueName: String = "Current Queue",
     snackbarHostState: SnackbarHostState
 ) {
     val appColors = LocalAppColors.current
-    val isLandscape =
-        LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-    var queueDropDownExpanded by remember { mutableStateOf(false) }
-
+    val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+    var dropDownExpanded by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -54,9 +40,7 @@ fun AlbumDetailsTopBar(
                 shape = RectangleShape,
                 color = appColors.font.copy(alpha = 0.4f),
                 blur = 8.dp,
-                offsetY = 6.dp,
-                offsetX = 0.dp,
-                spread = 0.dp
+                offsetY = 6.dp
             )
     ) {
         ShadowBox(modifier = Modifier.align(Alignment.BottomCenter))
@@ -66,48 +50,42 @@ fun AlbumDetailsTopBar(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = if (isLandscape) 8.dp else 24.dp)
         ) {
-            ButtonBack(onBackClick, modifier = Modifier.align(Alignment.CenterStart))
-            Column(
+            ButtonBack(onBackClick)
+
+            Box(
                 modifier = Modifier
                     .align(Alignment.Center)
-                    .padding(horizontal = 64.dp) // space for buttons
-                    .fillMaxWidth(1f),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .padding(horizontal = 64.dp),
+                contentAlignment = Alignment.Center
             ) {
                 MarqueeText(
-                    text = album.name, style = Typography.bodyLarge, isCentered = true
-                )
-                MarqueeText(
-                    text = album.artist,
-                    style = Typography.bodyMedium,
-                    isCentered = true,
-                    isMaintext = false
+                    text = queueName,
+                    style = Typography.bodyLarge,
+                    isCentered = true
                 )
             }
 
-            // Settings Button (Right)
             Box(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
                     .size(48.dp)
-                    .clickable { queueDropDownExpanded = !queueDropDownExpanded },
+                    .clickable { dropDownExpanded = !dropDownExpanded },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.albumico),
-                    contentDescription = "Queue Settings",
+                    painter = painterResource(id = R.drawable.queueico),
+                    contentDescription = "Queue Options",
                     tint = appColors.icon,
                     modifier = Modifier.size(32.dp)
                 )
 
                 QueueDropDownMenu(
-                    expanded = queueDropDownExpanded,
-                    onDismissRequest = { queueDropDownExpanded = false },
+                    expanded = dropDownExpanded,
+                    onDismissRequest = { dropDownExpanded = false },
                     onReshuffle = onReshuffle,
                     snackbarHostState = snackbarHostState
                 )
             }
         }
-
     }
 }

@@ -44,6 +44,7 @@ fun SettingsDropDownMenu(
     onReshuffle: () -> Unit,
     onReloadLocalFiles: () -> Unit,
     onToggleDescending: () -> Unit,
+    onNavToQueue: () -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
     val appColors = LocalAppColors.current
@@ -155,7 +156,8 @@ fun SettingsDropDownMenu(
                 }
             },
             onClick = {
-                onReshuffle()
+                onDismissRequest()
+                onNavToQueue()
             }
         )
 
@@ -196,7 +198,9 @@ fun SettingsDropDownMenu(
                     Icon(
                         painter = painterResource(id = R.drawable.refreshico),
                         contentDescription = "Reload mfiles",
-                        modifier = Modifier.padding(end = 8.dp).size(20.dp),
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .size(20.dp),
                         tint = appColors.icon
                     )
                     Text(
@@ -224,7 +228,9 @@ fun SettingsDropDownMenu(
                     Icon(
                         painter = painterResource(id = R.drawable.cancelico),
                         contentDescription = "Close button",
-                        modifier = Modifier.padding(end = 8.dp).size(20.dp),
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .size(20.dp),
                         tint = appColors.icon
                     )
                     Text(

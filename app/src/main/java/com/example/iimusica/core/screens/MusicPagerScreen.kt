@@ -113,6 +113,9 @@ fun MusicPagerScreen(
                 onToggleDescending = {
                     sharedViewModel.toggleDescending(screenKey)
                 },
+                onNavToQueue = {     navController.navigate("queue") {
+                    launchSingleTop = true
+                }},
                 snackbarHostState = snackbarHostState
             )
         },

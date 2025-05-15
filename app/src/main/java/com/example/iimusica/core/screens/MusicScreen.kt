@@ -38,7 +38,6 @@ import com.example.iimusica.utils.fetchers.getMusicFileFromPath
 import com.example.iimusica.utils.reloadmlist
 
 
-
 @OptIn(UnstableApi::class)
 @Composable
 fun MusicScreen(
@@ -85,7 +84,10 @@ fun MusicScreen(
         musicFile = getMusicFileFromPath(context, currentPath.toString())
     }
 
-    Log.d("statezbar", "Did it get updated in music screen? ${state.query}, issearching? ${state.isSearching}, ${state.sortOption}")
+    Log.d(
+        "statezbar",
+        "Did it get updated in music screen? ${state.query}, issearching? ${state.isSearching}, ${state.sortOption}"
+    )
 
     val painter = albumPainter(musicFile)
 
@@ -110,6 +112,9 @@ fun MusicScreen(
             MusicScreenTopBar(
                 isPlaying = playerViewModel.isPlaying,
                 onBackClick = { navController.navigateUp() },
+                onNavToQueue = {     navController.navigate("queue") {
+                    launchSingleTop = true
+                }},
                 isDescending = state.isDescending,
                 selectedSortOption = state.sortOption,
                 onSortOptionSelected = {
@@ -119,7 +124,7 @@ fun MusicScreen(
                 onReloadLocalFiles = {
                     reloadmlist(playerViewModel, musicViewModel, sharedViewModel, context)
                 },
-                onToggleDescending = {sharedViewModel.toggleDescending(screenKey)},
+                onToggleDescending = { sharedViewModel.toggleDescending(screenKey) },
                 snackbarHostState = snackbarHostState
             )
 

@@ -28,7 +28,9 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.example.iimusica.R
+import com.example.iimusica.components.buttons.ButtonSettings
 import com.example.iimusica.components.innerShadow
+import com.example.iimusica.components.ux.ShadowBox
 import com.example.iimusica.types.MusicTopBarActions
 import com.example.iimusica.types.PAGE_TITLES
 import com.example.iimusica.ui.theme.LocalAppColors
@@ -46,9 +48,9 @@ fun MusicTopBar(
     currentPage: Int,
     onPageSelected: (Int) -> Unit,
     onToggleDescending: () -> Unit,
+    onNavToQueue: () -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
-    var expanded by remember { mutableStateOf(false) } // Controls the dropdown visibility
     val appColors = LocalAppColors.current
     val pageTitles = PAGE_TITLES
 
@@ -108,29 +110,14 @@ fun MusicTopBar(
                         modifier = Modifier.size(28.dp)
                     )
                 }
-                IconButton(onClick = { expanded = true }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.moreico),
-                        contentDescription = "Sort",
-                        tint = appColors.icon,
-                        modifier = Modifier.size(28.dp)
-                    )
-                }
-                SettingsDropDownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    onSortOptionSelected = actions.onSortOptionSelected,
+                ButtonSettings(
                     selectedSortOption = selectedSortOption,
                     isDescending = isDescending,
-                    onReshuffle = {
-                        actions.onReshuffle()
-                        expanded = false
-                    },
-                    onReloadLocalFiles = {
-                        actions.onReloadLocalFiles()
-                        expanded = false
-                    },
+                    onSortOptionSelected = actions.onSortOptionSelected,
+                    onReshuffle = actions.onReshuffle,
+                    onReloadLocalFiles = actions.onReloadLocalFiles,
                     onToggleDescending = onToggleDescending,
+                    onNavToQueue = onNavToQueue,
                     snackbarHostState = snackbarHostState
                 )
             },
@@ -191,7 +178,9 @@ fun MusicTopBar(
                         .height(3.dp)
                         .background(appColors.active)
                         .zIndex(10f)
-                )
+                ){
+                    ShadowBox(modifier = Modifier.align(Alignment.BottomCenter))
+                }
             }
 
         }

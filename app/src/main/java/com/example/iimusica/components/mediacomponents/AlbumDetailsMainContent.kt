@@ -8,7 +8,6 @@ import androidx.compose.ui.graphics.asImageBitmap
 import com.example.iimusica.components.innerShadow
 import com.example.iimusica.core.viewmodels.AlbumViewModel
 import com.example.iimusica.types.Album
-import com.example.iimusica.ui.theme.Typography
 import com.example.iimusica.utils.formatDuration
 import androidx.annotation.OptIn
 import androidx.compose.animation.core.animateFloatAsState
@@ -38,7 +37,6 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.example.iimusica.components.buttons.ButtonPlayPause
-import com.example.iimusica.components.ux.ExpandableText
 import com.example.iimusica.core.viewmodels.PlayerViewModel
 import com.example.iimusica.ui.theme.LocalAppColors
 
@@ -55,6 +53,13 @@ fun AlbumDetailsMainContent(
 ) {
     val appColors = LocalAppColors.current
     val density = LocalDensity.current
+
+    val bitrateKbps = "${album.representativeSong.bitrate?.div(1000)} kbps"
+    val genre = album.representativeSong.genre.orEmpty()
+    val songCountText = "${album.songs.size} ${if (album.songs.size == 1) "song" else "songs"}"
+    val year = (album.representativeSong.year ?: "").toString()
+    val storageSize = albumViewModel.getAlbumStorageSize(album.songs)
+    val totalDuration = formatDuration(albumViewModel.getTotalDuration(album.albumId))
 
     val dragOffsetState = remember { mutableFloatStateOf(0f) }
     val dragOffset by dragOffsetState
@@ -97,9 +102,11 @@ fun AlbumDetailsMainContent(
                         .padding(bottom = 16.dp)
                 ) {
                     // weird aah shrinking behaviour
-                    val baseImageSize = if (isLandscape) this.maxWidth * 0.25f else this.maxWidth * 0.85f
+                    val baseImageSize =
+                        if (isLandscape) this.maxWidth * 0.25f else this.maxWidth * 0.85f
                     var shrinkingThreshhold = if (musicListHeightPercentage <= 0.45f) 0.2f else 1f
-                    val shrinkProgress = (-dragOffset / maxDragPx*shrinkingThreshhold).coerceIn(0f, 1f)
+                    val shrinkProgress =
+                        (-dragOffset / maxDragPx * shrinkingThreshhold).coerceIn(0f, 1f)
                     val animatedImageSize by animateFloatAsState(
                         targetValue = baseImageSize.value * (2.5f - (shrinkProgress * 7f)),
                         label = "ImageSizeAnim"
@@ -112,7 +119,8 @@ fun AlbumDetailsMainContent(
 
 
                     album.albumArtBitmap?.let { bitmap ->
-                        val finalImageSize = with(density) { animatedImageSize.toDp() * animatedVisibility }
+                        val finalImageSize =
+                            with(density) { animatedImageSize.toDp() * animatedVisibility }
 
                         if (animatedVisibility > 0.3f) {
                             Image(
@@ -135,65 +143,14 @@ fun AlbumDetailsMainContent(
                     horizontalArrangement = Arrangement.SpaceBetween
 
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .padding(horizontal = 32.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(
-                                modifier = Modifier.weight(1f),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                ExpandableText(
-                                    text = "${album.representativeSong.bitrate?.div(1000)} kbps",
-                                    color = appColors.secondaryFont,
-                                    style = Typography.bodyMedium
-                                )
-                                ExpandableText(
-                                    text = album.representativeSong.genre.orEmpty(),
-                                    color = appColors.secondaryFont,
-                                    style = Typography.bodyMedium
-                                )
-                            }
-
-                            Column(
-                                modifier = Modifier.weight(1f),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                ExpandableText(
-                                    text = "${album.songs.size} ${if (album.songs.size == 1) "song" else "songs"}",
-                                    color = appColors.font,
-                                    style = Typography.bodyMedium
-                                )
-                                ExpandableText(
-                                    text = (album.representativeSong.year ?: "").toString(),
-                                    color = appColors.secondaryFont,
-                                    style = Typography.bodyMedium
-                                )
-                            }
-                            Column(
-                                modifier = Modifier.weight(1f),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                ExpandableText(
-                                    text = albumViewModel.getAlbumStorageSize(album.songs),
-                                    color = appColors.secondaryFont,
-                                    style = Typography.bodyMedium
-                                )
-                                ExpandableText(
-                                    text = formatDuration(albumViewModel.getTotalDuration(album.albumId)),
-                                    color = appColors.secondaryFont,
-                                    style = Typography.bodyMedium
-                                )
-                            }
-                        }
-
-                    }
+                    CollectionInfo(
+                        bitrateKbps = bitrateKbps,
+                        genre = genre,
+                        songCountText = songCountText,
+                        year = year,
+                        storageSize = storageSize,
+                        totalDuration = totalDuration
+                    )
                 }
                 ButtonPlayPause(
                     playerViewModel = playerViewModel,
