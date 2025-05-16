@@ -10,9 +10,11 @@ import com.example.iimusica.core.viewmodels.AlbumViewModel
 import com.example.iimusica.types.Album
 import com.example.iimusica.utils.formatDuration
 import androidx.annotation.OptIn
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
@@ -22,22 +24,35 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import com.example.iimusica.R
 import com.example.iimusica.components.buttons.ButtonPlayPause
+import com.example.iimusica.components.ux.Animations.rememberAnimatedGradient
+import com.example.iimusica.components.ux.Animations.rememberRotationAnimation
 import com.example.iimusica.core.viewmodels.PlayerViewModel
+import com.example.iimusica.types.ALBUM_DETAILS_MINIMUM_MUSIC_LIST_HEIGHT
 import com.example.iimusica.ui.theme.LocalAppColors
 
 
@@ -61,6 +76,7 @@ fun AlbumDetailsMainContent(
     val storageSize = albumViewModel.getAlbumStorageSize(album.songs)
     val totalDuration = formatDuration(albumViewModel.getTotalDuration(album.albumId))
 
+    val isDragging = remember { mutableStateOf(false) }
     val dragOffsetState = remember { mutableFloatStateOf(0f) }
     val dragOffset by dragOffsetState
     val maxDragPx = with(density) { 1000.dp.toPx() }
@@ -77,10 +93,35 @@ fun AlbumDetailsMainContent(
     }
     val musicListHeightPercentage by remember {
         derivedStateOf {
-            (1f - albumDetailsHeightPercentage).coerceIn(0.2f, 1f)
+            (1f - albumDetailsHeightPercentage).coerceIn(ALBUM_DETAILS_MINIMUM_MUSIC_LIST_HEIGHT, 1f)
         }
     }
 
+    val animatedBackgroundColor = rememberAnimatedGradient(
+        isExpanded = isDragging.value,
+        expandedColors = listOf(appColors.accentStart, appColors.accentEnd),
+        collapsedColors = listOf(appColors.background),
+        customDurations = listOf(100, 500)
+    )
+
+    val animatedBackgroundGradient = rememberAnimatedGradient(
+        isExpanded = isDragging.value,
+        expandedColors = listOf(appColors.activeStart, appColors.activeEnd),
+        collapsedColors = listOf(appColors.background),
+        customDurations = listOf(300, 1000)
+    )
+
+    val borderWidth by animateDpAsState(
+        targetValue = if (isDragging.value) 2.dp else 0.dp
+    )
+
+    val animatedIconRotation =
+        rememberRotationAnimation(
+            imageVisible,
+            expandedRotation = 0f,
+            collapsedRotation = 180f,
+            durationMillis = 500
+        )
 
     Box {
         Column {
@@ -90,10 +131,13 @@ fun AlbumDetailsMainContent(
                     .draggable(
                         orientation = Orientation.Vertical,
                         state = rememberDraggableState { delta ->
+                            isDragging.value = true
                             dragOffsetState.floatValue =
                                 (dragOffsetState.floatValue + delta).coerceIn(-maxDragPx, 0f)
+                        },
+                        onDragStopped = {
+                            isDragging.value = false
                         }
-
                     )
             ) {
                 BoxWithConstraints(
@@ -164,24 +208,69 @@ fun AlbumDetailsMainContent(
             }
 
             Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .weight(musicListHeightPercentage)
             ) {
                 // Draggable handle (border line) placed directly below the album details
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(10.dp)
-                        .background(appColors.activeGradient)
+                        .offset(y = 24.dp)
+                        .clip(CircleShape)
+                        .background(appColors.backgroundDarker)
+                        .border(borderWidth, animatedBackgroundColor, CircleShape)
+                        .innerShadow(
+                            shape = RoundedCornerShape(16.dp),
+                            color = appColors.font.copy(alpha = 0.25f),
+                            blur = 8.dp,
+                            offsetY = 6.dp,
+                            offsetX = 0.dp,
+                            spread = 0.dp
+                        )
+                        .padding(8.dp)
+                        .size(28.dp)
                         .draggable(
                             orientation = Orientation.Vertical,
                             state = rememberDraggableState { delta ->
+                                isDragging.value = true
                                 dragOffsetState.floatValue =
-                                    (dragOffsetState.floatValue + delta).coerceIn(-1000f, 0f)
+                                    (dragOffsetState.floatValue + delta).coerceIn(-maxDragPx, 0f)
+                            },
+                            onDragStopped = {
+                                isDragging.value = false
                             }
                         )
-                )
+                        .zIndex(3f)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.draggableico),
+                        contentDescription = "Draggable slider",
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(24.dp)
+                            .rotate(animatedIconRotation)
+                            .zIndex(5f),
+                        tint = appColors.font
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(5.dp)
+                        .background(animatedBackgroundGradient)
+                        .draggable(
+                            orientation = Orientation.Vertical,
+                            state = rememberDraggableState { delta ->
+                                isDragging.value = true
+                                dragOffsetState.floatValue =
+                                    (dragOffsetState.floatValue + delta).coerceIn(-maxDragPx, 0f)
+                            },
+                            onDragStopped = {
+                                isDragging.value = false
+                            }
+                        )
 
+                )
 
                 Box(
                     modifier = Modifier

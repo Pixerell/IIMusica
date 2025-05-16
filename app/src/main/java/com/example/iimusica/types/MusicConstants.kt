@@ -7,3 +7,4 @@ const val SCROLLBAR_WIDTH = 10
 const val AVERAGE_MUSICITEM_HEIGHT = 85
 const val DEFAULT_QUEUE_NAME = "Default Queue"
 const val DEFAULT_SORTED_QUEUE_NAME = "Sorted Default"
+const val ALBUM_DETAILS_MINIMUM_MUSIC_LIST_HEIGHT = 0.18f

@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.Intent
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -31,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import com.example.iimusica.R
 import com.example.iimusica.components.innerShadow
+import com.example.iimusica.components.ux.Animations.rememberRotationAnimation
 import com.example.iimusica.core.player.PlaybackService
 import com.example.iimusica.types.QueueOption
 import com.example.iimusica.ui.theme.LocalAppColors
@@ -50,13 +50,7 @@ fun QueueDropDownMenu(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var queueOptionsExpanded by remember { mutableStateOf(false) }
-
-    val rotation by animateFloatAsState(
-        targetValue = if (queueOptionsExpanded) 90f else 0f,
-        animationSpec = tween(durationMillis = 500),
-        label = "queueiconrotation"
-    )
-
+    val rotation = rememberRotationAnimation(queueOptionsExpanded)
 
     DropdownMenu(
         expanded = expanded,

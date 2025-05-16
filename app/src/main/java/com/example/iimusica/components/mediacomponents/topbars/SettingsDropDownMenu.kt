@@ -5,7 +5,6 @@ import android.content.Intent
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
@@ -27,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import com.example.iimusica.R
 import com.example.iimusica.components.innerShadow
+import com.example.iimusica.components.ux.Animations.rememberRotationAnimation
 import com.example.iimusica.core.player.PlaybackService
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
@@ -53,12 +53,7 @@ fun SettingsDropDownMenu(
     var lastToggleTime by remember { mutableLongStateOf(0L) }
     val context = LocalContext.current
 
-    val rotation by animateFloatAsState(
-        targetValue = if (isSortByExpanded) 90f else 0f,
-        animationSpec = tween(durationMillis = 200),
-        label = "SortArrowRotation"
-    )
-
+    val rotation = rememberRotationAnimation(isSortByExpanded)
     val scope = rememberCoroutineScope()
 
     DropdownMenu(

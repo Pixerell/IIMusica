@@ -1,4 +1,4 @@
-package com.example.iimusica.components.ux
+package com.example.iimusica.components.ux.Animations
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateOffsetAsState
