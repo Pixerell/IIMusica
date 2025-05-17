@@ -26,6 +26,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.example.iimusica.components.mediacomponents.AlbumItem
 import com.example.iimusica.components.ux.InfoBox
+import com.example.iimusica.components.ux.LazyGridScrollBar
 import com.example.iimusica.components.ux.Loader
 import com.example.iimusica.components.ux.MessageType
 import com.example.iimusica.core.viewmodels.AlbumViewModel
@@ -44,7 +45,6 @@ fun AlbumsScreen(
     val isLoading by albumViewModel.isLoading
     val errorMessage = albumViewModel.errorMessage
     val gridState = rememberLazyGridState()
-    val bottomPadding = PaddingValues(bottom = BOTTOM_LIST_PADDING.dp)
     val filteredAlbums by albumViewModel.filteredAlbums
 
 
@@ -80,11 +80,13 @@ fun AlbumsScreen(
                 columns = GridCells.Fixed(2), // 2 columns
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(12.dp),
+                    .padding(horizontal = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = bottomPadding
+                contentPadding = PaddingValues(bottom = BOTTOM_LIST_PADDING.dp)
             ) {
+
+
                 items(filteredAlbums) { album ->
                     Box(
                         modifier = Modifier
@@ -103,6 +105,11 @@ fun AlbumsScreen(
                     }
                 }
             }
+            LazyGridScrollBar(
+                gridState = gridState,
+                avgRowHeight = 250,
+                columnCount = 2
+            )
         }
     }
 }
