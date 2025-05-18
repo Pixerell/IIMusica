@@ -26,7 +26,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.example.iimusica.components.mediacomponents.AlbumItem
 import com.example.iimusica.components.ux.InfoBox
-import com.example.iimusica.components.ux.LazyGridScrollBar
+import com.example.iimusica.components.ux.scrollbars.LazyGridScrollBar
 import com.example.iimusica.components.ux.Loader
 import com.example.iimusica.components.ux.MessageType
 import com.example.iimusica.core.viewmodels.AlbumViewModel

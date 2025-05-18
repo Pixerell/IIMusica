@@ -1,4 +1,4 @@
-package com.example.iimusica.components.ux.Animations
+package com.example.iimusica.components.ux.animations
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween

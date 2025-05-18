@@ -27,7 +27,7 @@ import com.example.iimusica.components.MiniPlayer
 import com.example.iimusica.components.mediacomponents.AlbumDetailsMainContent
 import com.example.iimusica.components.mediacomponents.topbars.AlbumDetailsTopBar
 import com.example.iimusica.components.ux.Loader
-import com.example.iimusica.components.ux.Animations.rememberMiniPlayerAnimation
+import com.example.iimusica.components.ux.animations.rememberMiniPlayerAnimation
 import com.example.iimusica.core.viewmodels.AlbumViewModel
 import com.example.iimusica.core.viewmodels.PlayerViewModel
 import com.example.iimusica.types.Album

@@ -35,8 +35,8 @@ import androidx.navigation.NavController
 import com.example.iimusica.R
 import com.example.iimusica.components.innerShadow
 import com.example.iimusica.components.ux.ExpandableText
-import com.example.iimusica.components.ux.Animations.rememberAnimatedGradient
-import com.example.iimusica.components.ux.Animations.rememberRotationAnimation
+import com.example.iimusica.components.ux.animations.rememberAnimatedGradient
+import com.example.iimusica.components.ux.animations.rememberRotationAnimation
 import com.example.iimusica.core.viewmodels.MusicViewModel
 import com.example.iimusica.core.viewmodels.PlayerViewModel
 import com.example.iimusica.core.viewmodels.SearchSortState

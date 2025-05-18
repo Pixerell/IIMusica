@@ -29,7 +29,7 @@ import androidx.navigation.NavController
 import com.example.iimusica.components.MiniPlayer
 import com.example.iimusica.components.buttons.ButtonReload
 import com.example.iimusica.components.mediacomponents.topbars.MusicTopBar
-import com.example.iimusica.components.ux.Animations.rememberMiniPlayerAnimation
+import com.example.iimusica.components.ux.animations.rememberMiniPlayerAnimation
 import com.example.iimusica.core.viewmodels.AlbumViewModel
 import com.example.iimusica.core.viewmodels.MusicViewModel
 import com.example.iimusica.core.viewmodels.PlayerViewModel

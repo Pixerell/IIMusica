@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
-import com.example.iimusica.components.ux.LazyColumnScrollBar
+import com.example.iimusica.components.ux.scrollbars.LazyColumnScrollBar
 import com.example.iimusica.core.viewmodels.PlayerViewModel
 import com.example.iimusica.types.BOTTOM_LIST_PADDING
 import com.example.iimusica.types.MusicFile

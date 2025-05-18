@@ -49,8 +49,8 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.example.iimusica.R
 import com.example.iimusica.components.buttons.ButtonPlayPause
-import com.example.iimusica.components.ux.Animations.rememberAnimatedGradient
-import com.example.iimusica.components.ux.Animations.rememberRotationAnimation
+import com.example.iimusica.components.ux.animations.rememberAnimatedGradient
+import com.example.iimusica.components.ux.animations.rememberRotationAnimation
 import com.example.iimusica.core.viewmodels.PlayerViewModel
 import com.example.iimusica.types.ALBUM_DETAILS_MINIMUM_MUSIC_LIST_HEIGHT
 import com.example.iimusica.ui.theme.LocalAppColors

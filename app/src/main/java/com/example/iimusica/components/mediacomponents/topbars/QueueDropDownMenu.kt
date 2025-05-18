@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import com.example.iimusica.R
 import com.example.iimusica.components.innerShadow
-import com.example.iimusica.components.ux.Animations.rememberRotationAnimation
+import com.example.iimusica.components.ux.animations.rememberRotationAnimation
 import com.example.iimusica.core.player.PlaybackService
 import com.example.iimusica.types.QueueOption
 import com.example.iimusica.ui.theme.LocalAppColors
