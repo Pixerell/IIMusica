@@ -26,6 +26,7 @@ import androidx.navigation.NavController
 import com.example.iimusica.components.MiniPlayer
 import com.example.iimusica.components.mediacomponents.AlbumDetailsMainContent
 import com.example.iimusica.components.mediacomponents.topbars.AlbumDetailsTopBar
+import com.example.iimusica.components.rememberQueueActions
 import com.example.iimusica.components.ux.Loader
 import com.example.iimusica.components.ux.animations.rememberMiniPlayerAnimation
 import com.example.iimusica.core.viewmodels.AlbumViewModel
@@ -46,26 +47,12 @@ fun AlbumDetailedScreen(
     playerViewModel: PlayerViewModel,
     snackbarHostState: SnackbarHostState
 ) {
-    val context = LocalContext.current
     val albumIdLong = albumId.toLongOrNull() ?: return
     val albumState = produceState<Album?>(initialValue = null, albumIdLong) {
         value = albumViewModel.getAlbumById(albumIdLong)
     }
     val album = albumState.value
     val appColors = LocalAppColors.current
-    val isLandscape =
-        LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-
-    val animationState = rememberMiniPlayerAnimation(
-        isFirstTimeEntered = albumViewModel.isFirstTimeEnteredAlbum,
-        isPlaying = playerViewModel.isPlaying,
-        animationComplete = albumViewModel.animationComplete,
-        miniPlayerVisible = albumViewModel.miniPlayerVisible
-    )
-
-    if (animationState.offset == IntOffset.Zero && albumViewModel.isFirstTimeEnteredAlbum) {
-        albumViewModel.isFirstTimeEnteredAlbum = false
-    }
 
     if (album == null) {
         Box(
@@ -88,6 +75,31 @@ fun AlbumDetailedScreen(
         }
         return
     }
+
+    val context = LocalContext.current
+    val isLandscape =
+        LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+    val animationState = rememberMiniPlayerAnimation(
+        isFirstTimeEntered = albumViewModel.isFirstTimeEnteredAlbum,
+        isPlaying = playerViewModel.isPlaying,
+        animationComplete = albumViewModel.animationComplete,
+        miniPlayerVisible = albumViewModel.miniPlayerVisible
+    )
+
+    if (animationState.offset == IntOffset.Zero && albumViewModel.isFirstTimeEnteredAlbum) {
+        albumViewModel.isFirstTimeEnteredAlbum = false
+    }
+
+    val queueActions = rememberQueueActions(
+        snackbarHostState = snackbarHostState,
+        navController = navController,
+        playerViewModel = playerViewModel,
+        defaultFiles =albumViewModel.getDefaultFiles(),
+        songs = album.songs,
+        queueName = album.name
+    )
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -98,6 +110,7 @@ fun AlbumDetailedScreen(
                 album = album,
                 onReshuffle = { playerViewModel.queueManager.regenerateShuffleOrder() },
                 onBackClick = { navController.navigateUp() },
+                queueActions = queueActions,
                 snackbarHostState = snackbarHostState
             )
             AlbumDetailsMainContent(

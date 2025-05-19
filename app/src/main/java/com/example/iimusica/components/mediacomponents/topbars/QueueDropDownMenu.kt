@@ -32,6 +32,7 @@ import com.example.iimusica.R
 import com.example.iimusica.components.innerShadow
 import com.example.iimusica.components.ux.animations.rememberRotationAnimation
 import com.example.iimusica.core.player.PlaybackService
+import com.example.iimusica.types.QueueActions
 import com.example.iimusica.types.QueueOption
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
@@ -44,6 +45,7 @@ fun QueueDropDownMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
     onReshuffle: () -> Unit,
+    queueActions: QueueActions,
     snackbarHostState: SnackbarHostState
 ) {
     val appColors = LocalAppColors.current
@@ -127,7 +129,19 @@ fun QueueDropDownMenu(
                     modifier = Modifier.padding(start = 16.dp)
                 ) {
                     QueueOption.entries.forEach { option ->
-                        QueueOptionItem(option = option, onClick = { })
+                        QueueOptionItem(option = option, onClick = {
+                            when (option) {
+                                QueueOption.SET -> queueActions.onSetQueue()
+                                QueueOption.ADD -> queueActions.onAddToQueue()
+                                QueueOption.REMOVE -> queueActions.onRemoveFromQueue()
+                                QueueOption.CLEAR -> queueActions.onClearQueue()
+                                QueueOption.RESET -> queueActions.onResetQueue()
+                                QueueOption.SAVE -> queueActions.onSaveQueue()
+                                QueueOption.GO -> queueActions.onGoToQueue()
+                            }
+                            queueOptionsExpanded = false
+                            onDismissRequest()
+                        })
                     }
                 }
             }

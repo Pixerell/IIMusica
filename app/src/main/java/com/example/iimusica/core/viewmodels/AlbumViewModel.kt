@@ -195,6 +195,10 @@ class AlbumViewModel(
         }
     }
 
+    fun getDefaultFiles(): List<MusicFile> {
+        return musicViewModel.mFiles.value
+    }
+
     fun toggleMiniPlayerVisibility() {
         miniPlayerVisible.value = !miniPlayerVisible.value
     }

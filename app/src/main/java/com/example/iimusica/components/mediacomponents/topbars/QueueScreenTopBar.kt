@@ -18,6 +18,7 @@ import com.example.iimusica.components.buttons.ButtonBack
 import com.example.iimusica.components.innerShadow
 import com.example.iimusica.components.ux.MarqueeText
 import com.example.iimusica.components.ux.ShadowBox
+import com.example.iimusica.types.QueueActions
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
 
@@ -26,6 +27,7 @@ fun QueueTopBar(
     onBackClick: () -> Unit,
     onReshuffle: () -> Unit,
     queueName: String = "Current Queue",
+    queueActions: QueueActions,
     snackbarHostState: SnackbarHostState
 ) {
     val appColors = LocalAppColors.current
@@ -83,6 +85,7 @@ fun QueueTopBar(
                     expanded = dropDownExpanded,
                     onDismissRequest = { dropDownExpanded = false },
                     onReshuffle = onReshuffle,
+                    queueActions = queueActions,
                     snackbarHostState = snackbarHostState
                 )
             }

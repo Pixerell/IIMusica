@@ -90,6 +90,7 @@ fun AppNavGraph(
                 QueueScreen(
                     navController = navController,
                     playerViewModel = playerViewModel,
+                    musicViewModel = musicViewModel,
                     snackbarHostState = snackBarHostState
                 )
             }

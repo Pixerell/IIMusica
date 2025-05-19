@@ -38,7 +38,7 @@ fun MusicList(
             modifier = Modifier.fillMaxSize(),
             contentPadding = bottomPadding
         ) {
-            itemsIndexed(musicFiles, key = { _, item -> item.path }) { index, music ->
+            itemsIndexed(musicFiles, key = { index, item -> item.path + index.toString() }) { index, music ->
                 MusicItem(
                     music = music,
                     navController = navController,

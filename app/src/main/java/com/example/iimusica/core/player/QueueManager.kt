@@ -6,6 +6,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import com.example.iimusica.types.DEFAULT_QUEUE_NAME
 import com.example.iimusica.types.MusicFile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -85,6 +86,20 @@ class QueueManager(
             return
         }
         Log.d("queuemanager", "Queue already filled with the same items")
+    }
+
+    fun removeFromQueue(songsToRemove: List<MusicFile>) {
+        queue.removeAll { music -> songsToRemove.any { it.path == music.path } }
+        regenerateShuffleOrder()
+    }
+
+    fun addToQueue(songsToAdd:List<MusicFile>) {
+        queue.addAll(songsToAdd)
+        regenerateShuffleOrder()
+    }
+
+    fun resetQueue(defaultQueue: List<MusicFile>) {
+        setQueue(defaultQueue, DEFAULT_QUEUE_NAME)
     }
 
     fun updateQueueName(newQueueName: String) {

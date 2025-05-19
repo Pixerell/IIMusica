@@ -29,6 +29,7 @@ import com.example.iimusica.components.innerShadow
 import com.example.iimusica.components.ux.MarqueeText
 import com.example.iimusica.components.ux.ShadowBox
 import com.example.iimusica.types.Album
+import com.example.iimusica.types.QueueActions
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
 
@@ -38,6 +39,7 @@ fun AlbumDetailsTopBar(
     album: Album,
     onBackClick: () -> Unit,
     onReshuffle: () -> Unit,
+    queueActions: QueueActions,
     snackbarHostState: SnackbarHostState
 ) {
     val appColors = LocalAppColors.current
@@ -104,6 +106,7 @@ fun AlbumDetailsTopBar(
                     expanded = queueDropDownExpanded,
                     onDismissRequest = { queueDropDownExpanded = false },
                     onReshuffle = onReshuffle,
+                    queueActions = queueActions,
                     snackbarHostState = snackbarHostState
                 )
             }
