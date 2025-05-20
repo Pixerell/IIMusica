@@ -100,6 +100,7 @@ class PlaybackController(
 
     fun playMusic(path: String, shouldPlay: Boolean = true) {
         try {
+
             val file = File(path)
             if (path.isEmpty() || !file.exists()) {
                 Log.e(tag, "playMusic called with an empty path.")

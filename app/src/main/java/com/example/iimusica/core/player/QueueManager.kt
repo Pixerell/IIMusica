@@ -3,6 +3,7 @@ package com.example.iimusica.core.player
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
@@ -20,11 +21,13 @@ class QueueManager(
 ) {
 
     private val queue = mutableListOf<MusicFile>()
-    private var currentIndex = 0
+    private val _currentIndex: MutableState<Int> = mutableIntStateOf(0)
+
     private val shuffleOrder = mutableListOf<Int>()
     private var shuffledIndex = 0
 
-    val queueName: MutableState<String> = mutableStateOf("NoQueue")// This changes when playing albums/playlists etc.
+    val queueName: MutableState<String> =
+        mutableStateOf("NoQueue")// This changes when playing albums/playlists etc.
 
     fun toggleShuffle() {
         _isShuffleEnabled.value = !_isShuffleEnabled.value
@@ -65,7 +68,7 @@ class QueueManager(
     }
 
     @OptIn(UnstableApi::class)
-    fun setQueue(newQueue: List<MusicFile>, newQueueName : String = "", startIndex: Int = 0) {
+    fun setQueue(newQueue: List<MusicFile>, newQueueName: String = "", startIndex: Int = 0) {
         if (newQueue.isEmpty()) {
             Log.d("queuemanager", "Empty queue brother")
             return
@@ -77,7 +80,7 @@ class QueueManager(
             }
             // If playing track exists in new queue - map index to it or set to 0 if it doesn't
             val currentTrack = _currentPath.value
-            currentIndex = if (currentTrack != null) {
+            _currentIndex.value = if (currentTrack != null) {
                 findIndexByPath(currentTrack)
             } else {
                 startIndex
@@ -93,9 +96,11 @@ class QueueManager(
         regenerateShuffleOrder()
     }
 
-    fun addToQueue(songsToAdd:List<MusicFile>) {
+    fun addToQueue(songsToAdd: List<MusicFile>) {
         queue.addAll(songsToAdd)
         regenerateShuffleOrder()
+        Log.d("queuemanage", "Added to queue $queue")
+
     }
 
     fun resetQueue(defaultQueue: List<MusicFile>) {
@@ -107,11 +112,20 @@ class QueueManager(
     }
 
     fun updateIndex(path: String, queue: List<MusicFile>, currentIndex: Int): Int {
-        return queue.indexOfFirst { it.path == path }.takeIf { it >= 0 } ?: currentIndex
+        val size = queue.size
+        if (size == 0) return currentIndex
+        // Search forward from currentIndex
+        for (i in 0 until size) {
+            val index = (currentIndex + i) % size
+            if (queue[index].path == path) {
+                return index
+            }
+        }
+        return currentIndex // fallback to currentIndex if not found
     }
 
     fun updateIndexes(path: String) {
-        currentIndex = updateIndex(path, queue, currentIndex)
+        _currentIndex.value = updateIndex(path, queue, _currentIndex.value)
         shuffledIndex = getShuffledIndexByPath(path) ?: shuffledIndex
     }
 
@@ -120,9 +134,9 @@ class QueueManager(
         return shuffleOrder.map { queue[it] }
     }
 
-    fun getCurrentIndex(): Int = currentIndex
+    fun getCurrentIndex(): Int = _currentIndex.value
     fun setCurrentIndex(ind: Int) {
-        currentIndex = ind
+        _currentIndex.value = ind
     }
 
     fun getShuffledIndex(): Int = shuffledIndex
@@ -135,7 +149,7 @@ class QueueManager(
             val shuffledQueue = shuffleOrder.map { queue[it] }
             shuffledQueue to shuffledIndex
         } else {
-            queue to currentIndex
+            queue to _currentIndex.value
         }
     }
 

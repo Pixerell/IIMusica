@@ -7,6 +7,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.example.iimusica.core.player.PlaybackCommandBus
@@ -75,8 +76,15 @@ class PlayerViewModel(application: Application, val playbackController: Playback
         playbackController.playMusic(path, shouldPlay)
     }
 
+    fun playMusicAt(index: Int, path : String) {
+        queueManager.setCurrentIndex(index)
+        playbackController.playMusic(path, true)
+    }
+
+
     fun playNext() {
         val (queuer, indexer) = queueManager.getNextTrack()
+        Log.d("queuemanage", "check index $indexer")
         playbackController.playNext(queuer, indexer)
     }
 
