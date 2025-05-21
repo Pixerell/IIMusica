@@ -19,7 +19,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.example.iimusica.components.mediacomponents.MusicScreenMainContent
@@ -72,10 +71,16 @@ fun MusicScreen(
                 playerViewModel.playMusic(currentPath)
             } else {
                 with(playerViewModel.queueManager) {
-                    setCurrentIndex(updateIndex(currentPath, getQueue(), getCurrentIndex()))
+                    setCurrentIndex(
+                        updateIndex(
+                            currentPath,
+                            getQueueWithIDs(),
+                            getCurrentIndex()
+                        )
+                    )
                     setShuffledIndex(
                         updateIndex(
-                            currentPath, getShuffledView(), getShuffledIndex()
+                            currentPath, getShuffledViewWithIDs(), getShuffledIndex()
                         )
                     )
                 }
@@ -84,10 +89,6 @@ fun MusicScreen(
         musicFile = getMusicFileFromPath(context, currentPath.toString())
     }
 
-    Log.d(
-        "statezbar",
-        "Did it get updated in music screen? ${state.query}, issearching? ${state.isSearching}, ${state.sortOption}"
-    )
 
     val painter = albumPainter(musicFile)
 
@@ -112,9 +113,11 @@ fun MusicScreen(
             MusicScreenTopBar(
                 isPlaying = playerViewModel.isPlaying,
                 onBackClick = { navController.navigateUp() },
-                onNavToQueue = {     navController.navigate("queue") {
-                    launchSingleTop = true
-                }},
+                onNavToQueue = {
+                    navController.navigate("queue") {
+                        launchSingleTop = true
+                    }
+                },
                 isDescending = state.isDescending,
                 selectedSortOption = state.sortOption,
                 onSortOptionSelected = {

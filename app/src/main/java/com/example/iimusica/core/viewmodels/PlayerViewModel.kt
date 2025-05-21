@@ -14,6 +14,8 @@ import com.example.iimusica.core.player.PlaybackCommandBus
 import com.example.iimusica.core.player.PlaybackController
 import com.example.iimusica.core.player.QueueManager
 import com.example.iimusica.types.MusicFile
+import com.example.iimusica.types.QUEUE_DIRECTION_BACKWARD
+import com.example.iimusica.types.QUEUE_DIRECTION_FORWARD
 import com.example.iimusica.types.SKIP_CHECK_CODE
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -64,6 +66,7 @@ class PlayerViewModel(application: Application, val playbackController: Playback
             PlaybackCommandBus.BUS_TOGGLE_REPEAT -> toggleRepeat()
         }
     }
+
     val queueManager = QueueManager(
         _isShuffleEnabled = _isShuffleEnabled,
         _currentPath = _currentPath,
@@ -73,23 +76,21 @@ class PlayerViewModel(application: Application, val playbackController: Playback
         })
 
     fun playMusic(path: String, shouldPlay: Boolean = true) {
+        val index = queueManager.getQueue().indexOfFirst { it.path == path }
+        if (index != -1) {
+            queueManager.setCurrentIndex(index)
+        }
         playbackController.playMusic(path, shouldPlay)
     }
 
-    fun playMusicAt(index: Int, path : String) {
-        queueManager.setCurrentIndex(index)
-        playbackController.playMusic(path, true)
-    }
-
-
     fun playNext() {
-        val (queuer, indexer) = queueManager.getNextTrack()
+        val (queuer, indexer) = queueManager.getNextTrack(QUEUE_DIRECTION_FORWARD)
         Log.d("queuemanage", "check index $indexer")
         playbackController.playNext(queuer, indexer)
     }
 
     fun playPrevious() {
-        val (queuer, indexer) = queueManager.getNextTrack()
+        val (queuer, indexer) = queueManager.getNextTrack(QUEUE_DIRECTION_BACKWARD)
         playbackController.playPrevious(queuer, indexer)
     }
 

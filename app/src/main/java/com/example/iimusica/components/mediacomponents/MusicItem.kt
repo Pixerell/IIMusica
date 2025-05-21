@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import com.example.iimusica.components.innerShadow
 import com.example.iimusica.types.MusicFile
@@ -72,6 +73,8 @@ fun MusicItem(
                             playerViewModel.playMusic(music.path)
                             playerViewModel.setCurrentPath(music.path, false)
                         }
+                        Log.d("queuemanager", "Current index in queue - ${playerViewModel.queueManager.getCurrentIndex()}")
+                        Log.d("queuemanager", "Queue state - ${playerViewModel.queueManager.getQueueWithIDs()}")
                     },
                     onDoubleTap = {
                         dismissSearch()

@@ -19,3 +19,9 @@ data class MusicFile(
     val bitrate: Int? = null,
     val trackNumber: Int? = null,
 )
+
+// To solve the problem of uniqueness when duplicate songs with paths are present
+data class QueuedMusicFile(
+    val musicFile: MusicFile,
+    val queueId: Long
+)
