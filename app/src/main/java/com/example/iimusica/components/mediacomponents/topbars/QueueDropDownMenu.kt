@@ -32,6 +32,7 @@ import com.example.iimusica.R
 import com.example.iimusica.components.innerShadow
 import com.example.iimusica.components.ux.animations.rememberRotationAnimation
 import com.example.iimusica.core.player.PlaybackService
+import com.example.iimusica.types.ANIM_SPEED_VERYSHORT
 import com.example.iimusica.types.QueueActions
 import com.example.iimusica.types.QueueOption
 import com.example.iimusica.ui.theme.LocalAppColors
@@ -120,7 +121,7 @@ fun QueueDropDownMenu(
         AnimatedContent(
             targetState = queueOptionsExpanded,
             transitionSpec = {
-                fadeIn(tween(180)).togetherWith(fadeOut(tween(180)))
+                fadeIn(tween(ANIM_SPEED_VERYSHORT)).togetherWith(fadeOut(tween(ANIM_SPEED_VERYSHORT)))
             },
             label = "QueueDropdownTransition"
         ) { expanded ->

@@ -16,3 +16,10 @@ const val QUEUE_DIRECTION_BACKWARD = -1
 const val MAX_QUEUE_SIZE = 1_000_000_000_000_000_000L // this is a meme
 const val DEFAULT_QUEUE_NAME = "Default Queue"
 const val DEFAULT_SORTED_QUEUE_NAME = "Sorted Default"
+
+// Animation speeds
+const val ANIM_SPEED_HIGH = 1500
+const val ANIM_SPEED_MEDIUM = 1000
+const val ANIM_SPEED_SHORT = 500
+const val ANIM_SPEED_VERYSHORT = 250
+const val ANIM_SPEED_TINY = 100

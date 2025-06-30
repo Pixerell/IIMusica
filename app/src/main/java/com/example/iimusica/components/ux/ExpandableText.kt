@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import com.example.iimusica.types.ANIM_SPEED_VERYSHORT
 
 
 @Composable
@@ -33,7 +34,7 @@ fun ExpandableText(
         modifier = modifier
             .clickable { expanded = !expanded }
             .animateContentSize(
-                animationSpec = tween(durationMillis = 300)
+                animationSpec = tween(durationMillis = ANIM_SPEED_VERYSHORT)
             )
     )
 }

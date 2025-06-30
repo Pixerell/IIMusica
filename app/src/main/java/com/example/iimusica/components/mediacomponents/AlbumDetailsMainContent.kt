@@ -53,6 +53,10 @@ import com.example.iimusica.components.ux.animations.rememberAnimatedGradient
 import com.example.iimusica.components.ux.animations.rememberRotationAnimation
 import com.example.iimusica.core.viewmodels.PlayerViewModel
 import com.example.iimusica.types.ALBUM_DETAILS_MINIMUM_MUSIC_LIST_HEIGHT
+import com.example.iimusica.types.ANIM_SPEED_MEDIUM
+import com.example.iimusica.types.ANIM_SPEED_SHORT
+import com.example.iimusica.types.ANIM_SPEED_TINY
+import com.example.iimusica.types.ANIM_SPEED_VERYSHORT
 import com.example.iimusica.ui.theme.LocalAppColors
 
 
@@ -101,14 +105,14 @@ fun AlbumDetailsMainContent(
         isExpanded = isDragging.value,
         expandedColors = listOf(appColors.accentStart, appColors.accentEnd),
         collapsedColors = listOf(appColors.background),
-        customDurations = listOf(100, 500)
+        customDurations = listOf(ANIM_SPEED_TINY, ANIM_SPEED_SHORT)
     )
 
     val animatedBackgroundGradient = rememberAnimatedGradient(
         isExpanded = isDragging.value,
         expandedColors = listOf(appColors.activeStart, appColors.activeEnd),
         collapsedColors = listOf(appColors.background),
-        customDurations = listOf(300, 1000)
+        customDurations = listOf(ANIM_SPEED_VERYSHORT, ANIM_SPEED_MEDIUM)
     )
 
     val borderWidth by animateDpAsState(
@@ -120,7 +124,7 @@ fun AlbumDetailsMainContent(
             imageVisible,
             expandedRotation = 0f,
             collapsedRotation = 180f,
-            durationMillis = 500
+            durationMillis = ANIM_SPEED_SHORT
         )
 
     Box {

@@ -40,6 +40,8 @@ import com.example.iimusica.components.ux.animations.rememberRotationAnimation
 import com.example.iimusica.core.viewmodels.MusicViewModel
 import com.example.iimusica.core.viewmodels.PlayerViewModel
 import com.example.iimusica.core.viewmodels.SearchSortState
+import com.example.iimusica.types.ANIM_SPEED_HIGH
+import com.example.iimusica.types.ANIM_SPEED_SHORT
 import com.example.iimusica.types.SKIP_CHECK_CODE
 import com.example.iimusica.ui.theme.QUEUE_PANEL_OFFSET
 import com.example.iimusica.ui.theme.Typography
@@ -77,7 +79,7 @@ fun QueuePanel(
         isExpanded = isPanelExpanded,
         expandedColors = listOf(appColors.activeStart, appColors.activeEnd),
         collapsedColors = listOf(appColors.backgroundDarker),
-        customDurations = listOf(500, 1500)
+        customDurations = listOf(ANIM_SPEED_SHORT, ANIM_SPEED_HIGH)
     )
 
     val rotation =

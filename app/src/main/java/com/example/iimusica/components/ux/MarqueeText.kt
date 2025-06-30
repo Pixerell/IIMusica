@@ -15,6 +15,9 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
+import com.example.iimusica.types.ANIM_SPEED_MEDIUM
+import com.example.iimusica.types.ANIM_SPEED_TINY
+import com.example.iimusica.types.ANIM_SPEED_VERYSHORT
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
 
@@ -32,8 +35,8 @@ fun MarqueeText(
     var textWidth by remember { mutableFloatStateOf(0f) }
     var boxWidth by remember { mutableFloatStateOf(0f) }
     val animatedOffset = remember { Animatable(0f) }
-    val speed = 200
-    var delayMillis = 1000
+    val speed = ANIM_SPEED_VERYSHORT
+    var delayMillis = ANIM_SPEED_MEDIUM
     var isActive by remember { mutableStateOf(true) }
     val finalStyle = style.copy(
         fontWeight = if (isMaintext) FontWeight.Bold else FontWeight.Normal,
@@ -52,13 +55,13 @@ fun MarqueeText(
                 animatedOffset.animateTo(
                     targetValue = -distance,
                     animationSpec = tween(
-                        durationMillis = (distance / speed * 1000).toInt(),
+                        durationMillis = (distance / speed * ANIM_SPEED_MEDIUM).toInt(),
                         easing = LinearEasing,
                         delayMillis = delayMillis
                     )
                 )
                 isFirstanim = false
-                delayMillis = 100
+                delayMillis = ANIM_SPEED_TINY
                 animatedOffset.snapTo(boxWidth)
             }
         }

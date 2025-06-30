@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.example.iimusica.types.ANIM_SPEED_MEDIUM
 
 data class MiniPlayerAnimationState(
     val offset: IntOffset,
@@ -35,13 +36,13 @@ fun rememberMiniPlayerAnimation(
     val targetOffset = if (!isFirstTimeEntered) Offset.Zero else Offset(0f, screenHeight)
     val offset by animateOffsetAsState(
         targetValue = if (!miniPlayerVisible.value) targetOffset else Offset.Zero,
-        animationSpec = tween(durationMillis = 1000),
+        animationSpec = tween(durationMillis = ANIM_SPEED_MEDIUM),
         label = "MiniPlayerSlideIn"
     )
 
     val fabOffsetY by animateDpAsState(
         targetValue = if (!miniPlayerVisible.value) 0.dp else 140.dp,
-        animationSpec = tween(durationMillis = 1000),
+        animationSpec = tween(durationMillis = ANIM_SPEED_MEDIUM),
         label = "FABOffset"
     )
 

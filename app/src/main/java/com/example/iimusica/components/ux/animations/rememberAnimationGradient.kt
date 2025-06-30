@@ -5,13 +5,14 @@ import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.example.iimusica.types.ANIM_SPEED_MEDIUM
 
 @Composable
 fun rememberAnimatedGradient(
     isExpanded: Boolean,
     expandedColors: List<Color>,
     collapsedColors: List<Color>,
-    durationMillis: Int = 1000,
+    durationMillis: Int = ANIM_SPEED_MEDIUM,
     customDurations: List<Int>? = null // optional per-color overrides
 ): Brush {
     val animatedColors = expandedColors.mapIndexed { index, expandedColor ->

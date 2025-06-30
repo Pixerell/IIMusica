@@ -28,6 +28,7 @@ import com.example.iimusica.R
 import com.example.iimusica.components.innerShadow
 import com.example.iimusica.components.ux.animations.rememberRotationAnimation
 import com.example.iimusica.core.player.PlaybackService
+import com.example.iimusica.types.ANIM_SPEED_VERYSHORT
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
 import com.example.iimusica.types.SortOption
@@ -94,7 +95,7 @@ fun SettingsDropDownMenu(
             },
             onClick = {
                 val now = System.currentTimeMillis()
-                if (now - lastToggleTime > 200) {
+                if (now - lastToggleTime > ANIM_SPEED_VERYSHORT) {
                     isSortByExpanded = !isSortByExpanded
                     lastToggleTime = now
                 }
@@ -103,8 +104,8 @@ fun SettingsDropDownMenu(
         // Once the Sort by section is expanded, show options
         AnimatedVisibility(
             isSortByExpanded,
-            enter = expandVertically(animationSpec = tween(200)),
-            exit = shrinkVertically(animationSpec = tween(200))
+            enter = expandVertically(animationSpec = tween(ANIM_SPEED_VERYSHORT)),
+            exit = shrinkVertically(animationSpec = tween(ANIM_SPEED_VERYSHORT))
         ) {
             Column(
                 modifier = Modifier

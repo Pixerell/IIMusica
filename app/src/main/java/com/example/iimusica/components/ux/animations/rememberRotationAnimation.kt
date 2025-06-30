@@ -4,13 +4,14 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import com.example.iimusica.types.ANIM_SPEED_VERYSHORT
 
 @Composable
 fun rememberRotationAnimation(
     isExpanded: Boolean,
     expandedRotation: Float = 90f,
     collapsedRotation: Float = 0f,
-    durationMillis: Int = 200,
+    durationMillis: Int = ANIM_SPEED_VERYSHORT,
     label: String = "RotationAnimation"
 ): Float {
     val rotation by animateFloatAsState(

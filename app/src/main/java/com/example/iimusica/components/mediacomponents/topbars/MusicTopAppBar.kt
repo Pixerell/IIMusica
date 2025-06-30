@@ -31,6 +31,7 @@ import com.example.iimusica.R
 import com.example.iimusica.components.buttons.ButtonSettings
 import com.example.iimusica.components.innerShadow
 import com.example.iimusica.components.ux.ShadowBox
+import com.example.iimusica.types.ANIM_SPEED_VERYSHORT
 import com.example.iimusica.types.MusicTopBarActions
 import com.example.iimusica.types.PAGE_TITLES
 import com.example.iimusica.ui.theme.LocalAppColors
@@ -58,7 +59,7 @@ fun MusicTopBar(
     val screenWidthPx = with(density) { LocalConfiguration.current.screenWidthDp.dp.toPx() }
     val animatedOffsetPx by animateFloatAsState(
         targetValue = currentPage * (screenWidthPx / pageTitles.size),
-        animationSpec = tween(333)
+        animationSpec = tween(ANIM_SPEED_VERYSHORT)
     )
 
     Column(
