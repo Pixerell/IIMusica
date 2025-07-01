@@ -17,6 +17,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -29,6 +32,7 @@ import androidx.navigation.NavController
 import com.example.iimusica.components.MiniPlayer
 import com.example.iimusica.components.buttons.ButtonReload
 import com.example.iimusica.components.mediacomponents.topbars.MusicTopBar
+import com.example.iimusica.components.ux.LoaderPathBox
 import com.example.iimusica.components.ux.animations.rememberMiniPlayerAnimation
 import com.example.iimusica.core.viewmodels.AlbumViewModel
 import com.example.iimusica.core.viewmodels.MusicViewModel
@@ -113,9 +117,11 @@ fun MusicPagerScreen(
                 onToggleDescending = {
                     sharedViewModel.toggleDescending(screenKey)
                 },
-                onNavToQueue = {     navController.navigate("queue") {
-                    launchSingleTop = true
-                }},
+                onNavToQueue = {
+                    navController.navigate("queue") {
+                        launchSingleTop = true
+                    }
+                },
                 snackbarHostState = snackbarHostState
             )
         },
@@ -164,6 +170,17 @@ fun MusicPagerScreen(
                     )
                 }
             }
+
+            if (musicViewModel.isLoading.value && !musicViewModel.isFullLoaded.value) {
+                val loadingPath by remember { derivedStateOf { musicViewModel.currentLoadingPath.value } }
+
+                LoaderPathBox(
+                    loadingPath = loadingPath,
+                    modifier = Modifier.align(Alignment.TopStart)
+                )
+            }
+
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -171,7 +188,7 @@ fun MusicPagerScreen(
                     .zIndex(111f)
                     .offset { animationState.offset }
             )
-             {
+            {
                 MiniPlayer(
                     playerViewModel = playerViewModel,
                     isMiniPlayerVisible = sharedViewModel.miniPlayerVisible.value,

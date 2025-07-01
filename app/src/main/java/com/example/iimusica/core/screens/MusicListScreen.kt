@@ -7,20 +7,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.PositionalThreshold
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.example.iimusica.components.ux.InfoBox
-import com.example.iimusica.components.ux.Loader
 import com.example.iimusica.components.ux.MessageType
-import com.example.iimusica.components.mediacomponents.MusicList
+import com.example.iimusica.components.mediacomponents.MusicListWithPull
 import com.example.iimusica.core.player.PlaybackCommandBus
 import com.example.iimusica.core.viewmodels.MusicViewModel
 import com.example.iimusica.core.viewmodels.PlayerViewModel
@@ -40,7 +34,7 @@ fun MusicListScreen(
     context: Context,
     musicViewModel: MusicViewModel,
     playerViewModel: PlayerViewModel,
-    sharedViewModel : SharedViewModel
+    sharedViewModel: SharedViewModel
 ) {
     val filteredFiles by musicViewModel.filteredFiles
     val mFiles by musicViewModel.mFiles
@@ -82,7 +76,23 @@ fun MusicListScreen(
                 )
         ) {
             if (isLoading) {
-                Loader(modifier = Modifier.align(Alignment.Center))
+                MusicListWithPull(
+                    musicFiles = filteredFiles,
+                    navController = navController,
+                    playerViewModel = playerViewModel,
+                    listState = musicListState,
+                    isRefreshing = false,
+                    pullState = state,
+                    appColors = appColors,
+                    onRefresh = {
+                        reloadmlist(
+                            playerViewModel,
+                            musicViewModel,
+                            sharedViewModel,
+                            context
+                        )
+                    }
+                )
             } else if (errorMessage.isNotEmpty()) {
                 InfoBox(
                     message = "There was an error $errorMessage",
@@ -101,38 +111,30 @@ fun MusicListScreen(
                     )
                 } else {
                     if (playerViewModel.queueManager.getQueue().isEmpty()) {
-                        playerViewModel.queueManager.setQueue(filteredFiles, DEFAULT_QUEUE_NAME)  // Initialize the queue with sorted files only if it's empty
+                        playerViewModel.queueManager.setQueue(
+                            filteredFiles,
+                            DEFAULT_QUEUE_NAME
+                        )  // Initialize the queue with sorted files only if it's empty
                     }
-                    PullToRefreshBox(
-                        state = state,
+                    MusicListWithPull(
+                        musicFiles = filteredFiles,
+                        navController = navController,
+                        playerViewModel = playerViewModel,
+                        listState = musicListState,
                         isRefreshing = musicViewModel.isLoading.value,
-                        indicator = {
-                            Indicator(
-                                isRefreshing = musicViewModel.isLoading.value,
-                                containerColor = appColors.backgroundDarker,
-                                color = appColors.icon,
-                                state = state,
-                                threshold = PositionalThreshold,
-                                modifier = Modifier
-                                    .align(Alignment.TopCenter)
-                                    .size(90.dp)
-                                    .padding(16.dp)
-                            )
-                        },
+                        pullState = state,
+                        appColors = appColors,
                         onRefresh = {
-                            reloadmlist(playerViewModel, musicViewModel, sharedViewModel, context)
+                            reloadmlist(
+                                playerViewModel,
+                                musicViewModel,
+                                sharedViewModel,
+                                context
+                            )
                         }
-                    ) {
-                        MusicList(
-                            musicFiles = filteredFiles,
-                            navController = navController,
-                            playerViewModel = playerViewModel,
-                            listState = musicListState
-                        )
-                    }
+                    )
                 }
             }
         }
     }
 }
-
