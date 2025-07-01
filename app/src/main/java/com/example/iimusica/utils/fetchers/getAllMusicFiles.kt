@@ -10,6 +10,8 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import com.example.iimusica.types.MusicFile
 import com.example.iimusica.utils.formatDuration
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 
 val projection = arrayOf(
@@ -36,9 +38,8 @@ fun scanAllFiles(context: Context) {
 }
 
 
-fun getAllMusicFiles(context: Context): List<MusicFile> {
+fun getAllMusicFiles(context: Context): Flow<Pair<MusicFile, String>> = flow {
     scanAllFiles(context)
-    val musicFiles = mutableListOf<MusicFile>()
 
     val cursor = context.contentResolver.query(
         MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -50,14 +51,13 @@ fun getAllMusicFiles(context: Context): List<MusicFile> {
         while (it.moveToNext()) {
             val musicFile = extractMusicFileFromCursor(it)
             musicFile?.let {
-                val albumArt = getAlbumArtBitmap(context, musicFile.albumId, musicFile.path)
-                musicFiles.add(it.copy(albumArtBitmap = albumArt))
+                val albumArt = getAlbumArtBitmap(context, it.albumId, it.path)
+                emit(it.copy(albumArtBitmap = albumArt) to it.path)
             }
         }
     }
-    Log.d("MusicFiles", "Total Music Files: ${musicFiles.size}")
-    return musicFiles
 }
+
 
 fun getMusicFileFromPath(context: Context, path: String): MusicFile? {
     val cursor = context.contentResolver.query(

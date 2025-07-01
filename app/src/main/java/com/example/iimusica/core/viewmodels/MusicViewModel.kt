@@ -33,6 +33,9 @@ class MusicViewModel(
     private val _filteredFiles = mutableStateOf<List<MusicFile>>(emptyList())
     val filteredFiles: MutableState<List<MusicFile>> get() = _filteredFiles
 
+    private val _currentLoadingPath = mutableStateOf<String>("")
+    val currentLoadingPath: MutableState<String> get() = _currentLoadingPath
+
     private var lastSongFilterState: SearchSortState? = null
 
     private val _shouldScrollTop = mutableStateOf(false)
@@ -46,18 +49,28 @@ class MusicViewModel(
     fun loadMusicFiles(context: Context) {
         _isLoading.value = true
         _errorMessage.value = null
+        _mFiles.value = emptyList() // clear before loading
+        lastSongFilterState = null
+
         viewModelScope.launch {
             _filesLoading.emit(FilesLoadingState.Loading) // Signal that files are being reset and loaded
         }
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val files = getAllMusicFiles(context)
-                lastSuccessfulFiles = files
+                val tempList = mutableListOf<MusicFile>()
+                getAllMusicFiles(context).collect { (musicFile, path) ->
+                    tempList.add(musicFile)
+                    withContext(Dispatchers.Main) {
+                        _mFiles.value = tempList.toList() // trigger recomposition
+                        _currentLoadingPath.value = path
+                    }
+                }
+
+                lastSuccessfulFiles = tempList
                 withContext(Dispatchers.Main) {
-                    _mFiles.value = files.toList()
                     updateFilteredFiles(sharedViewModel.getState(ScreenKey.Songs))
-                    _filesLoading.emit(FilesLoadingState.Loaded) // Signal that files have been successfully loaded
+                    _filesLoading.emit(FilesLoadingState.Loaded)
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {

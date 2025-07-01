@@ -7,20 +7,21 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.PositionalThreshold
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import com.example.iimusica.components.innerShadow
 import com.example.iimusica.components.ux.InfoBox
 import com.example.iimusica.components.ux.Loader
 import com.example.iimusica.components.ux.MessageType
-import com.example.iimusica.components.mediacomponents.MusicList
+import com.example.iimusica.components.mediacomponents.MusicListWithPull
+import com.example.iimusica.components.ux.ExpandableText
 import com.example.iimusica.core.player.PlaybackCommandBus
 import com.example.iimusica.core.viewmodels.MusicViewModel
 import com.example.iimusica.core.viewmodels.PlayerViewModel
@@ -29,6 +30,7 @@ import com.example.iimusica.types.DEFAULT_QUEUE_NAME
 import com.example.iimusica.types.DEFAULT_SORTED_QUEUE_NAME
 import com.example.iimusica.types.SKIP_CHECK_CODE
 import com.example.iimusica.ui.theme.LocalAppColors
+import com.example.iimusica.ui.theme.Typography
 import com.example.iimusica.utils.reloadmlist
 import kotlinx.coroutines.flow.collectLatest
 
@@ -40,7 +42,7 @@ fun MusicListScreen(
     context: Context,
     musicViewModel: MusicViewModel,
     playerViewModel: PlayerViewModel,
-    sharedViewModel : SharedViewModel
+    sharedViewModel: SharedViewModel
 ) {
     val filteredFiles by musicViewModel.filteredFiles
     val mFiles by musicViewModel.mFiles
@@ -82,7 +84,50 @@ fun MusicListScreen(
                 )
         ) {
             if (isLoading) {
-                Loader(modifier = Modifier.align(Alignment.Center))
+                Loader(modifier = Modifier.align(Alignment.Center).zIndex(100f))
+                MusicListWithPull(
+                    musicFiles = filteredFiles,
+                    navController = navController,
+                    playerViewModel = playerViewModel,
+                    listState = musicListState,
+                    isRefreshing = false,
+                    pullState = state,
+                    appColors = appColors,
+                    onRefresh = {
+                        reloadmlist(
+                            playerViewModel,
+                            musicViewModel,
+                            sharedViewModel,
+                            context
+                        )
+                    }
+                )
+                val loadingPath by remember { derivedStateOf { musicViewModel.currentLoadingPath.value } }
+
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .background(color = appColors.backgroundDarker)
+                        .fillMaxWidth()
+                        .innerShadow(
+                            shape = RectangleShape,
+                            color = appColors.font.copy(alpha = 0.25f),
+                            blur = 8.dp,
+                            offsetY = (-6).dp,
+                            offsetX = 0.dp,
+                            spread = 0.dp
+                        )
+                ) {
+                    ExpandableText(
+                        text = "Loading: $loadingPath",
+                        color = appColors.icon,
+                        minLines = 2,
+                        style = Typography.bodySmall,
+                        modifier = Modifier.padding(12.dp)
+                    )
+                }
+
+
             } else if (errorMessage.isNotEmpty()) {
                 InfoBox(
                     message = "There was an error $errorMessage",
@@ -101,38 +146,30 @@ fun MusicListScreen(
                     )
                 } else {
                     if (playerViewModel.queueManager.getQueue().isEmpty()) {
-                        playerViewModel.queueManager.setQueue(filteredFiles, DEFAULT_QUEUE_NAME)  // Initialize the queue with sorted files only if it's empty
+                        playerViewModel.queueManager.setQueue(
+                            filteredFiles,
+                            DEFAULT_QUEUE_NAME
+                        )  // Initialize the queue with sorted files only if it's empty
                     }
-                    PullToRefreshBox(
-                        state = state,
+                    MusicListWithPull(
+                        musicFiles = filteredFiles,
+                        navController = navController,
+                        playerViewModel = playerViewModel,
+                        listState = musicListState,
                         isRefreshing = musicViewModel.isLoading.value,
-                        indicator = {
-                            Indicator(
-                                isRefreshing = musicViewModel.isLoading.value,
-                                containerColor = appColors.backgroundDarker,
-                                color = appColors.icon,
-                                state = state,
-                                threshold = PositionalThreshold,
-                                modifier = Modifier
-                                    .align(Alignment.TopCenter)
-                                    .size(90.dp)
-                                    .padding(16.dp)
-                            )
-                        },
+                        pullState = state,
+                        appColors = appColors,
                         onRefresh = {
-                            reloadmlist(playerViewModel, musicViewModel, sharedViewModel, context)
+                            reloadmlist(
+                                playerViewModel,
+                                musicViewModel,
+                                sharedViewModel,
+                                context
+                            )
                         }
-                    ) {
-                        MusicList(
-                            musicFiles = filteredFiles,
-                            navController = navController,
-                            playerViewModel = playerViewModel,
-                            listState = musicListState
-                        )
-                    }
+                    )
                 }
             }
         }
     }
 }
-

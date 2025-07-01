@@ -21,6 +21,7 @@ fun ExpandableText(
     text: String,
     color: Color,
     style: TextStyle,
+    minLines : Int = 1,
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -29,7 +30,7 @@ fun ExpandableText(
         text = text,
         color = color,
         style = style,
-        maxLines = if (expanded) Int.MAX_VALUE else 1,
+        maxLines = if (expanded) Int.MAX_VALUE else minLines,
         overflow = if (expanded) TextOverflow.Clip else TextOverflow.Ellipsis,
         modifier = modifier
             .clickable { expanded = !expanded }
