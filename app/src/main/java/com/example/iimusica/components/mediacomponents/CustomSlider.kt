@@ -109,7 +109,7 @@ fun CustomSlider(
             if (!isMiniPlayer) {
                 drawCircle(
                     color = appColors.font,
-                    radius = 32f,
+                    radius = 16f,
                     center = Offset(size.width * progress, size.height / 2)
                 )
             }

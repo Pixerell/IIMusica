@@ -18,33 +18,33 @@ val Typography = Typography(
     bodyLarge = TextStyle(
         fontFamily = Tektur,
         fontWeight = FontWeight.Normal,
-        fontSize = 30.sp,
-        lineHeight = 24.sp,
+        fontSize = 28.sp,
+        lineHeight = 20.sp,
         letterSpacing = 0.5.sp
     ),
     headlineLarge = TextStyle(
         fontFamily = Tektur,
         fontWeight = FontWeight.Bold,
-        fontSize = 32.sp
+        fontSize = 28.sp
     ),
     headlineMedium = TextStyle(
         fontFamily = Tektur,
         fontWeight = FontWeight.W600,
-        fontSize = 28.sp
+        fontSize = 24.sp
     ),
     bodyMedium = TextStyle(
         fontFamily = Tektur,
         fontWeight = FontWeight.Normal,
-        fontSize = 20.sp
+        fontSize = 18.sp
     ),
     bodySmall = TextStyle(
         fontFamily = Tektur,
         fontWeight = FontWeight.Normal,
-        fontSize = 18.sp
+        fontSize = 16.sp
     ),
     labelSmall = TextStyle(
         fontFamily = Tektur,
         fontWeight = FontWeight.Normal,
-        fontSize = 16.sp
+        fontSize = 14.sp
     ),
 )

@@ -25,6 +25,7 @@ import com.example.iimusica.components.innerShadow
 import com.example.iimusica.types.MusicFile
 import com.example.iimusica.components.ux.AudioVisualizerView
 import com.example.iimusica.core.viewmodels.PlayerViewModel
+import com.example.iimusica.types.AVERAGE_MUSICITEM_HEIGHT
 import com.example.iimusica.ui.theme.LocalAppColors
 import com.example.iimusica.ui.theme.Typography
 import com.example.iimusica.utils.LocalDismissSearch
@@ -104,7 +105,7 @@ fun MusicItem(
 
         BoxWithConstraints(
             modifier = Modifier
-                .size(80.dp) // This still defines a fixed max constraint
+                .size(AVERAGE_MUSICITEM_HEIGHT.dp) // This still defines a fixed max constraint
                 .wrapContentSize(Alignment.Center)
         ) {
             val imageModifier = if (music.albumArtBitmap == null) {
@@ -137,7 +138,7 @@ fun MusicItem(
                 overflow = TextOverflow.Ellipsis,
                 style = TextStyle(
                     fontWeight = FontWeight.Bold,
-                    fontSize = Typography.bodyMedium.fontSize,
+                    fontSize = Typography.bodySmall.fontSize,
                     color = fontColor,
                     fontFamily = Typography.bodyLarge.fontFamily
                 ),

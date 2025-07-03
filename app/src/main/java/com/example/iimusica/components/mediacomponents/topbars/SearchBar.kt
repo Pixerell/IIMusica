@@ -8,6 +8,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.media3.common.util.UnstableApi
@@ -16,7 +18,11 @@ import com.example.iimusica.ui.theme.Typography
 
 @OptIn(UnstableApi::class)
 @Composable
-fun SearchBar(searchQuery: String, onSearchQueryChange: (String) -> Unit) {
+fun SearchBar(
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    focusRequester: FocusRequester
+) {
     val appColors = LocalAppColors.current
 
     BasicTextField(
@@ -31,7 +37,9 @@ fun SearchBar(searchQuery: String, onSearchQueryChange: (String) -> Unit) {
         ),
         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
         keyboardActions = KeyboardActions(),
-        modifier = Modifier.fillMaxWidth()
+
+        modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+        cursorBrush = androidx.compose.ui.graphics.SolidColor(appColors.font)
     )
 
     if (searchQuery.isEmpty()) {

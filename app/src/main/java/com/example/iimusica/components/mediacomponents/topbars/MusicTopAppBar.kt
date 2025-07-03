@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -62,6 +63,14 @@ fun MusicTopBar(
         animationSpec = tween(ANIM_SPEED_VERYSHORT)
     )
 
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(isSearching) {
+        if (isSearching) {
+            focusRequester.requestFocus()
+        }
+    }
+
     Column(
         modifier = Modifier
             .shadow(
@@ -82,7 +91,7 @@ fun MusicTopBar(
         TopAppBar(
             title = {
                 if (isSearching) {
-                    SearchBar(searchQuery, actions.onSearchQueryChange)
+                    SearchBar(searchQuery, actions.onSearchQueryChange, focusRequester)
                 } else {
                     Text(
                         text = "IIMusica",

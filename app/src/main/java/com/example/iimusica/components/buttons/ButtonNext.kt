@@ -2,6 +2,7 @@ package com.example.iimusica.components.buttons
 
 
 import androidx.annotation.OptIn
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -21,7 +22,8 @@ fun ButtonNext(playerViewModel: PlayerViewModel, modifier: Modifier) {
             painter = painterResource(R.drawable.nextico),
             contentDescription = "Next",
             tint = appColors.icon,
-            modifier = modifier
+            modifier = Modifier.fillMaxSize(0.8f)
+
         )
     }
 }

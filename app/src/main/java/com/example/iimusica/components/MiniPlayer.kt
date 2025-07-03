@@ -65,7 +65,7 @@ fun MiniPlayer(
 
     val rotation by animateFloatAsState(
         targetValue = if (isMiniPlayerVisible) 180f else 0f,
-        label = "ArrowRotation"
+        label = "ArrowRotation",
     )
 
     val painter = albumPainter(currentMusic)
@@ -132,11 +132,12 @@ fun MiniPlayer(
                         .background(appColors.backgroundDarker)
                         .zIndex(112f)
 
+
                 ) {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowUp,
                         tint = appColors.icon,
-                        contentDescription = "Options",
+                        contentDescription = "Hide/Show Mini player",
                         modifier = Modifier
                             .rotate(rotation)
                             .zIndex(112f)

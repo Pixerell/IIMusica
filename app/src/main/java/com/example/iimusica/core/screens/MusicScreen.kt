@@ -4,20 +4,23 @@ package com.example.iimusica.core.screens
 import android.content.res.Configuration
 import androidx.annotation.OptIn
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -54,10 +57,10 @@ fun MusicScreen(
         LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     val currentPath = playerViewModel.currentPath.value ?: path
-    var isPanelExpanded by remember { mutableStateOf(false) }
-    val togglePanelState: (Boolean) -> Unit = { expanded ->
-        isPanelExpanded = !isPanelExpanded
-    }
+
+    val dragOffsetState = remember { mutableFloatStateOf(0f) }
+    val isDragging = remember { mutableStateOf(false) }
+    val maxDragPx = with(LocalDensity.current) { 500.dp.toPx() }
 
     val screenKey = pageToScreenKey(0)
     val state = sharedViewModel.getState(screenKey)
@@ -96,15 +99,16 @@ fun MusicScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(appColors.background)
-            .pointerInput(Unit) {
-                detectVerticalDragGestures { _, dragAmount ->
-                    if (dragAmount < 0) { // Swipe up
-                        isPanelExpanded = true
-                    } else if (dragAmount > 0) { // Swipe down
-                        isPanelExpanded = false
-                    }
+            .draggable(
+                orientation = Orientation.Vertical,
+                state = rememberDraggableState { delta ->
+                    isDragging.value = true
+                    dragOffsetState.floatValue = (dragOffsetState.floatValue - delta).coerceIn(0f, maxDragPx)
+                },
+                onDragStopped = {
+                    isDragging.value = false
                 }
-            }
+            )
 
     ) {
         Column(
@@ -180,9 +184,9 @@ fun MusicScreen(
             musicViewModel,
             playerViewModel,
             state,
-            isPanelExpanded,
-            togglePanelState,
             navController = navController,
+            dragOffsetState = dragOffsetState,
+            isDragging = isDragging,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
     }

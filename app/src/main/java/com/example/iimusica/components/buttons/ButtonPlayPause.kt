@@ -49,7 +49,7 @@ fun ButtonPlayPause(
             },
             modifier = Modifier
                 .clip(CircleShape)
-                .size(if (isSmallMode) 40.dp else 80.dp),
+                .size(if (isSmallMode) 32.dp else 72.dp),
             containerColor = if (isSmallMode) Color.Transparent else appColors.icon,
             elevation = FloatingActionButtonDefaults.elevation(0.dp)
         ) {
@@ -61,7 +61,7 @@ fun ButtonPlayPause(
                     contentDescription = if (playerViewModel.isPlaying) "Pause" else "Play",
                     tint = appColors.active,
                     modifier = Modifier
-                        .size(28.dp)
+                        .size(24.dp)
                         .then(
                             if (!playerViewModel.isPlaying) {
                                 Modifier.offset(x = 2.dp)
