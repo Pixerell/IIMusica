@@ -37,7 +37,7 @@ fun scanAllFiles(context: Context) {
     }
 }
 
-
+// This is async flow
 fun getAllMusicFiles(context: Context): Flow<MusicFile> = flow {
     scanAllFiles(context)
     val cursor = context.contentResolver.query(
